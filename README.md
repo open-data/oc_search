@@ -36,3 +36,9 @@ To run: `python manage.py create_solr_core <search name>`
 
 `<search name` Is th name of a search that has been previously defined either by running a load script or
 through the Djanoo admin UI.
+
+### import_schema_ckan_yaml
+
+To run: `python manage.py import_schema_ckan_yaml --yaml_file ./travela.yaml --search_id travela --title_en "Travel Expenses" --title_fr "Dépenses de voyage gouvernementaux"`
+
+This command will parse the CKAN YAML file and load it into the search model database
