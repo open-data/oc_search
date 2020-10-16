@@ -1,7 +1,7 @@
 from django.contrib import admin
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
-from .models import Search, Field, Code
+from .models import Search, Field, Code, Organizations
 
 
 class SearchResource(resources.ModelResource):
@@ -33,9 +33,20 @@ class CodeResource(resources.ModelResource):
 class CodeAdmin(ImportExportModelAdmin):
     resource_class = CodeResource
 
+
+class OrganizationResource(resources.ModelResource):
+
+    class Meta:
+        model = Organizations
+
+
+class OrganizationAdmin(ImportExportModelAdmin):
+    resource_class = OrganizationResource
+
 # Register your models here.
 
 
 admin.site.register(Search, SearchAdmin)
 admin.site.register(Field, FieldAdmin)
 admin.site.register(Code, CodeAdmin)
+admin.site.register(Organizations, OrganizationAdmin)

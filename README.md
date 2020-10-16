@@ -19,6 +19,7 @@ Open Canada data catalog and proactive disclosure.
     `python manage.py sqlmigrate search 0001`<br>
     `python manage,py migrate`
 
+*NOTE* In addition to Python, the search application also requires Solr *.x and the custom python solr library [Solr Ciient](https://github.com/thriuin/SolrClient)
 ## Django Plugins ##
 
 Two Django plugins are used:
@@ -39,6 +40,21 @@ through the Djanoo admin UI.
 
 ### import_schema_ckan_yaml
 
-To run: `python manage.py import_schema_ckan_yaml --yaml_file ./travela.yaml --search_id travela --title_en "Travel Expenses" --title_fr "Dépenses de voyage gouvernementaux"`
+To run: `python manage.py import_schema_ckan_yaml --yaml_file <yaml file> --search_id <unique search ID> --title_en <English Title> --title_fr <French Title> [--reset]`
 
 This command will parse the CKAN YAML file and load it into the search model database
+
+### import_data_csv
+
+To run: `python manage.py --csv <CSV file> --search <Unique search ID> --core <Solr Core Name> [--nothing_to_report]`
+
+---
+
+## Creating a New Search
+
+Creating a new proactive disclosure search requires several steps
+
+1. Create a new blank Solr and copy in the synonyms files
+2. Create a search model by importing the CKAN recombinant Yaml file using the `import_schema_ckan_yaml` command
+3. Customize the Solr core schema for the seach model using the `create_solr_core` command
+4. Import the data from the proactive disclosure CSV file using the `import_data_csv` command
