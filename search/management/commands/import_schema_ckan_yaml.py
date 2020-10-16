@@ -160,7 +160,7 @@ class Command(BaseCommand):
                             self.process_yaml_field(search, yaml_field, options['reset'], is_ntr=True)
 
                     # always add default organization fields
-                    self.add_org_fields(search.search_id)
+                    self.add_org_fields(search)
 
             except Exception as x:
                 self.logger.error("Unexpected Error: {0}".format(x))

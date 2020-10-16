@@ -34,7 +34,7 @@ class Field(models.Model):
         ('fr', 'Français'),
         ('bi', 'Bilingual/Bilangue')
     ]
-    field_id = models.CharField(primary_key=True, max_length=64)
+    field_id = models.CharField(blank=False, max_length=64)
     search_id = models.ForeignKey(Search, on_delete=models.CASCADE)
     label_en = models.CharField(blank=False, max_length=132)
     label_fr = models.CharField(blank=False, max_length=132)
