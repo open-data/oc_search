@@ -76,19 +76,19 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('--search', help='Unique Search model identifier', type=str)
-        parser.add_argument('--core', type=str, help='Solr Core name', required=True)
 
     def handle(self, *args, **options):
         try:
             search_id = options['search']
             search_target = Search.objects.get(search_id=search_id)
+            solr_core = search_target.solr_core_name
             solr = SolrClient(settings.SOLR_SERVER_URL)
 
             # create custom Solr field types if necessary
-            if not solr.schema.does_field_type_exist(options['core'], 'search_text_en'):
-                solr.schema.create_field_type(options['core'], search_text_en)
-            if not solr.schema.does_field_type_exist(options['core'], 'search_text_fr'):
-                solr.schema.create_field_type(options['core'], search_text_fr)
+            if not solr.schema.does_field_type_exist(solr_core, 'search_text_en'):
+                solr.schema.create_field_type(solr_core, search_text_en)
+            if not solr.schema.does_field_type_exist(solr_core, 'search_text_fr'):
+                solr.schema.create_field_type(solr_core, search_text_fr)
             create_year_field = False
             create_month_field = False
 
@@ -100,20 +100,32 @@ class Command(BaseCommand):
                              "indexed": solr_field.solr_field_indexed,
                              "multiValued": solr_field.solr_field_multivalued
                              }
+                extra_copy_fields = []
                 if solr_field.solr_field_type in ("string", "pint", "pdate"):
                     new_field["docValues"] = True
-                self._add_or_update_solr_field(solr, options['core'], new_field)
+                self._add_or_update_solr_field(solr, solr_core, new_field)
 
-                # Create English and French strings for holding locale formatted numbers and dates
-                if solr_field.solr_field_type in ("pint", "pdate", "pfloat"):
+                # Create English and French strings for holding: locale formatted numbers and dates as well as code values
+                if solr_field.solr_field_type in ("pint", "pdate", "pfloat") and solr_field.field_id != 'year':
                     new_loc_field = {"name": "{0}_en".format(solr_field.field_id),
                                      "type": "string",
                                      "stored": True,
                                      "indexed": True,
                                      "docValues": True}
-                    self._add_or_update_solr_field(solr, options['core'], new_loc_field)
+                    self._add_or_update_solr_field(solr, solr_core, new_loc_field)
+                    extra_copy_fields.append(new_loc_field["name"])
                     new_loc_field["name"] = "{0}_fr".format(solr_field.field_id)
-                    self._add_or_update_solr_field(solr, options['core'], new_loc_field)
+                    self._add_or_update_solr_field(solr, solr_core, new_loc_field)
+                    extra_copy_fields.append(new_loc_field["name"])
+                elif solr_field.solr_field_type == 'string' and solr_field.solr_field_is_coded:
+                    new_loc_field = {"name": "{0}_en".format(solr_field.field_id),
+                                     "type": "string",
+                                     "stored": True,
+                                     "indexed": True,
+                                     "docValues": True}
+                    self._add_or_update_solr_field(solr, solr_core, new_loc_field)
+                    new_loc_field["name"] = "{0}_fr".format(solr_field.field_id)
+                    self._add_or_update_solr_field(solr, solr_core, new_loc_field)
 
                 # Create default year and month if so required
                 if solr_field.solr_field_type == 'pdate':
@@ -124,28 +136,24 @@ class Command(BaseCommand):
 
                 # create a string copy field for export
                 if solr_field.solr_field_export != "":
-                    export_field = {"name": solr_field.solr_field_export,
-                                    "type": "string",
-                                    "stored": True,
-                                    "indexed": False,
-                                    "docValues": True
-                                    }
-                    export_copy_field = {'source': solr_field.field_id,
-                                         'dest': solr_field.solr_field_export}
-                    self._add_or_update_solr_field(solr, options['core'], export_field)
-                    if not solr.schema.does_copy_field_exist(options['core'], solr_field.field_id,
-                                                             solr_field.solr_field_export):
-                        solr.schema.create_copy_field(options['core'], export_copy_field)
+                    for export_field_name in solr_field.solr_field_export.split(","):
+                        export_field = {"name": export_field_name,
+                                        "type": "string",
+                                        "stored": True,
+                                        "indexed": False,
+                                        "docValues": True
+                                        }
+                        export_copy_field = {'source': solr_field.field_id,
+                                             'dest': export_field_name}
+                        self._add_or_update_solr_field(solr, solr_core, export_field)
+                        if not solr.schema.does_copy_field_exist(solr_core, solr_field.field_id,
+                                                                 export_field_name):
+                            solr.schema.create_copy_field(solr_core, export_copy_field)
+                        extra_copy_fields.append(export_field['name'])
 
-            # Add a flag for Nothing To Report and year and month fields
-            ntr_field = {"name": "is_ntr_field",
-                         "type": 'boolean',
-                         "stored": True,
-                         "indexed": True,
-                         "multiValued": False,
-                         'docValues': False
-                         }
-            self._add_or_update_solr_field(solr, options['core'], ntr_field)
+                # Update the Field db record with the list of copy fields
+                solr_field.solr_extra_fields = ",".join(extra_copy_fields)
+                solr_field.save()
 
             # Create default year and month fields if specified
             if create_year_field:
@@ -154,14 +162,14 @@ class Command(BaseCommand):
                              "stored": True,
                              "indexed": True,
                              "docValues": True}
-                self._add_or_update_solr_field(solr, options['core'], new_field)
+                self._add_or_update_solr_field(solr, solr_core, new_field)
             if create_month_field:
-                new_field = {"name": "monrth",
+                new_field = {"name": "month",
                              "type": "pint",
                              "stored": True,
                              "indexed": True,
                              "docValues": True}
-                self._add_or_update_solr_field(solr, options['core'], new_field)
+                self._add_or_update_solr_field(solr, solr_core, new_field)
 
         except Exception as x:
             self.logger.error('Unexpected Error "{0}"'.format(x))

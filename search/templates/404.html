@@ -1,0 +1,69 @@
+{% extends "base-cdts.html" %}
+{% load i18n %}
+{% load static %}
+{% load search_extras %}
+
+{% block canada_ca_search %} {% endblock canada_ca_search %}
+{% block language_switch_url %}/{{ LANGUAGE_CODE | SwapLangCode }}/od{% endblock language_switch_url %}
+
+{% block top-settings %}
+    "lngLinks": [{
+        "lang": "{{ LANGUAGE_CODE | SwapLangCode }}",
+        "href": "/{{ LANGUAGE_CODE | SwapLangCode }}/od",
+        "text": "{{ LANGUAGE_CODE | SwapLangName }}"
+    }],
+    search: false,
+    "breadcrumbs": [{
+        "title": "Canada.ca",
+        "href": "https://www.canada.ca/{{ LANGUAGE_CODE }}.html",
+    },{
+        "title": "{% trans 'Open Government' %}",
+        "href": "{% trans 'https://open.canada.ca' %}/{{ LANGUAGE_CODE }}",
+    }]
+{% endblock %}
+
+{% block main-content %}
+    <div class="row mrgn-tp-lg">
+        <div class="col-xs-3 col-sm-2 col-md-2 text-center mrgn-tp-md">
+            <span class="glyphicon glyphicon-warning-sign glyphicon-error"></span>
+        </div>
+        <div class="col-xs-9 col-sm-10 col-md-10">
+            <h2 class="mrgn-tp-md">{% trans "We couldn't find that Web page" %}</h2>
+            <p class="pagetag"><b>{% trans "Error 404" %}</b></p>
+            <p>{% trans "We're sorry you ended up here. Sometimes a page gets moved or deleted, but hopefully we can help you find what you're looking for. Return to the <a href=\"/en/od\">search page" %}</p>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block pre-footer-settings %}
+    showPostContent: false,
+    showFeedback: false,
+    showShare: false
+{% endblock %}
+
+{% block footer-settings %}
+"footerSections": [{
+    "href": "{% trans 'https://open.canada.ca/en/forms/contact-us' %}",
+    "text": "{% trans 'Open Government Contact' %}"
+},{
+    "href": "{% trans 'https://www.canada.ca/en/government/dept.html' %}",
+    "text": "{% trans 'Departments and agencies' %}"
+},{
+    "href": "{% trans 'https://www.canada.ca/en/government/publicservice.html' %}",
+    "text": "{% trans 'Public service and military' %}"
+},{
+    "href": "{% trans 'http://news.gc.ca/' %}",
+    "text": "{% trans 'News' %}"
+},{
+    "href": "{% trans 'https://www.canada.ca/en/government/system/laws.html' %}",
+    "text": "{% trans 'Treaties, laws and regulations' %}"
+},{
+    "href": "{% trans 'https://www.canada.ca/en/transparency/reporting.html' %}",
+    "text": "{% trans 'Government-wide reporting' %}"
+},{
+    "href": "{% trans 'https://www.canada.ca/en/government/system.html' %}",
+    "text": "{% trans 'How government works' %}"
+}],
+"showFeatures": false
+{% endblock %}

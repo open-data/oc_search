@@ -1,0 +1,32 @@
+
+{% load i18n %}
+{% load search_extras %}
+
+<script>
+        var defTop = document.getElementById("def-top");
+        defTop.outerHTML = wet.builder.top({
+            "lngLinks": [{
+                "lang": "{{ language_code | SwapLangCode }}",
+                "href": "/search/{{ language_code | SwapLangCode }}/{{ search_type }}/record/{{ docs.0.id }}{% if query_path %}/?{{ query_path }}{% endif %}",
+                "text": "{{ language_code | SwapLangName}}"
+            }],
+            search: false,
+            "breadcrumbs": [{
+                "title": "Canada.ca",
+                "href": "https://www.canada.ca/{{ language_code }}.html",
+            },{
+                "title": "{% trans 'Open Government' %}",
+                "href": "{% trans 'https://open.canada.ca' %}/{{ LANGUAGE_CODE }}",
+            },{
+                "title": "{% trans 'Open Information' %}",
+                "href": "{% trans 'https://open.canada.ca/en/open-information' %}",
+            },{
+                "title": "{% trans 'Proactive Disclosure' %}",
+                "href": "{% trans 'https://open.canada.ca/en/proactive-disclosure' %}",
+            },{
+                "title": "{{ search_title }}",
+                "href": "{{ parent_path }}",
+            }
+            ]
+        });
+    </script>

@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -129,6 +130,12 @@ ROSETTA_MESSAGES_PER_PAGE = 25
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# File cache directory used by the export search results feature. If files are served by a web server like Nginx
+# or Apache, set the FILE_CACHE_URL
+
+FILE_CACHE_DIR = os.path.join(BASE_DIR, 'cache')
+FILE_CACHE_URL = ""
 
 SOLR_SERVER_URL = 'http://127.0.0.1:8983/solr'
 

@@ -53,7 +53,12 @@ class Command(BaseCommand):
                 field.label_fr = yaml_field['label']['fr']
 
             # Is nothing to report flag
-            field.is_ntr_field = is_ntr
+            if is_ntr:
+                if created:
+                    if field.alt_format == 'NTR':
+                        field.alt_format = 'ALL'
+                else:
+                    field.alt_format = 'NTR'
 
             # Don't override the optional fields in case it was manually edited
             if created or reset is True:
@@ -63,6 +68,7 @@ class Command(BaseCommand):
                         field.solr_field_type = self.field_types[yaml_field['datastore_type']]
                         if yaml_field['datastore_type'] == 'money':
                             field.solr_field_is_currency = True
+                            field.default_export_value = "float|0.0"
 
                 # Automatically expand dates and strings for English and French
                 if field.field_id.endswith('_en'):
@@ -75,6 +81,7 @@ class Command(BaseCommand):
                     field.solr_field_export = field.field_id + 'a'
                 elif field.field_id.endswith('_date'):
                     field.solr_field_type = 'pdate'
+                    field.default_export_value = "date|0001-01-01T00:00:00"
 
                     # The default year is sometimes used  for data facets
                     if 'extract_date_year' in yaml_field:
@@ -100,6 +107,7 @@ class Command(BaseCommand):
                     choice.label_en = yaml_field['choices'][ccode]["en"]
                     choice.label_fr = yaml_field['choices'][ccode]["fr"]
                     choice.save()
+
             field.save()
 
     def add_org_fields(self, search):
@@ -117,25 +125,41 @@ class Command(BaseCommand):
         field.label_fr = "Code de l'organisation"
         field.solr_field_stored = True
         field.solr_field_indexed = True
+        field.default_export_value = "str|-"
+        field.solr_field_is_coded = True
         field.save()
 
-        field, created = Field.objects.get_or_create(field_id='org_en', search_id=search)
+        field, created = Field.objects.get_or_create(field_id='owner_org_en', search_id=search)
         field.solr_field_type = 'string'
         field.solr_field_lang = 'en'
         field.label_en = 'Organization'
         field.label_fr = "Organisation"
         field.solr_field_stored = True
         field.solr_field_indexed = True
+        field.default_export_value = "str|-"
         field.save()
 
-        field, created = Field.objects.get_or_create(field_id='org_fr', search_id=search)
+        field, created = Field.objects.get_or_create(field_id='owner_org_fr', search_id=search)
         field.solr_field_type = 'string'
         field.solr_field_lang = 'fr'
         field.label_en = 'Organization'
         field.label_fr = "Organisation"
         field.solr_field_stored = True
         field.solr_field_indexed = True
+        field.default_export_value = "str|-"
         field.save()
+
+    def add_format_field(selfself, search):
+        field, created = Field.objects.get_or_create(field_id='format', search_id=search)
+        field.solr_field_type = 'string'
+        field.solr_field_lang = 'bi'
+        field.label_en = 'Record Format'
+        field.label_fr = "Format d'enregistrement"
+        field.solr_field_stored = True
+        field.solr_field_indexed = True
+        field.default_export_value = "str|-"
+        field.save()
+
 
     def handle(self, *args, **options):
 
@@ -148,6 +172,8 @@ class Command(BaseCommand):
                     search, created = Search.objects.get_or_create(search_id=options['search_id'])
                     search.label_en = options['title_en']
                     search.label_fr = options['title_fr']
+                    # Set the ID according to the datastore_primary_key fields
+                    search.id_fields = ",".join(schema['resources'][0]['datastore_primary_key']).strip(",")
                     search.save()
 
                     # Process regular PD data file fields
@@ -161,6 +187,9 @@ class Command(BaseCommand):
 
                     # always add default organization fields
                     self.add_org_fields(search)
+
+                    # Always add a format field.
+                    self.add_format_field(search)
 
             except Exception as x:
                 self.logger.error("Unexpected Error: {0}".format(x))

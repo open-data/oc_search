@@ -1,0 +1,10 @@
+{% load i18n %}
+{% load search_extras %}
+
+{% if info_msg|length > 0 %}
+<div class="row">
+    <section class="alert alert-info"><h3>{% trans 'Transitional Period' %}</h3>
+        <div class="small">{{ info_msg | markdown_filter | safe }}</div>
+    </section>
+</div>
+{% endif %}

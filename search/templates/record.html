@@ -1,0 +1,78 @@
+{% extends "base-cdts.html" %}
+{% load static %}
+{% load humanize %}
+{% load i18n %}
+{% load search_extras %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% block main-content-body %}
+{% if referer %}
+<div class="row">
+    <div class="col-md-12"><a class="btn btn-primary" href="{{ referer }}">{% trans 'Back to search' %}</a></div>
+</div>
+{% endif %}
+<div class="row mrgn-tp-md">
+
+    {% block main-content-centre %}
+
+        {% block main-content-search-items %}
+        {% for doc in docs %}
+            {% if record_detail_snippet %}
+                {% include record_detail_snippet %}
+            {% else %}
+                {% for field_name, field_value in doc.items %}
+
+                    {% if field_name in display_fields %}
+                    <div class="row">
+                        {% if field_name in display_field_name %}
+                            <div class="col-md-4"><strong>{{ display_field_name|get_dict_value:field_name }}</strong></div>
+                        {% else %}
+                            <div class="col-md-4"><strong>{{ field_name }}</strong></div>
+                        {% endif %}
+                        {% if field_name in codes %}
+                        <div class="col-md-8">{{ codes|get_dict_value:field_name|get_dict_value:field_value }}</div>
+                        {% else %}
+                        <div class="col-md-8">{{ field_value }}</div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                {% endfor %}
+            {% endif %}
+        {% endfor %}
+        {% endblock main-content-search-items %}
+
+        <div class="col-md-12">
+         {% block main-content-pagination %}
+            <section>
+                <ul class="pagination">
+                    {% for pg in pagination %}
+                        {% if pg == 1 %}
+                            {% if currentpage == 1 %}
+                                <li class="previous disabled"><a href="#" rel="prev">{% trans 'Previous' %}</a></li>
+                            {% else %}
+                                <li class="previous"><a href="#" onclick="gotoPage('{{ previous_page }}')">{% trans 'Previous' %} <span class="wb-inv">Go to page {{ previous_page }}</span></a></li>
+                            {% endif %}
+                            <li{% if currentpage == 1 %} class="active" {% endif %}><a href="#" onclick="gotoPage('1')">1<span class="wb-inv">(current) {% trans 'Go to' %} 1 </span></a></li>
+                         {% elif pg == last_page %}
+                            <li{% if currentpage == last_page %} class="active"{% endif %}>
+                              <a href="#" onclick="gotoPage('{{ last_page }}')">{{ pg }}<span class="wb-inv">(current) {% trans 'Go to' %} 1 </span></a>
+                            </li>
+                            {% if currentpage == last_page %}
+                            <li class="next disabled"><a href="#" rel="next">{% trans 'Next' %}</a></li>
+                            {% else %}
+                                <li class="next"><a href="#" onclick="gotoPage('{{ next_page }}')">{% trans 'Next' %} <span class="wb-inv">Go to page {{ next_page }}</span></a></li>
+                            {% endif %}
+                        {% elif pg == 0 %}
+                            <li><a href="#" onclick="">...<span class="wb-inv"></span></a></li>
+                        {% else %}
+                            <li {% if currentpage == pg %}class="active" {% endif %}><a href="#" onclick="gotoPage('{{ pg }}')">{{ pg }} <span class="wb-inv">Go to page {{pg}}</span></a></li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endblock main-content-pagination %}
+        </div>
+    {% endblock main-content-centre %}
+    </div>
+{% endblock main-content-body %}

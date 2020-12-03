@@ -17,14 +17,31 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import path
 from django.conf.urls import include
+from search.views import SearchView, RecordView, ExportView
+
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('search/admin/', admin.site.urls),
 ]
 
 # Enable Rosetta for translation
 if 'rosetta' in settings.INSTALLED_APPS:
     import rosetta
     urlpatterns += [
-        path('rosetta/', include('rosetta.urls'))
+        path('search/rosetta/', include('rosetta.urls'))
+    ]
+
+if settings.SEARCH_LANG_USE_PATH:
+    urlpatterns += [
+        path('search/<str:lang>/<str:search_type>/', SearchView.as_view(), name="SearchForm"),
+        path('rechercher/<str:lang>/<str:search_type>/', SearchView.as_view(), name="SearchForm"),
+        path('search/<str:lang>/<str:search_type>/record/<str:record_id>', RecordView.as_view(), name='RecordForm'),
+        path('search/<str:lang>/<str:search_type>/export/', ExportView.as_view(), name='RecordForm'),
+    ]
+else:
+    urlpatterns += [
+        path('search/<str:search_type>/', SearchView.as_view(), name="SearchForm"),
+        path('search/record/<str:search_type>/<str:record_id>', name='RecordForm'),
+        path('search/<str:search_type>/record/<str:record_id>', RecordView.as_view(), name='RecordForm'),
+        path('search/<str:lang>/<str:search_type>/export/', ExportView.as_view(), name='RecordForm'),
     ]

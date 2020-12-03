@@ -1,0 +1,16 @@
+{% load search_extras %}
+
+<div class="row mrgn-bttm-lg mrgn-tp-sm">
+{% for field_name, field_value in doc.items %}
+    {% if field_name in default_display_fields %}
+        <div class="row">
+            <div class="col-md-4"><strong>{{ display_field_name|get_dict_value:field_name }}</strong></div>
+            {% if field_name in id_fields %}
+               <div class="col-md-8"><a href="{{ path_info }}record/{{ doc.id }}">{{ field_value }}</a></div>
+            {% else %}
+                <div class="col-md-8">{{ field_value }}</div>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endfor %}
+</div>

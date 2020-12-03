@@ -1,0 +1,33 @@
+{% load i18n %}
+
+<div class="row mrgn-bttm-lg">
+    <div class="col-md-12">
+        {% if doc.format == 'NTR' %}
+            <div class="col-md-12">{% trans 'Nothing to report this period'  %}</div>
+            <div class="col-md-4">Organization:</div><div class="col-md-8">{% if language == "fr" %}{{ doc.owner_org_fr }}{% else %}{{ doc.owner_org_en }}{% endif %}</div>
+            <div class="col-md-4">{% trans 'Year' %}</div><div class="col-md-8">{{ doc.year }}</div>
+            <div class="col-md-4">{% trans 'Month' %}</div><div class="col-md-8">{% if language == "fr" %}{{ doc.month_fr }}{% else %}{{ doc.month_en }}{% endif %}</div>
+        {% else %}
+            <div class="col-md-8"><a href="{{ path_info }}record/{{ doc.id }}"><strong>{% if doc.name %}{{ doc.name }}{% else %}{{ doc.id }}{% endif %}</strong></a></div>
+            {% if language == 'fr' %}
+            <div class="col-md-4">{{ doc.total_fr }}</div>
+            <div class="col-md-8">{{ doc.title_fr }}</div>
+            <div class="col-md-4">{{ doc.start_date_fr }}</div>
+            <div class="col-md-12">{{ doc.destination_fra }}</div>
+            <div class="col-md-4">Organisation :</div>
+            <div class="col-md-8">{{ doc.owner_org_en }}</div>
+            <div class="col-md-4">N° de référence :</div>
+            <div class="col-md-8">{{ doc.ref_number }}</div>
+            {% else %}
+            <div class="col-md-4">{{ doc.total_en }}</div>
+            <div class="col-md-8">{{ doc.title_eng }}</div>
+            <div class="col-md-4">{{ doc.start_date_en }}</div>
+            <div class="col-md-12">{{ doc.destination_eng }}</div>
+            <div class="col-md-4">Organization:</div>
+            <div class="col-md-8">{{ doc.owner_org_en }}</div>
+            <div class="col-md-4">Reference No:</div>
+            <div class="col-md-8">{{ doc.ref_number }}</div>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>

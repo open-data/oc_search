@@ -22,10 +22,11 @@ Open Canada data catalog and proactive disclosure.
 *NOTE* In addition to Python, the search application also requires Solr *.x and the custom python solr library [Solr Ciient](https://github.com/thriuin/SolrClient)
 ## Django Plugins ##
 
-Two Django plugins are used:
+Three Django plugins are used:
 
 1. [Rosetta](https://django-rosetta.readthedocs.io/index.html) Provides a UI for language translation
 2. [Django import/export](https://django-import-export.readthedocs.io/en/latest/)  Django application and library for importing and exporting data with included admin integration.
+3. [Django Jazzmin Admin Theme](https://django-jazzmin.readthedocs.io/) *(Optional)* Provides a more modern Ui for the Django admin interface
 
 ## Commands ##
 
@@ -58,3 +59,4 @@ Creating a new proactive disclosure search requires several steps
 2. Create a search model by importing the CKAN recombinant Yaml file using the `import_schema_ckan_yaml` command
 3. Customize the Solr core schema for the seach model using the `create_solr_core` command
 4. Import the data from the proactive disclosure CSV file using the `import_data_csv` command
+
