@@ -1,0 +1,24 @@
+{% load i18n %}
+{% load search_extras %}
+
+                <details class="panel panel-default mrgn-bttm-0"{% if  selected_facets|get_dict_value:key|length > 0 %}open{% endif %}>
+                    <summary class="panel-heading">
+                       <h5 class="panel-title">{{ value|get_dict_value:'__label__' }}</h5>
+                    </summary>
+                    <ul class="list-group">
+                    {% for subkey, subvalue in value.items %}
+                        {% if subkey != '__label__' and subvalue > 0 %}
+                            <li class="list-group-item{% if subkey in selected_facets|get_dict_value:key %} active{% endif %}">
+                             <div class="row">
+                                <div class="checkbox mrgn-tp-0 mrgn-bttm-0 col-sm-9 h6">
+                                    <label><input type="checkbox"
+                                             onclick='selectFacet("{{ key }}", "{{ subkey }}" )'
+                                             style="vertical-align:middle;position:relative;top:-1px;" value="{{ key }}"
+                                             {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}
+                                    > {% if subkey == 'NTR' %}{% trans 'Nothing To Report' %}{% else %}{{ subkey|capfirst }}{% endif %}</label></div>
+                                <div class="text-right col-sm-3"><span class="badge">{{ subvalue }}</span></div>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    </ul>
+                </details>

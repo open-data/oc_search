@@ -23,8 +23,8 @@
                     <div class="input-group">
                         <label for="search_text" class="wb-inv">{% trans 'Search' %}</label>
                         <input type="text" name="search_text" class="form-control"  id="search_text"
-                               value="{{ search_text|safe }}" placeholder="{% trans 'Search' %}"
-                               aria-label="{% trans 'Search' %}" size="60"/>
+                               value="{{ search_text }}" placeholder="{% trans 'Search' %}"
+                               aria-label="{% trans 'Search' %}" size="60" />
                         <span class="input-group-btn">
                              <label for="od-search-button" class="wb-inv">{% trans 'Search' %}</label>
                              <button type="button" class="btn btn-primary btn-small form-submit" id="search-button" onclick="submitForm();"
@@ -135,20 +135,20 @@
                         {% for subkey, subvalue in value.items reversed %}
                             {% if subkey != '__label__' and subvalue > 0 %}
                                 <li class="list-group-item{% if subkey in selected_facets|get_dict_value:key %} active{% endif %}">
-                                 <div class="row">
-                                    <div class="checkbox mrgn-tp-0 mrgn-bttm-0 col-sm-9 h6">
+                                 <div class="row small">
+                                    <div class="checkbox mrgn-tp-0 mrgn-bttm-0 col-sm-9">
                                         {% if key in codes.keys %}
                                         <label><input type="checkbox"
                                                  onclick='selectFacet("{{ key }}", "{{ subkey }}" )'
                                                  style="vertical-align:middle;position:relative;top:-1px;" value="{{ key }}"
                                                  {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}
-                                        > {{ codes|get_dict_value:key|get_dict_value:subkey }} </label></div>
+                                        >  {{ codes|get_dict_value:key|get_dict_value:subkey }} </label></div>
                                         {% else %}
                                         <label><input type="checkbox"
                                                  onclick='selectFacet("{{ key }}", "{{ subkey }}" )'
                                                  style="vertical-align:middle;position:relative;top:-1px;" value="{{ key }}"
                                                  {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}
-                                        > {{ subkey }} </label></div>
+                                        >  {{ subkey }} </label></div>
                                         {% endif %}
                                     <div class="text-right col-sm-3"><span class="badge">{{ subvalue }}</span></div>
                                 </li>
@@ -158,20 +158,20 @@
                         {% for subkey, subvalue in value.items %}
                             {% if subkey != '__label__' and subvalue > 0 %}
                                 <li class="list-group-item{% if subkey in selected_facets|get_dict_value:key %} active{% endif %}">
-                                 <div class="row">
+                                 <div class="row small">
                                     <div class="checkbox mrgn-tp-0 mrgn-bttm-0 col-sm-9 h6">
                                         {% if key in codes.keys %}
                                         <label><input type="checkbox"
                                                  onclick='selectFacet("{{ key }}", "{{ subkey }}" )'
                                                  style="vertical-align:middle;position:relative;top:-1px;" value="{{ key }}"
                                                  {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}
-                                        > {{ codes|get_dict_value:key|get_dict_value:subkey }} </label></div>
+                                        >  {{ codes|get_dict_value:key|get_dict_value:subkey }} </label></div>
                                         {% else %}
                                         <label><input type="checkbox"
                                                  onclick='selectFacet("{{ key }}", "{{ subkey }}" )'
                                                  style="vertical-align:middle;position:relative;top:-1px;" value="{{ key }}"
                                                  {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}
-                                        > {{ subkey }} </label></div>
+                                        >  {{ subkey }} </label></div>
                                         {% endif %}
                                     <div class="text-right col-sm-3"><span class="badge">{{ subvalue }}</span></div>
                                 </li>

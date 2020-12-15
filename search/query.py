@@ -20,6 +20,7 @@ def url_part_escape(orig):
         )
     )
 
+
 def url_part_unescape(urlpart):
     """
     reverse url_part_escape
@@ -106,13 +107,56 @@ def get_search_terms(search_text: str):
     return solr_search_terms
 
 
+def get_query_fields(request: HttpRequest, fields: dict):
+    qf = ['id']
+    for f in fields:
+        if fields[f].solr_field_lang in [request.LANGUAGE_CODE, 'bi']:
+            qf.append(f)
+            if fields[f].solr_extra_fields:
+                if fields[f].solr_field_lang == request.LANGUAGE_CODE:
+                    qf.extend(fields[f].solr_extra_fields.split(","))
+                else:
+                    copy_fields = fields[f].solr_extra_fields.split(",")
+                    for copy_field in copy_fields:
+                        if copy_field.endswith("_" + request.LANGUAGE_CODE):
+                            qf.append(copy_field)
+            if fields[f].solr_field_is_coded:
+                code_value_field = "{0}_{1}".format(f, request.LANGUAGE_CODE)
+                if code_value_field not in qf:
+                    qf.append(code_value_field)
+    return qf
+
+
+def get_mlt_fields(request: HttpRequest, fields: dict):
+    qf = ['id']
+    for f in fields:
+        if fields[f].solr_field_lang in [request.LANGUAGE_CODE, 'bi']:
+            if fields[f].solr_field_type in ['search_text_en', 'search_text_en', 'string']:
+                qf.append(f)
+    return qf
+
+
 def create_solr_query(request: HttpRequest, search: Search, fields: dict, Codes: dict, facets: list, start_row: int,
-                      rows: int, record_id: str, export=False):
+                      rows: int, record_id: str, export=False, highlighting=False):
+    """
+    Create a complete query to send to the SolrClient query.
+    :param request:
+    :param search:
+    :param fields:
+    :param Codes:
+    :param facets:
+    :param start_row:
+    :param rows:
+    :param record_id:
+    :param export: Set to true if constructing the query for a /export Solr handler query
+    :param highlighting: set to true if the query should include search term highlighting
+    :return:
+    """
     using_facets = len(facets) > 0
 
     # Look for known fields in the GET request
     known_fields = {}
-    solr_query = {'q': '*', 'defType': 'edismax'}
+    solr_query = {'q': '*', 'defType': 'edismax', 'sow': True}
 
     for request_field in request.GET.keys():
         if request_field == 'search_text' and not record_id:
@@ -124,24 +168,14 @@ def create_solr_query(request: HttpRequest, search: Search, fields: dict, Codes:
 
     # This happens for record reviews
     if record_id:
-        record_id_esc = url_part_escape(record_id)
-        solr_query['q'] = 'id:"{0}"'.format(record_id_esc)
+        #record_id_esc = url_part_escape(record_id)
+        solr_query['q'] = 'id:"{0}"'.format(record_id)
 
     solr_query['q.op'] = "AND"
 
     # Create a Solr query field list based on the Fields Model. Expand the field list where needed
-    # solr_query['fl'] = ",".join(fields.keys())
-    qf = ['id']
-    for f in fields:
-        if Field(f).solr_field_lang in [request.LANGUAGE_CODE, 'bi']:
-            qf.append(f)
-            if fields[f].solr_extra_fields:
-                qf.extend(fields[f].solr_extra_fields.split(","))
-            if fields[f].solr_field_is_coded:
-                code_value_field = "{0}_{1}".format(f, request.LANGUAGE_CODE)
-                if code_value_field not in  qf:
-                    qf.append(code_value_field)
-    solr_query['qf'] = qf
+    solr_query['qf'] = get_query_fields(request, fields)
+
     if export:
         ef = ['id']
         for f in fields:
@@ -150,10 +184,28 @@ def create_solr_query(request: HttpRequest, search: Search, fields: dict, Codes:
                     ef.append(f)
         solr_query['fl'] = ",".join(ef)
     else:
-        solr_query['fl'] = ",".join(qf)
+        solr_query['fl'] = ",".join(solr_query['qf'])
     if not export:
         solr_query['start'] = start_row
         solr_query['rows'] = rows
+    if not export and highlighting:
+        hl_fields = []
+        for field in fields:
+            if fields[field].solr_field_type in ["search_text_en", "search_text_fr", "string", 'text_general']:
+                hl_fields.append(field)
+                if fields[field].solr_extra_fields:
+                    for extra_field in fields[field].solr_extra_fields.split(","):
+                        if extra_field.endswith("_en") or extra_field.endswith("_fr"):
+                            hl_fields.append(extra_field.strip())
+        solr_query.update({
+            'hl': 'on',
+            'hl.method': 'original',
+            'hl.simple.pre': '<mark>',
+            'hl.simple.post': '</mark>',
+            'hl.snippets': 10,
+            'hl.fl': hl_fields,
+            'hl.highlightMultiTerm': True,
+        })
 
     # Set a default sort order
     if 'sort' not in solr_query:
@@ -181,3 +233,22 @@ def create_solr_query(request: HttpRequest, search: Search, fields: dict, Codes:
     if export and solr_query['sort'] == "score desc":
         solr_query['sort'] = "id asc"
     return solr_query
+
+
+def create_solr_mlt_query(request: HttpRequest, search: Search, fields: dict, start_row: int, record_id: str):
+    solr_query = {
+        'q': 'id:"{0}"'.format(record_id),
+        'mlt': True,
+        'mlt.count': search.mlt_items,
+        'mlt.boost': True,
+        'start': start_row,
+        'rows': search.mlt_items,
+        'fl':  get_query_fields(request, fields),
+        'mlt.fl': get_mlt_fields(request, fields),
+        'mlt.mintf': 1,
+        'mlt.minwl': 3,
+        'mlt.mindf': 2,
+        'mlt.maxdfpct': 50,
+    }
+    return solr_query
+

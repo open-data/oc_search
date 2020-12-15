@@ -143,3 +143,4 @@ cython_debug/
 # Search Application
 /data/
 /search/migrations/0*.py
+/oc_search/settings.py

@@ -49,10 +49,17 @@ def clear_default_display_field(modeladmn, request, queryset):
 clear_default_display_field.short_description = 'Clear selected fields for default search results'
 
 
+def make_currency_field(modeladmn, request, queryset):
+    queryset.update(solr_field_is_currency=True, solr_field_type='pfloat')
+
+
+make_currency_field.short_description = 'Mark selected fields as currency, float'
+
+
 class FieldAdmin(ImportExportModelAdmin):
     resource_class = FieldResource
     list_display = ('field_id', 'is_search_facet', 'is_default_display', 'search_id', 'solr_field_type')
-    actions = [make_facet_field, make_default_display_field, clear_facet_field, clear_default_display_field]
+    actions = [make_facet_field, make_default_display_field, clear_facet_field, clear_default_display_field, make_currency_field]
     search_fields = ['field_id', 'is_search_facet']
     list_filter = ['search_id']
 

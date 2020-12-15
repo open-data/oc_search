@@ -103,7 +103,6 @@ class Command(BaseCommand):
                 field.solr_field_is_coded = True
                 for ccode in yaml_field['choices']:
                     choice, created = Code.objects.get_or_create(code_id=ccode, field_id=field)
-                    choice.id = ccode
                     choice.label_en = yaml_field['choices'][ccode]["en"]
                     choice.label_fr = yaml_field['choices'][ccode]["fr"]
                     choice.save()

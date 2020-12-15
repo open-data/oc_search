@@ -9,7 +9,7 @@ from django.utils.translation import gettext
 from dateutil import parser
 import json
 import markdown2
-from search.urlsafe import url_part_unescape
+from search.query import url_part_unescape
 
 
 register = template.Library()

@@ -141,6 +141,8 @@ class Command(BaseCommand):
                                 self.logger.error('Invalid date: "{0}"'.format(x2))
                         elif self.csv_fields[csv_field].solr_field_type in ['pint', 'pfloat']:
                             if solr_record[csv_field]:
+                                if solr_record[csv_field] == '.':
+                                    solr_record[csv_field] = "0"
                                 csv_decimal = parse_decimal(solr_record[csv_field], locale='en_US')
                                 if self.csv_fields[csv_field].solr_field_is_currency:
                                     solr_record[csv_field + '_en'] = format_currency(csv_decimal, 'CAD', locale='en_CA')

@@ -1,8 +1,10 @@
 
+{% load i18n %}
 {% load search_extras %}
 
 {% if language == "fr" %}
-    <div class="col-md-12"><h3>{{ doc.name }} - {{ doc.title_fr }}</h3></div>
+    <div class="col-md-9 mrgn=tp-md" style="vertical-align: baseline;"><strong>{{ doc.name }} - {{ doc.title_fr }}</strong></div>
+    <div class="col-md-3 text-right"><a href="{{ parent_path }}similaire/{{ doc.id }}" style="vertical-align: text-top;"><button type="button" class="btn btn-secondary">{% trans "Show similar records" %}</button></a></div>
     <div class="col-md-4"><strong>Organisation :</strong></div>
     <div class="col-md-8">{{ codes|get_dict_value:"owner_org"|get_dict_value:doc.owner_org }}</div>
     <div class="col-md-4"><strong>But de voyage :</strong></div>
@@ -36,7 +38,8 @@
         </div>
     </div>
 {% else %}
-    <div class="col-md-12"><h3>{{ doc.name }} - {{ doc.title_en }}</h3></div>
+    <div class="col-md-9 mrgn=tp-md" style="vertical-align: baseline;"><strong>{{ doc.name }} - {{ doc.title_en }}</strong></div>
+    <div class="col-md-3 text-right"><a href="{{ parent_path }}similar/{{ doc.id }}" style="vertical-align: text-top;"><button type="button" class="btn btn-secondary">{% trans "Show similar records" %}</button></a></div>
     <div class="col-md-4"><strong>Department:</strong></div>
     <div class="col-md-8">{{ codes|get_dict_value:"owner_org"|get_dict_value:doc.owner_org }}</div>
     <div class="col-md-4"><strong>Purpose:</strong></div>

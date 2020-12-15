@@ -6,47 +6,43 @@
 {% get_current_language as LANGUAGE_CODE %}
 
 {% block main-content-body %}
-{% if parent_path %}
+{% if referer %}
 <div class="row">
-    <div class="col-md-12">
-        <a class="btn btn-primary" href="{{ parent_path }}"><span class="glyphicon glyphicon-menu-left"></span> {% trans 'Back to search' %}</a>
-    </div>
+    <div class="col-md-12"><a class="btn btn-primary" href="{{ parent_path }}"><span class="glyphicon glyphicon-menu-left"></span> {% trans 'Back to search' %}</a></div>
 </div>
 {% endif %}
 <div class="row mrgn-tp-md">
 
     {% block main-content-centre %}
+        <div class="col-md-12 mrgn-tp-lg">
+        <div class="panel panel-info">
+            <header class="panel-heading">
+                <h5 class="panel-title">{% trans 'Original Record' %}</h5>
+            </header>
+            <div class="row mrgn-tp-md mrgn-bttm-md mrgn-lft-md mrgn-rght-md">
+            {% include search_item_snippet with doc=original_doc %}
+            </div>
+        </div>
+        </div>
 
-        {% block main-content-search-items %}
-        {% for doc in docs %}
-            {% if record_detail_snippet %}
-                {% include record_detail_snippet %}
-            {% else %}
-                {% for field_name, field_value in doc.items %}
-
-                    {% if field_name in display_fields %}
-                    <div class="row">
-                        {% if field_name in display_field_name %}
-                            <div class="col-md-4"><strong>{{ display_field_name|get_dict_value:field_name }}</strong></div>
-                        {% else %}
-                            <div class="col-md-4"><strong>{{ field_name }}</strong></div>
-                        {% endif %}
-                        {% if field_name in codes %}
-                        <div class="col-md-8">{{ codes|get_dict_value:field_name|get_dict_value:field_value }}</div>
-                        {% else %}
-                        <div class="col-md-8">{{ field_value }}</div>
-                        {% endif %}
-                    </div>
-                    {% endif %}
-                {% endfor %}
-                {% if mlt_enabled %}
-                    <div class="row">
-                        <div class="col-md-12"> <a href="{{ parent_path }}similar/{{ doc.id }}"><button type="button" class="btn btn-secondary">{% trans "Find similar records" %}</button></a></div>
-                    </div>
+        <div class="col-md-12 mrgn-tp-md">
+        <div class="panel panel-default">
+            <header class="panel-heading">
+                <h5 class="panel-title">{% trans 'Similar Records' %}</h5>
+            </header>
+            <div class="row mrgn-tp-md mrgn-bttm-md mrgn-lft-md mrgn-rght-md">
+            {% block main-content-search-items %}
+                {% if docs|length > 0 %}
+                    {% for doc in docs %}
+                        {% include search_item_snippet %}
+                    {% endfor %}
+                {% else %}
+                    {% trans "No similar records were found" %}
                 {% endif %}
-            {% endif %}
-        {% endfor %}
-        {% endblock main-content-search-items %}
+            {% endblock main-content-search-items %}
+            </div>
+        </div>
+        </div>
 
         <div class="col-md-12">
          {% block main-content-pagination %}

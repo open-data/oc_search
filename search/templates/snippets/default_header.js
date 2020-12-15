@@ -5,6 +5,7 @@ function submitForm(e) {
     let search_text = $('#search_text').val();
     search_params.set('sort', sort_opt);
     search_params.set('search_text', search_text)
+    search_params.set('page', '1');
     console.log(search_params.toString());
     window.location.search = search_params.toString();
 }

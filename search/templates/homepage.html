@@ -1,0 +1,22 @@
+{% extends "base-cdts.html" %}
+{% load static %}
+{% load humanize %}
+{% load i18n %}
+{% load search_extras %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% block main-content-body %}
+<div class="row">
+    <div class="col-md-12"><h1>{% trans 'Search Open Government' %}</h1></div>
+    <div class="col-md-12 mrgn-tp-lg mrgn-bttm-lg">
+        <strong>{% trans 'Available Search Categories' %}</strong>
+    </div>
+    <div class="col-md-12">
+        <ul class="list-unstyled lst-spcd">
+            {% for s in search_list %}
+            <li><a href="{{ parent_path }}{{ s.search_id }}/"><strong>{{ s.label_en }}</strong></a>{% if s.desc_en %} - {{ s.desc_en }}{% endif %}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock main-content-body %}

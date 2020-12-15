@@ -33,6 +33,8 @@ class Search(models.Model):
     dataset_download_url_fr = models.URLField(verbose_name="Download Dataset URL (Fench)", default="https://ouvert.canada.ca")
     id_fields = models.CharField(blank=True, default="", max_length=132, help_text="Comma separated list of fields that form the Solr primiary key")
     alt_formats = models.CharField(blank=True, default="", max_length=132, help_text="Comma separated list of alternate record formst, for example NTR (Nothing to Report)")
+    mlt_enabled = models.BooleanField(blank=True, default=False, verbose_name="Enable More-Like-This", help_text="Indicate if the this search will be using Solr's 'More Like This' functionality")
+    mlt_items = models.IntegerField(blank=True, default=10, verbose_name="No. Items returned for More-Like-This", help_text="Number of itemsto show on the More-Like-This search results page. Default is 10")
 
     def __str__(self):
         return '%s (%s)' % (self.label_en, self.search_id)
@@ -43,24 +45,26 @@ class Field(models.Model):
     SOLR_FIELD_TYPES = [
         ('search_text_en', 'Search Text English'),
         ('search_text_fr', 'Search Text French'),
+        ('text_general', 'Generic Text'),
         ('pint', 'Integer'),
         ('string', 'String'),
         ('pdate', 'Date'),
         ('pfloat', 'Float/Currency')
     ]
-    SOLR_FIELD_LANG = [
+    SOLR_FIELD_LANGS = [
         ('en', 'English'),
         ('fr', 'Français'),
         ('bi', 'Bilingual/Bilangue')
     ]
 
+    id = models.AutoField(primary_key=True)
     field_id = models.CharField(blank=False, max_length=64, verbose_name="Unique Field Identifier")
     search_id = models.ForeignKey(Search, on_delete=models.CASCADE)
     label_en = models.CharField(blank=False, max_length=132, verbose_name="Engliah Label")
     label_fr = models.CharField(blank=False, max_length=132, verbose_name="French Label")
     solr_field_type = models.CharField(blank=False, choices=SOLR_FIELD_TYPES, default='string', max_length=20,
                                        verbose_name="Solr Field Type")
-    solr_field_lang = models.CharField(blank=False, choices=SOLR_FIELD_LANG, default='bi', max_length=2,
+    solr_field_lang = models.CharField(blank=False, choices=SOLR_FIELD_LANGS, default='bi', max_length=2,
                                        verbose_name='Language Type')
     solr_field_export = models.CharField(blank=True, max_length=65, verbose_name='Copy field for export',
                                          default='',
@@ -108,7 +112,8 @@ class Field(models.Model):
 
 class Code(models.Model):
 
-    code_id = models.CharField(primary_key=True, max_length=32)
+    id = models.AutoField(primary_key=True)
+    code_id = models.CharField(blank=False, max_length=32, verbose_name="Unique code Identifier")
     field_id = models.ForeignKey(Field, on_delete=models.CASCADE)
     label_en = models.CharField(blank=False, max_length=132)
     label_fr = models.CharField(blank=False, max_length=132)

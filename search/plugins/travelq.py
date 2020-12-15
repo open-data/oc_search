@@ -21,29 +21,22 @@ def load_csv_record(csv_record: dict, solr_record: dict, search: Search, fields:
         if 'total' in solr_record and solr_record['total'] and format != 'NTR':
             total_decimal = parse_decimal(solr_record['total'], locale='en_US')
             if - 0 < total_decimal < 250:
-                solr_record['total_range_en'] = 'F: $0 - $249.99'
-                solr_record['total_range_fr'] = 'F : 0 $ - 249,99 $'
+                solr_record['total_range'] = 'r6'
             elif 250 <= total_decimal < 500:
-                solr_record['total_range_en'] = 'E: $250.00 - $499.99'
-                solr_record['total_range_fr'] = 'E : 250.00 $ - 499.99 $'
+                solr_record['total_range_'] = 'r5'
             elif 500 <= total_decimal < 1000:
-                solr_record['total_range_en'] = 'D: $500.00 - $999.99'
-                solr_record['total_range_fr'] = 'D : 500,00 $ - 999.99 $'
+                solr_record['total_range'] = 'r4'
             elif 1000 <= total_decimal < 5000:
-                solr_record['total_range_en'] = 'C: $1,000.00 - $4,999.99'
-                solr_record['total_range_fr'] = 'C : 1 000,00 $ - 4 999,99 $'
+                solr_record['total_range'] = 'r3'
             elif 5000 <= total_decimal < 25000:
-                solr_record['total_range_en'] = 'B: $5,000.00 - $24,999.99 '
-                solr_record['total_range_fr'] = 'B : 5 000,00 $ - 24 999,99 $'
+                solr_record['total_range'] = 'r2'
             elif 25000 < total_decimal:
-                solr_record['total_range_en'] = 'A: $25,000.00+'
-                solr_record['total_range_fr'] = 'A : plus de 25000,00 $'
+                solr_record['total_range'] = 'r1'
             else:
-                solr_record['total_range_en'] = ''
-                solr_record['total_range_fr'] = ''
+                solr_record['total_range'] = 'r7'
         else:
-            solr_record['total_range_en'] = '-'
-            solr_record['total_range_fr'] = '-'
+            solr_record['total_range'] = 'r7'
+
 
     except NumberFormatError as nfe:
         print(nfe)

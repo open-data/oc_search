@@ -6,9 +6,9 @@
         <div class="row">
             <div class="col-md-4"><strong>{{ display_field_name|get_dict_value:field_name }}</strong></div>
             {% if field_name in id_fields %}
-               <div class="col-md-8"><a href="{{ path_info }}record/{{ doc.id }}">{{ field_value }}</a></div>
+               <div class="col-md-8"><a href="{{ path_info }}record/{{ doc.id }}">{{ field_value | safe }} <span class="glyphicon glyphicon-menu-right"></span></a></div>
             {% else %}
-                <div class="col-md-8">{{ field_value }}</div>
+                <div class="col-md-8">{{ field_value | safe | truncatechars:500 }}</div>
             {% endif %}
         </div>
     {% endif %}

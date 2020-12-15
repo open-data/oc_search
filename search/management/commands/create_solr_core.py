@@ -126,6 +126,20 @@ class Command(BaseCommand):
                     self._add_or_update_solr_field(solr, solr_core, new_loc_field)
                     new_loc_field["name"] = "{0}_fr".format(solr_field.field_id)
                     self._add_or_update_solr_field(solr, solr_core, new_loc_field)
+                elif solr_field.solr_field_type == 'string' and solr_field.solr_extra_fields:
+                    # If the user has manually specified extra copy fields for bilingual strings like names
+                    for extra_field in solr_field.solr_extra_fields.split(","):
+                        new_loc_field = {"name": extra_field.strip(),
+                                         "type": "search_text_fr" if extra_field.endswith('_fr') else  "search_text_en",
+                                         "stored": True,
+                                         "indexed": True,
+                                         "docValues": False}
+                        self._add_or_update_solr_field(solr, solr_core, new_loc_field)
+                        export_copy_field = {'source': solr_field.field_id,
+                                             'dest': extra_field}
+                        if not solr.schema.does_copy_field_exist(solr_core, solr_field.field_id,
+                                                                 extra_field):
+                            solr.schema.create_copy_field(solr_core, export_copy_field)
 
                 # Create default year and month if so required
                 if solr_field.solr_field_type == 'pdate':
