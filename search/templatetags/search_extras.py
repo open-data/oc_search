@@ -2,6 +2,7 @@
 
 
 from babel.dates import format_date
+from babel.numbers import format_currency, format_decimal, parse_decimal
 import bleach
 from django import template
 from django.conf import settings
@@ -194,3 +195,10 @@ def unspecified(value: str, lang: str):
             return 'Unspecified'
     else:
         return value
+
+
+@register.filter('friendly_currency')
+def friendly_currency(value: int, currency_locale_str: str):
+    currency_locale = currency_locale_str.split(",")
+    return format_currency(value, currency=currency_locale[0], locale=currency_locale[1])
+

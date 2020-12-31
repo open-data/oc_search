@@ -7,7 +7,7 @@
         defTop.outerHTML = wet.builder.top({
             "lngLinks": [{
                 "lang": "{{ language_code | SwapLangCode }}",
-                "href": "/search/{{ language_code | SwapLangCode }}/{{ search_type }}/{% if query_path %}?{{ query_path }}{% endif %}",
+                "href": "/search/{{ language_code | SwapLangCode }}/{% if search_type %}{{ search_type }}/{% if query_path %}?{{ query_path }}{% endif %}{% endif %}",
                 "text": "{{ language_code | SwapLangName}}"
             }],
             search: false,
@@ -15,14 +15,14 @@
                 "title": "Canada.ca",
                 "href": "https://www.canada.ca/{{ language_code }}.html",
             },{
-                "title": "{% trans 'Open Government' %}",
-                "href": "{% trans 'https://open.canada.ca' %}/{{ LANGUAGE_CODE }}",
+                "title": "{% translate 'Open Government' %}",
+                "href": "{% translate 'https://open.canada.ca' %}/{{ LANGUAGE_CODE }}",
             },{
-                "title": "{% trans 'Open Information' %}",
-                "href": "{% trans 'https://open.canada.ca/en/open-information' %}",
+                "title": "{% translate 'Open Information' %}",
+                "href": "{% translate 'https://open.canada.ca/en/open-information' %}",
             },{
-                "title": "{% trans 'Proactive Disclosure' %}",
-                "href": "{% trans 'https://open.canada.ca/en/proactive-disclosure' %}",
+                "title": "{% translate 'Proactive Disclosure' %}",
+                "href": "{% translate 'https://open.canada.ca/en/proactive-disclosure' %}",
             }]
         });
     </script>

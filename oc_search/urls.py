@@ -21,6 +21,7 @@ from search.views import SearchView, RecordView, ExportView, MoreLikeThisView, H
 
 
 urlpatterns = [
+    path('search/admin/doc/', include('django.contrib.admindocs.urls')),
     path('search/admin/', admin.site.urls),
 ]
 

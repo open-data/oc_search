@@ -15,7 +15,7 @@
                                              onclick='selectFacet("{{ key }}", "{{ subkey }}" )'
                                              style="vertical-align:middle;position:relative;top:-1px;" value="{{ key }}"
                                              {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}
-                                    > {% if subkey == 'NTR' %}{% trans 'Nothing To Report' %}{% else %}{{ subkey|capfirst }}{% endif %}</label></div>
+                                    > {% if subkey == 'NTR' %}{% translate 'Nothing To Report' %}{% else %}{{ subkey|capfirst }}{% endif %}</label></div>
                                 <div class="text-right col-sm-3"><span class="badge">{{ subvalue }}</span></div>
                             </li>
                         {% endif %}

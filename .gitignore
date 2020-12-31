@@ -144,3 +144,4 @@ cython_debug/
 /data/
 /search/migrations/0*.py
 /oc_search/settings.py
+/search/templates/snippets/custom/

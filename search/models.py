@@ -3,6 +3,9 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class Search(models.Model):
+    """
+    Stores metadata about a Search application, related to :model: 'search.Field' and :model: 'search.Code'.
+    """
     search_id = models.CharField(primary_key=True, max_length=32, unique=True)
     label_en = models.CharField(blank=False, max_length=132)
     label_fr = models.CharField(blank=False, max_length=132)
@@ -10,12 +13,14 @@ class Search(models.Model):
     desc_fr = models.TextField(blank=True, default="")
     imported_on = models.DateTimeField(blank=True, null=True, help_text="If an import script is used to create the "
                                                                         "search, this is the last date it was run.")
-    solr_core_name = models.CharField(blank=False, default="solr_core", max_length=64)
-    results_page_size = models.IntegerField(blank=False, default=10)
-    results_sort_order = models.CharField(blank=False, max_length=132, default="score desc")
-    results_sort_order_display_en = models.CharField(blank=False, max_length=200, default="Best Match")
-    results_sort_order_display_fr = models.CharField(blank=False, max_length=200, default="Pertinence")
-    page_template = models.CharField(blank=False, default="search.html", max_length=132)
+    solr_core_name = models.CharField(blank=False, default="solr_core", max_length=64, verbose_name="Solr Core name")
+    results_page_size = models.IntegerField(blank=False, default=10, verbose_name="No. of Search Results Per Page")
+    results_sort_order_en = models.CharField(blank=False, max_length=132, default="score desc", verbose_name="Sort-by Categories (English)")
+    results_sort_order_fr = models.CharField(blank=False, max_length=132, default="score desc", verbose_name="Sort-by Categories (Français)")
+    results_sort_order_display_en = models.CharField(blank=False, max_length=200, default="Best Match", verbose_name="Sort-by Category Labels (English)")
+    results_sort_order_display_fr = models.CharField(blank=False, max_length=200, default="Pertinence", verbose_name="Sort-by Category Labels (Français)")
+    page_template = models.CharField(blank=False, default="search.html", max_length=132, verbose_name="Search Page Template")
+    record_template = models.CharField(blank=False, default="record.html", max_length=132, verbose_name="Record Page Template")
     breadcrumb_snippet = models.CharField(blank=False, default="search_snippets/default_breadcrumb.html", max_length=132)
     footer_snippet = models.CharField(blank=False, default="search_snippets/default_footer.html", max_length=132)
     info_message_snippet = models.CharField(blank=False, default="search_snippets/default_info_message.html", max_length=250)
@@ -41,6 +46,9 @@ class Search(models.Model):
 
 
 class Field(models.Model):
+    """
+    Stores metadata about individual fields in each search application, related to :model: 'search.Search' and :model: 'search.Code'.
+    """
 
     SOLR_FIELD_TYPES = [
         ('search_text_en', 'Search Text English'),
@@ -71,15 +79,16 @@ class Field(models.Model):
                                          help_text='Name of a string field that will be created to hold export values. '
                                                    'Note that export fields are automatically created for '
                                                    'Interger and Date fields')
+    solr_field_is_coded = models.BooleanField(blank=False, default=False, verbose_name="Contains Code Values",
+                                              help_text="The values in this field are code values whose values are in the Code tabke")
+    solr_extra_fields = models.CharField(blank=True, default="", verbose_name="Extra Solr Copyfields", max_length=132,
+                                         help_text="A comma separated list of auto-generated Solr copy-fields that are populated by this field")
+
     solr_field_stored = models.BooleanField(blank=False, default=True, verbose_name="Field is stored on Solr")
     solr_field_indexed = models.BooleanField(blank=False, default=True, verbose_name="Field is indexed on Solr")
     solr_field_multivalued = models.BooleanField(blank=False, default=False, verbose_name="Field supports multiple values")
     solr_field_is_currency = models.BooleanField(blank=False, default=False, verbose_name="Is a monetary field")
-    solr_field_is_coded = models.BooleanField(blank=False, default=False, verbose_name="Contains Code Values",
-                                              help_text="The values in this field are code values whose values are in the Code tabke")
-    #csv_field_name = models.CharField(blank=True, max_length=132, verbose_name="Friendly CSV export field name")
-    is_default_year = models.BooleanField(blank=False, default=False, verbose_name="Field is the search's default year field")
-    is_default_month = models.BooleanField(blank=False, default=False, verbose_name="Field is the search's default month field")
+
     is_search_facet = models.BooleanField(blank=False, default=False, help_text="Is a search facet field, should never have blank values",
                                           verbose_name="Search Facet field")
     solr_facet_sort = models.CharField(blank=True, max_length=5, choices=[
@@ -94,8 +103,7 @@ class Field(models.Model):
     solr_facet_display_reversed = models.BooleanField(blank=False, default=False, verbose_name="Display Facet in Reversed Orderd")
     solr_facet_display_order = models.IntegerField(blank=True, default=0, verbose_name="Facet Display Order",
                                                    help_text="Ordered place in which to display the facets on the page, if this field is a facet")
-    solr_extra_fields = models.CharField(blank=True, default="", verbose_name="Extra Solr Copyfields", max_length=132,
-                                         help_text="A comma separated list of auto-generated Solr copy-fields that are populated by this field")
+
     alt_format = models.CharField(blank=True, default='', max_length=30, verbose_name="Alternate Record Type",
                                   help_text="This field is part of an alternate format (e.g. Nothing To Report). Use 'ALL' if the field appears in all formats")
     is_default_display = models.BooleanField(blank=False, default=False, verbose_name="Default search item field",
@@ -103,14 +111,21 @@ class Field(models.Model):
     default_export_value = models.CharField(blank=True, default='str|-', verbose_name="Default value for empty fields", max_length=132,
                                          help_text="A default value used for empty or blank values. Examples: str:-, int:0, date:2000-01-01T00:00:00Z. ")
 
+    is_default_year = models.BooleanField(blank=False, default=False, verbose_name="Field is the search's default year field")
+    is_default_month = models.BooleanField(blank=False, default=False, verbose_name="Field is the search's default month field")
+
     def __str__(self):
-        return '%s (%s)' % (self.label_en, self.field_id)
+        return '%s - (%s) %s' % (self.label_en, self.field_id, self.search_id)
 
     class Meta:
         unique_together = (('field_id', 'search_id'),)
 
 
 class Code(models.Model):
+    """
+    Stores metadata about individual Codes associated with a particular field in a search application, related to :model: 'search.Search' and :model: 'search.Field'.
+    Note that codes are _not_ shared between fields or searches
+    """
 
     id = models.AutoField(primary_key=True)
     code_id = models.CharField(blank=False, max_length=32, verbose_name="Unique code Identifier")

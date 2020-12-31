@@ -27,7 +27,6 @@ class CanadaBilingualMiddleware:
                 request.LANGUAGE_CODE = 'fr'
             else:
                 request.LANGUAGE_CODE = 'en'
-
         response = self.get_response(request)
 
         # Code to be executed for each request/response after

@@ -1,7 +1,7 @@
 import csv
 from django.core.management.base import BaseCommand
 from pathlib import Path
-from search.models import Search, Field, Code
+from search.models import Search, Field
 
 import logging
 

@@ -162,7 +162,10 @@ def create_solr_query(request: HttpRequest, search: Search, fields: dict, Codes:
         if request_field == 'search_text' and not record_id:
             solr_query['q'] = get_search_terms(request.GET.get('search_text'))
         elif request_field == 'sort' and not record_id:
-            solr_query['sort'] = request.GET.get('sort') if request.GET.get('sort') in search.results_sort_order.split(',') else 'score desc'
+            if request.LANGUAGE_CODE == 'fr':
+                solr_query['sort'] = request.GET.get('sort') if request.GET.get('sort') in search.results_sort_order_fr.split(',') else 'score desc'
+            else:
+                solr_query['sort'] = request.GET.get('sort') if request.GET.get('sort') in search.results_sort_order_en.split(',') else 'score desc'
         elif request_field in fields:
             known_fields[request_field] = request.GET.get(request_field).split('|')
 

@@ -1,0 +1,3 @@
+[submodule "oc_search_definitions"]
+	path = oc_search_definitions
+	url = https://github.com/thriuin/oc_search_definitions

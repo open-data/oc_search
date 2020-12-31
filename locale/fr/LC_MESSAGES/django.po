@@ -9,8 +9,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-02 11:15-0500\n"
-"PO-Revision-Date: 2020-12-02 11:20+0000\n"
-"Last-Translator: b'  <ross.thompson@tbs-sct.gc.ca>'\n"
+"PO-Revision-Date: 2020-12-21 17:18+0000\n"
+"Last-Translator: b'Ross Thompson <ross.thompson@tbs-sct.gc.ca>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
@@ -25,7 +25,7 @@ msgstr "Anglais"
 
 #: .\oc_search\settings-sample.py:120 .\oc_search\settings.py:130
 msgid "French"
-msgstr ""
+msgstr "Français"
 
 #: .\search\templates\404.html:20 .\search\templates\base-cdts.html:24
 #: .\search\templates\snippets\default_breadcrumb.html:18
@@ -41,183 +41,197 @@ msgstr "https://ouvert.canada.ca"
 
 #: .\search\templates\404.html:31
 msgid "We couldn't find that Web page"
-msgstr ""
+msgstr "Nous n'avons pas trouvé cette page Web"
 
 #: .\search\templates\404.html:32
 msgid "Error 404"
-msgstr ""
+msgstr "Erreur 404"
 
 #: .\search\templates\404.html:33
 msgid ""
 "We're sorry you ended up here. Sometimes a page gets moved or deleted, but "
-"hopefully we can help you find what you're looking for. Return to the <a "
-"href=\\"
+"hopefully we can help you find what you're looking for."
 msgstr ""
+"Nous sommes désolés que vous ayez abouti ici. Il arrive parfois qu’une page "
+"ait été déplacée ou supprimée. Heureusement, nous pouvons vous aider à "
+"trouver ce que vous cherchez."
 
 #: .\search\templates\404.html:47
 #: .\search\templates\snippets\default_footer.html:8
 msgid "https://open.canada.ca/en/forms/contact-us"
 msgstr ""
+"https://ouvert.canada.ca/fr/formulaire/faites-nous-part-de-vos-commentaires"
 
 #: .\search\templates\404.html:48
 #: .\search\templates\snippets\default_footer.html:9
 msgid "Open Government Contact"
-msgstr ""
+msgstr "Contactez-nous du gouvernement ouvert"
 
 #: .\search\templates\404.html:50
 #: .\search\templates\snippets\default_footer.html:11
 msgid "https://www.canada.ca/en/government/dept.html"
-msgstr ""
+msgstr "https://www.canada.ca/fr/gouvernement/min.html"
 
 #: .\search\templates\404.html:51
 #: .\search\templates\snippets\default_footer.html:12
 msgid "Departments and agencies"
-msgstr ""
+msgstr "Ministères et organismes"
 
 #: .\search\templates\404.html:53
 #: .\search\templates\snippets\default_footer.html:14
 msgid "https://www.canada.ca/en/government/publicservice.html"
-msgstr ""
+msgstr "https://www.canada.ca/fr/gouvernement/fonctionpublique.html"
 
 #: .\search\templates\404.html:54
 #: .\search\templates\snippets\default_footer.html:15
 msgid "Public service and military"
-msgstr ""
+msgstr "Fonction publique et force militaire"
 
 #: .\search\templates\404.html:56
 #: .\search\templates\snippets\default_footer.html:17
 msgid "http://news.gc.ca/"
-msgstr ""
+msgstr "https://www.canada.ca/fr/nouvelles.html"
 
 #: .\search\templates\404.html:57
 #: .\search\templates\snippets\default_footer.html:18
 msgid "News"
-msgstr ""
+msgstr "Nouvelles"
 
 #: .\search\templates\404.html:59
 #: .\search\templates\snippets\default_footer.html:20
 msgid "https://www.canada.ca/en/government/system/laws.html"
-msgstr ""
+msgstr "https://www.canada.ca/fr/gouvernement/systeme/lois.html"
 
 #: .\search\templates\404.html:60
 #: .\search\templates\snippets\default_footer.html:21
 msgid "Treaties, laws and regulations"
-msgstr ""
+msgstr "Traités, lois et règlements"
 
 #: .\search\templates\404.html:62
 #: .\search\templates\snippets\default_footer.html:23
 msgid "https://www.canada.ca/en/transparency/reporting.html"
-msgstr ""
+msgstr "https://www.canada.ca/fr/transparence/rapports.html"
 
 #: .\search\templates\404.html:63
 #: .\search\templates\snippets\default_footer.html:24
 msgid "Government-wide reporting"
-msgstr ""
+msgstr "Rapports à l'échelle du gouvernement"
 
 #: .\search\templates\404.html:65
 #: .\search\templates\snippets\default_footer.html:26
 msgid "https://www.canada.ca/en/government/system.html"
-msgstr ""
+msgstr "https://www.canada.ca/fr/gouvernement/systeme.html"
 
 #: .\search\templates\404.html:66
 #: .\search\templates\snippets\default_footer.html:27
 msgid "How government works"
-msgstr ""
+msgstr "À propos du gouvernement"
 
 #: .\search\templates\base-cdts.html:20
 msgid "Treasury Board of Canada Secretariat"
-msgstr ""
+msgstr "Secrétariat du Conseil du Trésor du Canada"
 
 #: .\search\templates\record.html:11
 msgid "Back to search"
-msgstr ""
+msgstr "Retour à la page de recherche"
 
 #: .\search\templates\record.html:52 .\search\templates\record.html:54
 #: .\search\templates\search.html:79 .\search\templates\search.html:81
 msgid "Previous"
-msgstr ""
+msgstr "Précédente"
 
 #: .\search\templates\record.html:56 .\search\templates\record.html:59
 #: .\search\templates\search.html:83 .\search\templates\search.html:86
 msgid "Go to"
-msgstr ""
+msgstr "Aller à"
 
 #: .\search\templates\record.html:62 .\search\templates\record.html:64
 #: .\search\templates\search.html:89 .\search\templates\search.html:91
 msgid "Next"
-msgstr ""
+msgstr "Suivant"
 
 #: .\search\templates\search.html:16
 #, python-format
 msgid "Found %(result_num)s record%(result_s)s"
-msgstr ""
+msgstr "%(result_num)s dossier%(result_s)s trouvé%(result_s)s"
 
 #: .\search\templates\search.html:24 .\search\templates\search.html:26
 #: .\search\templates\search.html:27 .\search\templates\search.html:29
 #: .\search\templates\search.html:31
 msgid "Search"
-msgstr ""
+msgstr "Recherche"
 
 #: .\search\templates\search.html:38
 msgid "Order By"
-msgstr ""
+msgstr "Trier par"
 
 #: .\search\templates\search.html:112
 msgid "Clear all choices"
-msgstr ""
+msgstr "Effacer tout"
 
 #: .\search\templates\search.html:117
 msgid "Download Search Results"
-msgstr ""
+msgstr "Télécharger les résultats de recherche"
 
 #: .\search\templates\search.html:117
 msgid "(100,000 row limit)"
-msgstr ""
+msgstr "(100 000 lignes au maximum)"
 
 #: .\search\templates\search.html:120
 msgid "Download Complete Dataset"
-msgstr ""
+msgstr "Téléchargez le jeu de données complet"
 
 #: .\search\templates\snippets\data\travelq_search_item.html:6
 msgid "Nothing to report this period"
-msgstr ""
+msgstr "Rien à signaler pour cette périod"
 
 #: .\search\templates\snippets\data\travelq_search_item.html:8
 msgid "Year"
-msgstr ""
+msgstr "Anneé"
 
 #: .\search\templates\snippets\data\travelq_search_item.html:9
 msgid "Month"
-msgstr ""
+msgstr "Mois"
 
 #: .\search\templates\snippets\default_about_message.html:8
 msgid "About this information"
-msgstr ""
+msgstr "À propos de cette information"
 
 #: .\search\templates\snippets\default_breadcrumb.html:21
 #: .\search\templates\snippets\default_record_breadcrumb.html:21
 msgid "Open Information"
-msgstr ""
+msgstr "Information ouverte"
 
 #: .\search\templates\snippets\default_breadcrumb.html:22
 #: .\search\templates\snippets\default_record_breadcrumb.html:22
 msgid "https://open.canada.ca/en/open-information"
-msgstr ""
+msgstr "https://ouvert.canada.ca/fr/information-ouverte"
 
 #: .\search\templates\snippets\default_breadcrumb.html:24
 #: .\search\templates\snippets\default_record_breadcrumb.html:24
 msgid "Proactive Disclosure"
-msgstr ""
+msgstr "Divulgation proactive"
 
 #: .\search\templates\snippets\default_breadcrumb.html:25
 #: .\search\templates\snippets\default_record_breadcrumb.html:25
 msgid "https://open.canada.ca/en/proactive-disclosure"
-msgstr ""
+msgstr "https://ouvert.canada.ca/fr/divulgation-proactive"
 
 #: .\search\templates\snippets\default_info_message.html:6
 msgid "Transitional Period"
-msgstr ""
+msgstr "Période de transition"
 
 #: .\search\templatetags\search_extras.py:45
 msgid "There are no filters for this search"
-msgstr ""
+msgstr "Aucun filtre sélectionné pour cette recherche"
+
+msgid "Available Searches"
+msgstr "Recherches disponibles"
+
+msgid "Search Open Government"
+msgstr "Recherchez gouvernement ouvert"
+
+msgid "Show similar records"
+msgstr "Recherche des dossiers similaires"
+
+

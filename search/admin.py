@@ -3,22 +3,30 @@ from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 from .models import Search, Field, Code
 
+# -- Searches ---
 
 class SearchResource(resources.ModelResource):
 
     class Meta:
         model = Search
+        import_id_fields = ('search_id')
+        skip_unchanged = True
+        report_skipped = True
 
 
 class SearchAdmin(ImportExportModelAdmin):
     resource_class = SearchResource
     list_display = ['search_id', 'label_en', 'solr_core_name']
 
+# -- Fields ---
 
 class FieldResource(resources.ModelResource):
 
     class Meta:
         model = Field
+        import_id_fields = ('field_id', 'search_id',)
+        skip_unchanged = True
+        report_skipped = True
 
 
 def make_facet_field(modeladmn, request, queryset):
@@ -62,17 +70,34 @@ class FieldAdmin(ImportExportModelAdmin):
     actions = [make_facet_field, make_default_display_field, clear_facet_field, clear_default_display_field, make_currency_field]
     search_fields = ['field_id', 'is_search_facet']
     list_filter = ['search_id']
+    fieldsets = (
+        (None, {'fields': ('field_id','search_id','label_en','label_fr','solr_field_type','solr_field_lang','solr_field_export','solr_field_is_coded','solr_extra_fields')}),
+        ('Solr Attributes', {'fields': ('solr_field_stored', 'solr_field_indexed', 'solr_field_multivalued', 'solr_field_is_currency')}),
+        ('Facets', {'fields': ('is_search_facet', 'solr_facet_sort', 'solr_facet_limit', 'solr_facet_snippet', 'solr_facet_display_reversed', 'solr_facet_display_order')}),
+        ('Advanced', {'fields': ('alt_format', 'is_default_display', 'default_export_value')}),
+        ('Search Default', {'fields': ('is_default_year', 'is_default_month')}),
+    )
 
+# -- Codes ---
 
 class CodeResource(resources.ModelResource):
 
     class Meta:
         model = Code
+        import_id_fields = ('field_id', 'code_id')
+        fields = ('field_id__search_id', 'field_id__field_id', 'id', 'field_id', 'code_id', 'label_en', 'label_fr')
+        skip_unchanged = True
+        report_skipped = True
+
+    def before_import_row(self, row, row_number=None, **kwargs):
+        fq = Field.objects.filter(search_id_id=row['field_id__search_id']).filter(field_id=row['field_id__field_id'])
+        for f in fq:
+            row['field_id'] = f.id
 
 
 class CodeAdmin(ImportExportModelAdmin):
     resource_class = CodeResource
-    list_display = ['code_id', 'field_id', 'label_en']
+    list_display = ['code_id', 'field_id', 'label_en', 'label_fr']
     search_fields = ['code_id', 'label_en', 'label_fr']
     list_filter = [('field_id', admin.RelatedOnlyFieldListFilter)]
 

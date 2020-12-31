@@ -3,8 +3,6 @@
 {% load humanize %}
 {% load i18n %}
 {% load search_extras %}
-{% get_current_language as LANGUAGE_CODE %}
-
 
 {% block main-content-body %}
 <div class="row">
@@ -19,23 +17,24 @@
 
          <div class="mrgn-bttm-md form-inline">
              <div class="row">
-                <div class="col-md-7 col-sm-12">
+                <div class="col-md-6 col-sm-12">
                     <div class="input-group">
-                        <label for="search_text" class="wb-inv">{% trans 'Search' %}</label>
+
+                        <label for="search_text" class="wb-inv">{% translate 'Search' %}</label>
                         <input type="text" name="search_text" class="form-control"  id="search_text"
-                               value="{{ search_text }}" placeholder="{% trans 'Search' %}"
-                               aria-label="{% trans 'Search' %}" size="60" />
+                               value="{{ search_text }}" placeholder="{% translate 'Search' %}"
+                               aria-label="{% translate 'Search' %}" size="60" />
                         <span class="input-group-btn">
-                             <label for="od-search-button" class="wb-inv">{% trans 'Search' %}</label>
+                             <label for="od-search-button" class="wb-inv">{% translate "Search" %}</label>
                              <button type="button" class="btn btn-primary btn-small form-submit" id="search-button" onclick="submitForm();"
-                                     style="padding: 6px 12px">{% trans 'Search' %}
+                                     style="padding: 6px 12px">{% translate "Search" %}
                             </button>
                         </span>
                     </div>
                 </div>
-                <div class="col-md-5 col-sm-12">
+                <div class="col-md-6 col-sm-12">
                     <div class="form-group">
-                        <label for="sort-by" class="control-label">{% trans 'Order By' %}</label>
+                        <label for="sort-by" class="control-label">{% translate "Order By" %}</label>
                         <select class="form-control" name="sort" id="sort" value="{{ sort }}" onchange="submitForm();">
                             {% for option, label in sort_options.items %}}
                         <option value="{{ option }}" {% if sort == option %}selected="selected"{% endif %}
@@ -76,19 +75,19 @@
                     {% for pg in pagination %}
                         {% if pg == 1 %}
                             {% if currentpage == 1 %}
-                                <li class="previous disabled"><a href="#" rel="prev">{% trans 'Previous' %}</a></li>
+                                <li class="previous disabled"><a href="#" rel="prev">{% translate 'Previous' %}</a></li>
                             {% else %}
-                                <li class="previous"><a href="#" onclick="gotoPage('{{ previous_page }}')">{% trans 'Previous' %} <span class="wb-inv">Go to page {{ previous_page }}</span></a></li>
+                                <li class="previous"><a href="#" onclick="gotoPage('{{ previous_page }}')">{% translate 'Previous' %} <span class="wb-inv">Go to page {{ previous_page }}</span></a></li>
                             {% endif %}
-                            <li{% if currentpage == 1 %} class="active" {% endif %}><a href="#" onclick="gotoPage('1')">1<span class="wb-inv">(current) {% trans 'Go to' %} 1 </span></a></li>
+                            <li{% if currentpage == 1 %} class="active" {% endif %}><a href="#" onclick="gotoPage('1')">1<span class="wb-inv">(current) {% translate 'Go to' %} 1 </span></a></li>
                          {% elif pg == last_page %}
                             <li{% if currentpage == last_page %} class="active"{% endif %}>
-                              <a href="#" onclick="gotoPage('{{ last_page }}')">{{ pg }}<span class="wb-inv">(current) {% trans 'Go to' %} 1 </span></a>
+                              <a href="#" onclick="gotoPage('{{ last_page }}')">{{ pg }}<span class="wb-inv">(current) {% translate 'Go to' %} 1 </span></a>
                             </li>
                             {% if currentpage == last_page %}
-                            <li class="next disabled"><a href="#" rel="next">{% trans 'Next' %}</a></li>
+                            <li class="next disabled"><a href="#" rel="next">{% translate 'Next' %}</a></li>
                             {% else %}
-                                <li class="next"><a href="#" onclick="gotoPage('{{ next_page }}')">{% trans 'Next' %} <span class="wb-inv">Go to page {{ next_page }}</span></a></li>
+                                <li class="next"><a href="#" onclick="gotoPage('{{ next_page }}')">{% translate 'Next' %} <span class="wb-inv">Go to page {{ next_page }}</span></a></li>
                             {% endif %}
                         {% elif pg == 0 %}
                             <li><a href="#" onclick="">...<span class="wb-inv"></span></a></li>
@@ -109,15 +108,15 @@
         <div class="btn-block">
             <div>
                 <a onclick="resetSearch();" href="#" class="btn btn-default mrgn-bttm-md btn-block"><span
-                class="glyphicon glyphicon-refresh"></span> {% trans 'Clear all choices' %}</a>
+                class="glyphicon glyphicon-refresh"></span> {% translate "Clear all choices" %}</a>
             </div>
         </div>
         <div>
             <a href="{{ export_path }}" class="btn btn-default mrgn-bttm-md btn-block{% if total_hits < 1 or total_hits > 100000 %} disabled{% endif %}"><span
-                class="glyphicon glyphicon-download-alt"></span> {% trans 'Download Search Results' %}{% if total_hits > 100000 %}<br>{% trans '(100,000 row limit)' %}{% endif %}</a>
+                class="glyphicon glyphicon-download-alt"></span> {% translate 'Download Search Results' %}{% if total_hits > 100000 %}<br>{% translate '(100,000 row limit)' %}{% endif %}</a>
         </div>
         <div>
-            <a href="{{ download_ds_url_en }}" class="list-group-item aurora-list-group-item-info text-center">{% trans 'Download Complete Dataset' %}</a>
+            <a href="{{ download_ds_url_en }}" class="list-group-item aurora-list-group-item-info text-center">{% translate 'Download Complete Dataset' %}</a>
         </div>
     </aside>
      <aside>
@@ -126,7 +125,7 @@
                 {% if key in facet_snippets.keys %}
                     {% include facet_snippets|get_dict_value:key %}
                 {% else %}
-                <details class="panel panel-default mrgn-bttm-0"{% if  selected_facets|get_dict_value:key|length > 0 %}open{% endif %}>
+                <details class="panel panel-default mrgn-bttm-0 provisional gc-chckbxrdio"{% if  selected_facets|get_dict_value:key|length > 0 %}open{% endif %}>
                     <summary class="panel-heading">
                        <h5 class="panel-title">{{ value|get_dict_value:'__label__' }}</h5>
                     </summary>
@@ -142,13 +141,13 @@
                                                  onclick='selectFacet("{{ key }}", "{{ subkey }}" )'
                                                  style="vertical-align:middle;position:relative;top:-1px;" value="{{ key }}"
                                                  {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}
-                                        >  {{ codes|get_dict_value:key|get_dict_value:subkey }} </label></div>
+                                        >&nbsp;&nbsp;{{ codes|get_dict_value:key|get_dict_value:subkey }} </label></div>
                                         {% else %}
                                         <label><input type="checkbox"
                                                  onclick='selectFacet("{{ key }}", "{{ subkey }}" )'
                                                  style="vertical-align:middle;position:relative;top:-1px;" value="{{ key }}"
                                                  {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}
-                                        >  {{ subkey }} </label></div>
+                                        >&nbsp;&nbsp;{{ subkey }} </label></div>
                                         {% endif %}
                                     <div class="text-right col-sm-3"><span class="badge">{{ subvalue }}</span></div>
                                 </li>
@@ -165,13 +164,13 @@
                                                  onclick='selectFacet("{{ key }}", "{{ subkey }}" )'
                                                  style="vertical-align:middle;position:relative;top:-1px;" value="{{ key }}"
                                                  {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}
-                                        >  {{ codes|get_dict_value:key|get_dict_value:subkey }} </label></div>
+                                        >&nbsp;&nbsp;{{ codes|get_dict_value:key|get_dict_value:subkey }} </label></div>
                                         {% else %}
                                         <label><input type="checkbox"
                                                  onclick='selectFacet("{{ key }}", "{{ subkey }}" )'
                                                  style="vertical-align:middle;position:relative;top:-1px;" value="{{ key }}"
                                                  {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}
-                                        >  {{ subkey }} </label></div>
+                                        >&nbsp;&nbsp;{{ subkey }} </label></div>
                                         {% endif %}
                                     <div class="text-right col-sm-3"><span class="badge">{{ subvalue }}</span></div>
                                 </li>
@@ -190,3 +189,4 @@
 
 </div>
 {% endblock main-content-body %}
+
