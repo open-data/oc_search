@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'import_export',
-    'rosetta',
     'search'
 ]
 
@@ -124,8 +123,6 @@ LANGUAGES = [
 LOCALE_PATHS = [
     os.path.join(BASE_DIR, 'locale')
 ]
-ROSETTA_SHOW_AT_ADMIN_PANEL = True
-ROSETTA_MESSAGES_PER_PAGE = 25
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/

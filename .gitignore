@@ -145,3 +145,8 @@ cython_debug/
 /search/migrations/0*.py
 /oc_search/settings.py
 /search/templates/snippets/custom/
+/locale/fr/LC_MESSAGES/*.po
+!/locale/fr/LC_MESSAGES/django_core.po
+# Don<t include file-based sessions
+/session/
+!/session/NOTE.md

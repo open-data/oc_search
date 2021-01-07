@@ -70,6 +70,9 @@ class Command(BaseCommand):
         data_path = path.join(root_path, 'data')
         if not path.exists(data_path):
             mkdir(data_path)
+        locale_path = path.join(root_path, 'locale')
+        if not path.exists(locale_path):
+            mkdir(locale_path)
 
         # Export Search
         dataset = ExportSearchResource(options['search_id']).export()
@@ -104,3 +107,9 @@ class Command(BaseCommand):
         if path.exists(custom_plug_in):
             copyfile(custom_plug_in, path.join(plugin_path, "{0}.py".format(options['search_id'])))
             logging.info("Copying custom plugin to {0}".format(path.join(plugin_path, "{0}.py".format(options['search_id']))))
+
+        # Copy custom locale file <search ID>.po if one exists. For simplicity, currently assuming there is only Freench locales
+        custom_locale = path.join(Path(__file__).resolve().parent.parent.parent.parent, 'locale', 'fr', 'LC_MESSAGES', "{0}.po".format(options['search_id']))
+        if path.exists(custom_locale):
+            copyfile(custom_locale, path.join(locale_path, "{0}.po".format(options['search_id'])))
+            logging.info("Copying custom locale file to {0}".format(path.join(plugin_path, "{0}.po".format(options['search_id']))))

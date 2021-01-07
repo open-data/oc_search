@@ -129,3 +129,5 @@ class Command(BaseCommand):
         if path.exists(plugin_path):
             copyfile(path.join(plugin_path, "{0}.py".format(options['search_id'])), custom_plug_in)
             logging.info("Copying custom plugin to {0}".format(plugin_path))
+
+        # Copy custom local file

@@ -1,0 +1,1 @@
+Anonymous session files are in this directory
