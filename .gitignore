@@ -143,6 +143,8 @@ cython_debug/
 # Search Application
 /data/
 /search/migrations/0*.py
+/search/plugins
+!/search/plugins/default.py
 /oc_search/settings.py
 /search/templates/snippets/custom/
 /locale/fr/LC_MESSAGES/*.po
