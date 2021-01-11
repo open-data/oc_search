@@ -46,7 +46,7 @@ steps:
     pushd '$(projectRoot)'
     ls
     pip list
-    pythom manage.py
+    python manage.py
     python manage.py test search.tests --testrunner xmlrunner.extra.djangotestrunner.XMLTestRunner --no-input
   displayName: 'Run tests'
 
