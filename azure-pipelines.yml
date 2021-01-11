@@ -35,23 +35,22 @@ steps:
 - script: |
     python -m pip install --upgrade pip setuptools wheel
     pip install -r requirements.txt
-    pip install unittest-xml-reporting
   displayName: 'Install prerequisites'
 
 - task: ArchiveFiles@2
   inputs:
-    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/Staging' 
+    rootFolderOrFile: '$(Build.SourcesDirectory)'
     includeRootFolder: true
     archiveType: 'tar'
-    tarCompression: 'gz'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/OfflinePackage/OC_Search_DeploymentPackage.tar.gz' 
-    replaceExistingArchive: true 
-  displayName: 'Create OfflinePackage (tarball)'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/SourceOfflinePackage/OC_Search_SourcePackage.tgz'
+    replaceExistingArchive: true
+  displayName: 'Create Source tarball'
     
-- task: PublishPipelineArtifact@0
+- task: PublishBuildArtifacts@1
   inputs:
-    artifactName: 'OfflinePackage'
-    targetPath: '$(Build.ArtifactStagingDirectory)/OfflinePackage'
-  displayName: 'Upload OfflinePackage to Artifacts'
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)/SourceOfflinePackage'
+      ArtifactName: 'SourceOfflinePackage'
+      publishLocation: 'Container'
+
 
 
