@@ -47,7 +47,7 @@ steps:
     ls
     pip list
     python manage.py
-    python manage.py test search.tests --testrunner xmlrunner.extra.djangotestrunner.XMLTestRunner --no-input
+    python manage.py test search.tests 
   displayName: 'Run tests'
 
 - task: PublishTestResults@2
