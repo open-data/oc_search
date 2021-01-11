@@ -43,6 +43,7 @@ steps:
   displayName: 'Copy test settings file'
 
 - script: |
+    ls '$(projectRoot)'
     pushd '$(projectRoot)'
     python manage.py test search.tests --testrunner xmlrunner.extra.djangotestrunner.XMLTestRunner --no-input
   displayName: 'Run tests'
