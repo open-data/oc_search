@@ -62,3 +62,21 @@ steps:
 - script: |
     rm oc_search/oc_search/settings.py
   displayName: 'Copy test settings file'
+
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/Staging' 
+    includeRootFolder: true
+    archiveType: 'tar'
+    tarCompression: 'gz'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/OfflinePackage/OC_Search_DeploymentPackage.tar.gz' 
+    replaceExistingArchive: true 
+  displayName: 'Create OfflinePackage (tarball)'
+    
+- task: PublishPipelineArtifact@0
+  inputs:
+    artifactName: 'OfflinePackage'
+    targetPath: '$(Build.ArtifactStagingDirectory)/OfflinePackage'
+  displayName: 'Upload OfflinePackage to Artifacts'
+
+
