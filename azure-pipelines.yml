@@ -10,9 +10,6 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
 - task: UsePythonVersion@0
   displayName: 'Using Python 3.6'
   inputs:
@@ -41,11 +38,9 @@ steps:
     pip install unittest-xml-reporting
   displayName: 'Install prerequisites'
 
-
 - script: |
     cp oc_search/settings-sample.py oc_search/settings.py
   displayName: 'Copy test settings file'
-
 
 - script: |
     pushd '$(projectRoot)'
