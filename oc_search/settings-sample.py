@@ -36,32 +36,44 @@ INSTALLED_APPS = [
     'django.contrib.admindocs',
     'django.contrib.auth',
     'django.contrib.contenttypes',
+    'django.contrib.humanize',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'import_export',
     'search'
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'oc_search.middleware.CanadaBilingualMiddleware'
 ]
 
 ROOT_URLCONF = 'oc_search.urls'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/3.0/howto/static-files/
+
+STATIC_URL = '/static/'
+
+STATICFILES_DIRS = [
+    ('cdts', os.path.join(BASE_DIR, "cdts", "v4_0_32")),
+    ('search_snippets', os.path.join(BASE_DIR, 'search', 'templates', 'snippets')),
+]
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'static'),
+                 os.path.join(BASE_DIR, 'search', 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -121,13 +133,8 @@ LANGUAGES = [
 ]
 
 LOCALE_PATHS = [
-    os.path.join(BASE_DIR, 'locale')
+    os.path.join(BASE_DIR, 'locale'),
 ]
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.0/howto/static-files/
-
-STATIC_URL = '/static/'
 
 # File cache directory used by the export search results feature. If files are served by a web server like Nginx
 # or Apache, set the FILE_CACHE_URL
@@ -135,9 +142,23 @@ STATIC_URL = '/static/'
 FILE_CACHE_DIR = os.path.join(BASE_DIR, 'cache')
 FILE_CACHE_URL = ""
 
-SOLR_SERVER_URL = 'http://127.0.0.1:8983/solr'
+# Solr Search Configuration
+
+SOLR_SERVER_URL = 'http://localhost:8983/solr'
 
 SOLR_COLLECTION = "SolrClient_unittest"
+
+# Application URL
+
+SEARCH_EN_HOSTNAME = ''
+SEARCH_FR_HOSTNAME = ''
+SEARCH_LANG_USE_PATH = True
+
+# Active CDTS Version
+
+CDTS_VERSION = 'v4_0_32'
+
+ANALYTICS_JS = ""
 
 # Logging
 
@@ -154,3 +175,23 @@ LOGGING = {
         'level': 'INFO',
     },
 }
+
+MARKDOWN_FILTER_WHITELIST_TAGS = [
+    'a',
+    'p',
+    'code',
+    'em',
+    'h1', 'h2', 'h3', 'h4',
+    'ul',
+    'ol',
+    'li',
+    'br',
+    'mark',
+    'pre',
+    'strong',
+    'table', 'thead', 'th', 'tr', 'tbody', 'td'
+]
+
+SESSION_ENGINE="django.contrib.sessions.backends.file"
+SESSION_FILE_PATH = os.path.join(BASE_DIR, 'session')
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
