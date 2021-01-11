@@ -44,9 +44,7 @@ steps:
 
 - script: |
     pushd '$(projectRoot)'
-    ls
-    pip list
-    python manage.py
+
     python manage.py test search.tests 
   displayName: 'Run tests'
 
