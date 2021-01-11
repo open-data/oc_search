@@ -38,27 +38,6 @@ steps:
     pip install unittest-xml-reporting
   displayName: 'Install prerequisites'
 
-- script: |
-    cp oc_search/settings-sample.py oc_search/settings.py
-  displayName: 'Copy test settings file'
-
-- script: |
-    pushd '$(projectRoot)'
-
-    python manage.py test search.tests 
-  displayName: 'Run tests'
-
-- task: PublishTestResults@2
-  inputs:
-    testResultsFiles: "**/TEST-*.xml"
-    testRunTitle: 'Basic Python 3.6 Test Run'
-  condition: succeededOrFailed()
-
-# Do not package the temp settings file
-- script: |
-    rm oc_search/oc_search/settings.py
-  displayName: 'Copy test settings file'
-
 - task: ArchiveFiles@2
   inputs:
     rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/Staging' 
