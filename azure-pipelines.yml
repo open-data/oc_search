@@ -42,6 +42,7 @@ steps:
     rootFolderOrFile: '$(Build.SourcesDirectory)'
     includeRootFolder: true
     archiveType: 'tar'
+    tarCompression: 'gz'
     archiveFile: '$(Build.ArtifactStagingDirectory)/SourceOfflinePackage/OC_Search_SourcePackage.tgz'
     replaceExistingArchive: true
   displayName: 'Create Source tarball'
