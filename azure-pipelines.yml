@@ -40,7 +40,7 @@ steps:
 - task: ArchiveFiles@2
   inputs:
     rootFolderOrFile: '$(Build.SourcesDirectory)'
-    includeRootFolder: true
+    includeRootFolder: false
     archiveType: 'tar'
     tarCompression: 'gz'
     archiveFile: '$(Build.ArtifactStagingDirectory)/SourceOfflinePackage/OC_Search_SourcePackage.tgz'
