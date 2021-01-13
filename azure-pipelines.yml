@@ -37,6 +37,11 @@ steps:
     pip install -r requirements.txt
   displayName: 'Install prerequisites'
 
+- script: |
+    pushd '$(projectRoot)'
+    git clone https://github.com/thriuin/SolrClient.git
+  displayName: "Download SolrClient code"
+
 - task: ArchiveFiles@2
   inputs:
     rootFolderOrFile: '$(Build.SourcesDirectory)'
@@ -47,6 +52,17 @@ steps:
     replaceExistingArchive: true
   displayName: 'Create Source tarball'
     
+
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(projectRoot)/SolrClient'
+    includeRootFolder: true
+    archiveType: 'tar'
+    tarCompression: 'gz'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/SourceOfflinePackage/SolrClient.tgz'
+    replaceExistingArchive: true
+  displayName: 'Create SolrClient tarball'
+
 - task: PublishBuildArtifacts@1
   inputs:
       PathtoPublish: '$(Build.ArtifactStagingDirectory)/SourceOfflinePackage'
