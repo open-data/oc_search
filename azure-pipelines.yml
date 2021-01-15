@@ -42,7 +42,7 @@ steps:
     connection: 'open-data'
     userRepository: 'open-data/SolrClient'
     defaultVersionType: 'latest'
-    downloadPath: '$(Build.ArtifactStagingDirectory)/SourceOfflinePackage'
+    downloadPath: '$(Build.SourcesDirectory)'
 
 
 - task: ArchiveFiles@2
