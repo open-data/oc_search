@@ -42,7 +42,7 @@ steps:
     git clone https://github.com/thriuin/SolrClient.git
   displayName: "Download SolrClient code"
 
-- task: ArchiveFiles@2
+- task: ArchiveFiles@1
   inputs:
     rootFolderOrFile: '$(Build.SourcesDirectory)'
     includeRootFolder: false
@@ -68,6 +68,3 @@ steps:
       PathtoPublish: '$(Build.ArtifactStagingDirectory)/SourceOfflinePackage'
       ArtifactName: 'SourceOfflinePackage'
       publishLocation: 'Container'
-
-
-
