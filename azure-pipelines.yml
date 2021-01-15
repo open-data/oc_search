@@ -42,7 +42,8 @@ steps:
     connection: 'open-data'
     userRepository: 'open-data/SolrClient'
     defaultVersionType: 'latest'
-    downloadPath: '$(System.ArtifactsDirectory)'
+    downloadPath: '$(Build.ArtifactStagingDirectory)/SourceOfflinePackage'
+
 
 - task: ArchiveFiles@2
   inputs:
@@ -51,16 +52,6 @@ steps:
     archiveType: 'tar'
     tarCompression: 'gz'
     archiveFile: '$(Build.ArtifactStagingDirectory)/SourceOfflinePackage/OC_Search_SourcePackage.tgz'
-    replaceExistingArchive: true
-  displayName: 'Create Source tarball'
-
-- task: ArchiveFiles@2
-  inputs:
-    rootFolderOrFile: '$(Build.ArtifactsDirectory)'
-    includeRootFolder: false
-    archiveType: 'tar'
-    tarCompression: 'gz'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/SourceOfflinePackage/SolrClient.tgz'
     replaceExistingArchive: true
   displayName: 'Create Source tarball'
 
