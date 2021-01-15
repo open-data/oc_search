@@ -42,8 +42,11 @@ steps:
     connection: 'open-data'
     userRepository: 'open-data/SolrClient'
     defaultVersionType: 'latest'
-    downloadPath: '$(Build.SourcesDirectory)'
+    downloadPath: '$(Build.ArtifactStagingDirectory)/SolrClient'
 
+- script: |
+    ls -l '$(Build.ArtifactStagingDirectory)/SolrClient'
+  displayName: 'List SolrClient'
 
 - task: ArchiveFiles@2
   inputs:
@@ -60,3 +63,11 @@ steps:
       PathtoPublish: '$(Build.ArtifactStagingDirectory)/SourceOfflinePackage'
       ArtifactName: 'SourceOfflinePackage'
       publishLocation: 'Container'
+  displayName: 'Publish OC Search'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish:   '$(Build.ArtifactStagingDirectory)/SolrClient'
+    ArtifactName: 'SolrClient'
+    publishLocation: 'Container'
+  displayName: 'Publish SolrClient'
