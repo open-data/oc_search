@@ -44,11 +44,7 @@ steps:
     defaultVersionType: 'latest'
     downloadPath: '$(System.ArtifactsDirectory)'
 
-- script: |
-    git clone https://github.com/thriuin/SolrClient.git
-  displayName: "Download SolrClient code"
-
-- task: ArchiveFiles@1
+- task: ArchiveFiles@2
   inputs:
     rootFolderOrFile: '$(Build.SourcesDirectory)'
     includeRootFolder: false
