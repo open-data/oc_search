@@ -41,11 +41,12 @@ steps:
   inputs:
     connection: 'open-data'
     userRepository: 'open-data/SolrClient'
+    itemPattern: '**'
     defaultVersionType: 'latest'
-    downloadPath: '$(Build.ArtifactStagingDirectory)/SolrClient'
+    downloadPath: '$(System.ArtifactsDirectory)'
 
 - script: |
-    ls -l '$(Build.ArtifactStagingDirectory)/SolrClient'
+    ls -l ''$(System.ArtifactsDirectory)''
   displayName: 'List SolrClient'
 
 - task: ArchiveFiles@2
@@ -67,7 +68,7 @@ steps:
 
 - task: PublishBuildArtifacts@1
   inputs:
-    PathtoPublish:   '$(Build.ArtifactStagingDirectory)/SolrClient'
+    PathtoPublish:   $(System.ArtifactsDirectory)
     ArtifactName: 'SolrClient'
     publishLocation: 'Container'
   displayName: 'Publish SolrClient'
