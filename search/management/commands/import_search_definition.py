@@ -51,14 +51,14 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('--import_dir', type=str, help='Directory to write export files to', required=True)
-        parser.add_argument('--search_id', type=str, help='A unique code identifier for the Search', required=True)
+        parser.add_argument('--search', type=str, help='A unique code identifier for the Search', required=True)
 
 
     def handle(self, *args, **options):
         if not path.exists(options['import_dir']):
             raise CommandError('Import directory not found: ' + options['export_dir'])
 
-        root_path = path.join(options['import_dir'], options['search_id'])
+        root_path = path.join(options['import_dir'], options['search'])
         if not path.exists(root_path):
             raise CommandError('Import search directory not found: ' + root_path)
 
@@ -75,11 +75,14 @@ class Command(BaseCommand):
         data_path = path.join(root_path, 'data')
         if not path.exists(data_path):
             data_path = ''
+        locale_path = path.join(root_path, 'locale')
+        if not path.exists(locale_path):
+            locale_path = ''
 
         # Import Search
 
-        search_resource = ExportSearchResource(options['search_id'])
-        searches_path = path.join(db_path, "{0}_search.json".format(options['search_id']))
+        search_resource = ExportSearchResource(options['search'])
+        searches_path = path.join(db_path, "{0}_search.json".format(options['search']))
         with open(searches_path, 'r', encoding='utf-8-sig', errors="ignore") as json_file:
             imported_data = tablib.Dataset().load(json_file)
             result = search_resource.import_data(dataset=imported_data, dry_run=True)
@@ -90,8 +93,8 @@ class Command(BaseCommand):
                 logging.info("Imported Search model")
 
         # Import Fields
-        field_resource = ExportFieldResource(options['search_id'])
-        fields_path = path.join(db_path, "{0}_fields.json".format(options['search_id']))
+        field_resource = ExportFieldResource(options['search'])
+        fields_path = path.join(db_path, "{0}_fields.json".format(options['search']))
         with open(fields_path, 'r', encoding='utf-8-sig', errors="ignore") as json_file:
             imported_data = tablib.Dataset().load(json_file)
             result = field_resource.import_data(dataset=imported_data, dry_run=True)
@@ -102,8 +105,8 @@ class Command(BaseCommand):
                 logging.info("Imported Field models")
 
         # Import Codes - A search may not necessarily have codes
-        code_resource = ExportCodeResource(options['search_id'])
-        codes_path = path.join(db_path, "{0}_codes.json".format(options['search_id']))
+        code_resource = ExportCodeResource(options['search'])
+        codes_path = path.join(db_path, "{0}_codes.json".format(options['search']))
         if path.exists(codes_path):
             with open(codes_path, 'r', encoding='utf-8-sig', errors="ignore") as json_file:
                 imported_data = tablib.Dataset().load(json_file)
@@ -116,7 +119,7 @@ class Command(BaseCommand):
 
         # Copy custom snippets. The convention is for templates to be deployed to : BASE_DIr/templates/snippets/<search ID>/
         BASE_DIR = Path(__file__).resolve().parent.parent.parent
-        custom_template_dir = path.join(BASE_DIR, 'templates', 'snippets', 'custom', options['search_id'])
+        custom_template_dir = path.join(BASE_DIR, 'templates', 'snippets', 'custom', options['search'])
         if path.exists(snippet_path):
             if not path.exists(custom_template_dir):
                 mkdir(custom_template_dir)
@@ -124,10 +127,21 @@ class Command(BaseCommand):
             logging.info("Copying custom snippets to {0}".format(custom_template_dir))
 
         # Copy custom plugin - if one exists. The convention is for plugin file to be named : BASE_DIr/plugins/<search ID>.py
-        custom_plug_in = path.join(BASE_DIR, 'plugins', "{0}.py".format(options['search_id']))
+        custom_plug_in = path.join(BASE_DIR, 'plugins', "{0}.py".format(options['search']))
 
         if path.exists(plugin_path):
-            copyfile(path.join(plugin_path, "{0}.py".format(options['search_id'])), custom_plug_in)
+            copyfile(path.join(plugin_path, "{0}.py".format(options['search'])), custom_plug_in)
             logging.info("Copying custom plugin to {0}".format(plugin_path))
 
-        # Copy custom local file
+        # Copy custom locale PO files to the django French PO file directory
+        if path.exists(locale_path):
+            locale_export = path.join(Path(__file__).resolve().parent.parent.parent.parent, 'locale', 'fr', 'LC_MESSAGES', "{0}.po".format(options['search']))
+            copyfile(path.join(locale_path,  "{0}.po".format(options['search'])), locale_export)
+            logging.info("Copying custom locale file to {0}".format(locale_export))
+
+        # If there are custom data files included, save these to the project
+        if path.exists(data_path):
+            data_export_dir = path.join(Path(__file__).resolve().parent.parent.parent.parent, 'data', options['search'])
+            if not path.exists(data_export_dir):
+                mkdir(data_export_dir)
+            copy_tree(data_path, data_export_dir)

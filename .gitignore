@@ -141,9 +141,12 @@ dmypy.json
 cython_debug/
 
 # Search Application
-/data/
-/search/migrations/0*.py
-/search/plugins
+/data/*.csv
+/data/*.txt
+/data/*.yaml
+/data/*.json
+/search/migrations/*.py
+/search/plugins/*.py
 !/search/plugins/default.py
 /oc_search/settings.py
 /search/templates/snippets/custom/
