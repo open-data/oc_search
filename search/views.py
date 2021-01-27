@@ -309,7 +309,7 @@ class RecordView(SearchView):
             context["search_text"] = request.GET.get("search_text", "")
             if 'prev_search' in request.session:
                 context['back_to_url'] =  request.session['prev_search']
-
+            request.session['prev_record'] = request.build_absolute_uri()
             solr = SolrClient(settings.SOLR_SERVER_URL)
 
             core_name = self.searches[search_type].solr_core_name
@@ -529,6 +529,8 @@ class MoreLikeThisView(SearchView):
 
             context['docs'] = solr_response.data['moreLikeThis'][record_id]['docs']
             context['original_doc'] = solr_response.docs[0]
+            if 'prev_record' in request.session:
+                context['back_to_url'] =  request.session['prev_record']
 
             return render(request, "more_like_this.html", context)
 

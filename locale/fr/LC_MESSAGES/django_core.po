@@ -129,6 +129,9 @@ msgstr "Secrétariat du Conseil du Trésor du Canada"
 msgid "Back to search"
 msgstr "Retour à la page de recherche"
 
+msgid "Back to record"
+msgstr "Retour au dossier précédent"
+
 #: .\search\templates\record.html:52 .\search\templates\record.html:54
 #: .\search\templates\search.html:79 .\search\templates\search.html:81
 msgid "Previous"

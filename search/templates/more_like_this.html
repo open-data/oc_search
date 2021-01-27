@@ -6,9 +6,9 @@
 {% get_current_language as LANGUAGE_CODE %}
 
 {% block main-content-body %}
-{% if referer %}
+{% if back_to_url %}
 <div class="row">
-    <div class="col-md-12"><a class="btn btn-primary" href="{{ parent_path }}"><span class="glyphicon glyphicon-menu-left"></span> {% translate 'Back to search' %}</a></div>
+    <div class="col-md-12"><a class="btn btn-primary" href="{{ back_to_url }}"><span class="glyphicon glyphicon-menu-left"></span> {% translate 'Back to record' %}</a></div>
 </div>
 {% endif %}
 <div class="row mrgn-tp-md">
