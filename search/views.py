@@ -398,7 +398,7 @@ class ExportView(SearchView):
 
     def __init__(self):
         super().__init__()
-        self.cache_dir = settings.FILE_CACHE_DIR
+        self.cache_dir = settings.EXPORT_FILE_CACHE_DIR
         if not os.path.exists(self.cache_dir):
             os.mkdir(self.cache_dir)
 
@@ -437,7 +437,7 @@ class ExportView(SearchView):
                     if settings.EXPORT_FILE_CACHE_URL == "":
                         return FileResponse(open(cached_filename, 'rb'), as_attachment=True)
                     else:
-                        return HttpResponseRedirect(settings.EXPORT_FILE_CACHE_URL + "{}.csv".format(hashed_query))
+                        return HttpResponseRedirect(settings.EXPORT_FILE_CACHE_URL + "{0}_{1}.csv".format(hashed_query, lang))
 
             solr = SolrClient(settings.SOLR_SERVER_URL)
             core_name = self.searches[search_type].solr_core_name
