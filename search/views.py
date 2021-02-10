@@ -469,10 +469,10 @@ class ExportView(SearchView):
                     facets)
 
             if self.cache_search_results_file(cached_filename=cached_filename, sr=solr_response):
-                if settings.FILE_CACHE_URL == "":
+                if settings.EXPORT_FILE_CACHE_URL == "":
                     return FileResponse(open(cached_filename, 'rb'), as_attachment=True)
                 else:
-                    return HttpResponseRedirect(settings.FILE_CACHE_URL + "{0}_{1}.csv".format(hashed_query, lang))
+                    return HttpResponseRedirect(settings.EXPORT_FILE_CACHE_URL + "{0}_{1}.csv".format(hashed_query, lang))
         else:
             return render(request, '404.html', get_error_context(search_type, lang))
 

@@ -139,8 +139,8 @@ LOCALE_PATHS = [
 # File cache directory used by the export search results feature. If files are served by a web server like Nginx
 # or Apache, set the FILE_CACHE_URL
 
-FILE_CACHE_DIR = os.path.join(BASE_DIR, 'cache')
-FILE_CACHE_URL = ""
+EXPORT_FILE_CACHE_DIR = os.path.join(BASE_DIR, 'cache')
+EXPORT_FILE_CACHE_URL = ""
 
 # Solr Search Configuration
 
