@@ -139,6 +139,8 @@ class Command(BaseCommand):
                                     solr_record[csv_field + '_fr'] = ''
                             except ValueError as x2:
                                 self.logger.error('Invalid date: "{0}"'.format(x2))
+                                solr_record[csv_field] = ''
+                                continue
                         elif self.csv_fields[csv_field].solr_field_type in ['pint', 'pfloat']:
                             if solr_record[csv_field]:
                                 if solr_record[csv_field] == '.':
@@ -173,7 +175,11 @@ class Command(BaseCommand):
                             solr_record['id'] = ",".join(id_values)
                     else:
                         solr_record = self.set_empty_fields(solr_record)
-                        solr_record['id'] = "{0}-{1}-{2}".format(solr_record['owner_org'], solr_record['year'], solr_record['month'])
+                        if 'month' in solr_record:
+                            solr_record['id'] = "{0}-{1}-{2}".format(solr_record['owner_org'], solr_record['year'], solr_record['month'])
+                        elif 'quarter' in solr_record:
+                            solr_record['id'] = "{0}-{1}-{2}".format(solr_record['owner_org'], solr_record['year'],
+                                                                     solr_record['quarter'])
 
                     # Call plugins if they exist for this search type. This is where a developer can introduce
                     # code to customize the data that is loaded into Solr for a particular search.

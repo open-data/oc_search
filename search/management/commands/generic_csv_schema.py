@@ -47,5 +47,5 @@ class Command(BaseCommand):
                 self.logger.error("Unexpected Error: {0}".format(x))
             self.logger.info("Imported file {0}".format(options['csv_file']))
         else:
-            self.logger.error("Cannot find file {0}".format(options['yaml_file']))
+            self.logger.error("Cannot find file {0}".format(options['csv_file']))
             exit(-1)
