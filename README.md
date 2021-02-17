@@ -122,6 +122,7 @@ For example:
 Several custom Django management commands are available  
 
 <div id="create_solr_core">
+   
 ### create_solr_core ### 
 
 To run: `python manage.py create_solr_core <search name>`
@@ -131,7 +132,8 @@ through the Django admin UI.
 </div>
 
 <div id="import_schema_ckan_yaml">
-### import_schema_ckan_yaml
+   
+### import_schema_ckan_yaml ###
 
 To run: `python manage.py import_schema_ckan_yaml --yaml_file <yaml file> --search_id <unique search ID> --title_en <English Title> --title_fr <French Title> [--reset]`
 
@@ -139,7 +141,8 @@ This command will parse the CKAN YAML file and load it into the search model dat
 </div>
 
 <div id="import_data_csv">
-### import_data_csv
+   
+### import_data_csv ###
 
 To run: `python manage.py --csv <CSV file> --search <Unique search ID> --core <Solr Core Name> [--nothing_to_report]`
 </div>
