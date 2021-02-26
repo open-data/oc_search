@@ -36,9 +36,25 @@
                             <div class="col-md-4"><strong>{{ field_name }}</strong></div>
                         {% endif %}
                         {% if field_name in codes %}
-                        <div class="col-md-8">{{ codes|get_dict_value:field_name|get_dict_value:field_value }}</div>
+                            <div class="col-md-8">
+                            {% if field_value|is_list %}
+                                {% for field_list_value in field_value %}
+                                    {{ codes|get_dict_value:field_name|get_dict_value:field_list_value }}<br>
+                                {% endfor %}
+                            {% else %}
+                                {{ codes|get_dict_value:field_name|get_dict_value:field_value }}
+                            {% endif %}
+                            </div>
                         {% else %}
-                        <div class="col-md-8">{{ field_value }}</div>
+                        <div class="col-md-8">
+                            {% if field_value|is_list %}
+                                {% for field_list_value in field_value %}
+                                    {{ field_list_value }}<br>
+                                {% endfor %}
+                            {% else %}
+                                {{ field_value }}
+                            {% endif %}
+                        </div>
                         {% endif %}
                     </div>
                     {% endif %}

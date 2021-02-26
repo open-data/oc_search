@@ -35,5 +35,9 @@ def post_mlt_solr_query(context: dict, solr_response: SolrResponse, solr_query: 
     return context, solr_response
 
 
+def filter_csv_record(csv_record,search: Search, fields: dict, codes: dict, format: str):
+    return True
+
+
 def load_csv_record(csv_record: dict, solr_record: dict, search: Search, fields: dict, codes: dict, format: str):
     return solr_record

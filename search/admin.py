@@ -17,8 +17,21 @@ class SearchResource(resources.ModelResource):
 class SearchAdmin(ImportExportModelAdmin):
     resource_class = SearchResource
     list_display = ['search_id', 'label_en', 'solr_core_name']
+    fieldsets = (
+        (None, {'fields': ('search_id', 'solr_core_name', 'id_fields', 'alt_formats', 'label_en', 'label_fr',
+                           'dataset_download_text_en', 'dataset_download_url_en',
+                           'dataset_download_text_fr', 'dataset_download_url_fr', 'desc_en', 'desc_fr',
+                           'about_message_en', 'about_message_fr', 'imported_on')}),
+        ('Results', {'fields': ('results_page_size', 'results_sort_order_en', 'results_sort_order_fr',
+                                'results_sort_order_display_en', 'results_sort_order_display_fr')}),
+        ('Templates', {'fields': ('page_template', 'record_template', 'breadcrumb_snippet', 'footer_snippet',
+                                  'info_message_snippet', 'about_message_snippet', 'header_js_snippet',
+                                  'header_css_snippet', 'body_js_snippet', 'search_item_snippet',
+                                  'record_detail_snippet', 'record_breadcrumb_snippet')}),
+        ('More-like-this', {'fields': ('mlt_enabled', 'mlt_items')})
+    )
 
-# -- Fields ---
+    # -- Fields ---
 
 class FieldResource(resources.ModelResource):
 
@@ -66,12 +79,12 @@ make_currency_field.short_description = 'Mark selected fields as currency, float
 
 class FieldAdmin(ImportExportModelAdmin):
     resource_class = FieldResource
-    list_display = ('field_id', 'is_search_facet', 'is_default_display', 'search_id', 'solr_field_type')
+    list_display = ('field_id', 'is_search_facet', 'is_default_display', 'search_id', 'format_name', 'solr_field_type')
     actions = [make_facet_field, make_default_display_field, clear_facet_field, clear_default_display_field, make_currency_field]
     search_fields = ['field_id', 'is_search_facet']
     list_filter = ['search_id']
     fieldsets = (
-        (None, {'fields': ('field_id','search_id','label_en','label_fr','solr_field_type','solr_field_lang','solr_field_export','solr_field_is_coded','solr_extra_fields')}),
+        (None, {'fields': ('field_id', 'search_id', 'label_en', 'label_fr', 'format_name', 'solr_field_type', 'solr_field_lang', 'solr_field_export', 'solr_field_is_coded', 'solr_extra_fields')}),
         ('Solr Attributes', {'fields': ('solr_field_stored', 'solr_field_indexed', 'solr_field_multivalued', 'solr_field_is_currency')}),
         ('Facets', {'fields': ('is_search_facet', 'solr_facet_sort', 'solr_facet_limit', 'solr_facet_snippet', 'solr_facet_display_reversed', 'solr_facet_display_order')}),
         ('Advanced', {'fields': ('alt_format', 'is_default_display', 'default_export_value')}),
@@ -100,6 +113,7 @@ class CodeAdmin(ImportExportModelAdmin):
     list_display = ['code_id', 'field_id', 'label_en', 'label_fr']
     search_fields = ['code_id', 'label_en', 'label_fr']
     list_filter = [('field_id', admin.RelatedOnlyFieldListFilter)]
+    save_as = True
 
 
 admin.site.register(Search, SearchAdmin)

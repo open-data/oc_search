@@ -15,7 +15,7 @@
             </div>
         </div>
 
-         <div class="mrgn-bttm-md form-inline">
+         <div class="mrgn-bttm-lg form-inline">
              <div class="row">
                 <div class="col-md-6 col-sm-12">
                     <div class="input-group">
@@ -25,7 +25,7 @@
                                value="{{ search_text }}" placeholder="{% translate 'Search' %}"
                                aria-label="{% translate 'Search' %}" size="60" />
                         <span class="input-group-btn">
-                             <label for="od-search-button" class="wb-inv">{% translate "Search" %}</label>
+                             <label for="search-button" class="wb-inv">{% translate "Search" %}</label>
                              <button type="button" class="btn btn-primary btn-small form-submit" id="search-button" onclick="submitForm();"
                                      style="padding: 6px 12px">{% translate "Search" %}
                             </button>
@@ -34,7 +34,7 @@
                 </div>
                 <div class="col-md-6 col-sm-12">
                     <div class="form-group">
-                        <label for="sort-by" class="control-label">{% translate "Order By" %}</label>
+                        <label for="sort" class="control-label">{% translate "Order By" %}</label>
                         <select class="form-control" name="sort" id="sort" value="{{ sort }}" onchange="submitForm();">
                             {% for option, label in sort_options.items %}}
                         <option value="{{ option }}" {% if sort == option %}selected="selected"{% endif %}
@@ -116,10 +116,12 @@
                 class="glyphicon glyphicon-download-alt"></span> {% translate 'Download Search Results' %}{% if total_hits > 100000 %}<br>{% translate '(100,000 row limit)' %}{% endif %}</a>
         </div>
         <div>
-            <a href="{{ download_ds_url_en }}" class="list-group-item aurora-list-group-item-info text-center">{% translate 'Download Complete Dataset' %}</a>
+            <a href="{{ download_ds_url }}" class="list-group-item aurora-list-group-item-info text-center">{{ download_ds_text }}</a>
         </div>
     </aside>
+
      <aside>
+         <div class="mrgn-tp-md"><h2><span class="glyphicon glyphicon-filter" aria-hidden="true"></span> {% translate 'Filters:' %}</h2></div>
             <div>
                 {% for key, value in facets.items %}
                 {% if key in facet_snippets.keys %}
@@ -127,7 +129,7 @@
                 {% else %}
                 <details class="panel panel-default mrgn-bttm-0 provisional gc-chckbxrdio"{% if  selected_facets|get_dict_value:key|length > 0 %}open{% endif %}>
                     <summary class="panel-heading">
-                       <h5 class="panel-title">{{ value|get_dict_value:'__label__' }}</h5>
+                       <h3 class="panel-title">{{ value|get_dict_value:'__label__' }}</h3>
                     </summary>
                     <ul class="list-group">
                     {% if key in reversed_facets %}

@@ -111,6 +111,12 @@ class Command(BaseCommand):
                     total += 1
                     cycle += 1
 
+                    # Call plugins if they exist for this search type. This is where a developer can introduce
+                    # code to customize the data that is loaded into Solr for a particular search.
+                    search_type_plugin = 'search.plugins.{0}'.format(options['search'])
+                    if search_type_plugin in self.discovered_plugins:
+                        if not self.discovered_plugins[search_type_plugin].filter_csv_record(csv_record, self.search_target, self.csv_fields, self.field_codes, 'NTR' if options['nothing_to_report'] else ''):
+                            continue
                     # Create a dictionary for each record loaded into  Solr
                     solr_record = {'format': 'NTR' if options['nothing_to_report'] else 'DEFAULT'}
                     for csv_field in csv_reader.fieldnames:
@@ -121,7 +127,15 @@ class Command(BaseCommand):
                         if csv_field == 'owner_org_title':
                             continue
 
-                        solr_record[csv_field] = csv_record[csv_field]
+                        # Handle multi-valued fields here
+                        if self.csv_fields[csv_field].solr_field_multivalued:
+                            solr_record[csv_field] = csv_record[csv_field].split(',')
+                            # Copy fields fo report cannot use multi-values - so directly populate with original string
+                            if self.csv_fields[csv_field].solr_field_export:
+                                for extra_field in self.csv_fields[csv_field].solr_field_export.split(','):
+                                    solr_record[extra_field] = csv_record[csv_field]
+                        else:
+                            solr_record[csv_field] = csv_record[csv_field]
 
                         # Automatically expand out dates and numbers for use with Solr export handler
                         if self.csv_fields[csv_field].solr_field_type == 'pdate':
@@ -159,12 +173,25 @@ class Command(BaseCommand):
                         # Lookup the expanded code value from the codes dict of dict
                         if csv_field in self.field_codes:
                             if csv_record[csv_field]:
-                                if csv_record[csv_field].lower() in self.field_codes[csv_field]:
-                                    solr_record[csv_field + '_en'] = self.field_codes[csv_field][csv_record[csv_field].lower()].label_en
-                                    solr_record[csv_field + '_fr'] = self.field_codes[csv_field][csv_record[csv_field].lower()].label_fr
+
+                                if self.csv_fields[csv_field].solr_field_multivalued:
+                                    codes_en = []
+                                    codes_fr = []
+                                    for code_value in csv_record[csv_field].split(","):
+                                        if code_value.lower() in self.field_codes[csv_field]:
+                                            codes_en.append(self.field_codes[csv_field][code_value.lower()].label_en)
+                                            codes_fr.append(self.field_codes[csv_field][code_value.lower()].label_fr)
+                                        else:
+                                            self.logger.info("Unknown code value: {0} for field: {1}".format(code_value, csv_field))
+                                    solr_record[csv_field + '_en'] = codes_en
+                                    solr_record[csv_field + '_fr'] = codes_fr
                                 else:
-                                    self.logger.info("Unknown code value: {0} for field: {1}".format(csv_record[csv_field],
-                                                                                                     csv_field))
+                                    if csv_record[csv_field].lower() in self.field_codes[csv_field]:
+                                        solr_record[csv_field + '_en'] = self.field_codes[csv_field][csv_record[csv_field].lower()].label_en
+                                        solr_record[csv_field + '_fr'] = self.field_codes[csv_field][csv_record[csv_field].lower()].label_fr
+                                    else:
+                                        self.logger.info("Unknown code value: {0} for field: {1}".format(csv_record[csv_field],
+                                                                                                         csv_field))
 
                     # Set the Solr ID field (Nothing To Report records are excluded)
                     if not options['nothing_to_report']:
@@ -183,7 +210,6 @@ class Command(BaseCommand):
 
                     # Call plugins if they exist for this search type. This is where a developer can introduce
                     # code to customize the data that is loaded into Solr for a particular search.
-                    search_type_plugin = 'search.plugins.{0}'.format(options['search'])
                     if search_type_plugin in self.discovered_plugins:
                         solr_record = self.discovered_plugins[search_type_plugin].load_csv_record(csv_record, solr_record, self.search_target, self.csv_fields, self.field_codes, 'NTR' if options['nothing_to_report'] else '')
 

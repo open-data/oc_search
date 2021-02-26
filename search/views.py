@@ -12,6 +12,7 @@ from .query import calc_pagination_range, calc_starting_row, create_solr_query, 
 from search.models import Search, Field, Code
 import search.plugins
 from SolrClient import SolrClient, SolrResponse
+from SolrClient.exceptions import ConnectionError, SolrError
 from time import time
 
 
@@ -23,7 +24,7 @@ def iter_namespace(ns_pkg):
     return pkgutil.iter_modules(ns_pkg.__path__, ns_pkg.__name__ + ".")
 
 
-def get_error_context(search_type: str, lang: str):
+def get_error_context(search_type: str, lang: str, error_msg=""):
     return {
         "language": lang,
         "LANGUAGE_CODE": lang,
@@ -39,7 +40,9 @@ def get_error_context(search_type: str, lang: str):
         "footer_snippet": "search_snippets/default_footer.html",
         "body_js_snippet": "",
         "info_message_snippet": "search_snippets/default_info_message.html",
-        "about_message_snippet": "search_snippets/default_about_message.html"
+        "about_message_snippet": "search_snippets/default_about_message.html",
+        "DEBUG": settings.DEBUG,
+        "exception_message": error_msg
     }
 
 
@@ -185,11 +188,13 @@ class SearchView(View):
         if search_type in self.searches:
             context = self.default_context(request, search_type, lang)
             context["search_item_snippet"] = self.searches[search_type].search_item_snippet
-            context["download_ds_url_en"] = self.searches[search_type].dataset_download_url_fr if lang == 'fr' else self.searches[search_type].dataset_download_url_en
+            context["download_ds_url"] = self.searches[search_type].dataset_download_url_fr if lang == 'fr' else self.searches[search_type].dataset_download_url_en
+            context["download_ds_text"] = self.searches[search_type].dataset_download_text_fr if lang == 'fr' else self.searches[search_type].dataset_download_text_en
             context["search_text"] = request.GET.get("search_text", "")
             context["id_fields"] = self.searches[search_type].id_fields.split(',') if self.searches[
                 search_type].id_fields else []
             context["export_path"] = "{0}export?{1}".format(request.META["PATH_INFO"], request.META["QUERY_STRING"])
+            context['about_msg'] = self.searches[search_type].about_message_fr if lang == 'fr' else self.searches[search_type].about_message_en
 
             solr = SolrClient(settings.SOLR_SERVER_URL)
 
@@ -206,9 +211,21 @@ class SearchView(View):
                     reversed_facets.append(facet)
             context['reversed_facets'] = reversed_facets
 
+            # Determine a default sort  - only used by the query if a valid sort order is not specified. Use the
+            # first soft specified in the search model, or use score if nothing is specified
+
+            default_sort_order = 'score desc'
+            if request.LANGUAGE_CODE == 'fr':
+                if self.searches[search_type].results_sort_order_fr:
+                    default_sort_order = self.searches[search_type].results_sort_order_fr.split(',')[0]
+            else:
+                if self.searches[search_type].results_sort_order_en:
+                    default_sort_order = self.searches[search_type].results_sort_order_en.split(',')[0]
+
             solr_query = create_solr_query(request, self.searches[search_type], self.fields[search_type],
                                            self.codes_fr if lang == 'fr' else self.codes_en,
-                                           facets, start_row, 10, record_id='', export=False, highlighting=True)
+                                           facets, start_row, 10, record_id='', export=False, highlighting=True,
+                                           default_sort=default_sort_order)
 
             # Call  plugin pre-solr-query if defined
             search_type_plugin = 'search.plugins.{0}'.format(search_type)
@@ -224,77 +241,79 @@ class SearchView(View):
 
             # Query Solr
 
-            solr_response = solr.query(core_name, solr_query, highlight=True)
+            try:
+                solr_response = solr.query(core_name, solr_query, highlight=True)
 
-            # Call  plugin post-solr-query if it exists
-            if search_type_plugin in self.discovered_plugins:
-                context, solr_response = self.discovered_plugins[search_type_plugin].post_search_solr_query(
-                    context,
-                    solr_response,
-                    solr_query,
-                    request,
-                    self.searches[search_type], self.fields[search_type],
-                    self.codes_fr if lang == 'fr' else self.codes_en,
-                    facets,
-                    '')
+                # Call  plugin post-solr-query if it exists
+                if search_type_plugin in self.discovered_plugins:
+                    context, solr_response = self.discovered_plugins[search_type_plugin].post_search_solr_query(
+                        context,
+                        solr_response,
+                        solr_query,
+                        request,
+                        self.searches[search_type], self.fields[search_type],
+                        self.codes_fr if lang == 'fr' else self.codes_en,
+                        facets,
+                        '')
 
-            if len(facets) > 0:
-                # Facet search results
-                context['facets'] = solr_response.get_facets()
-                # Get the selected facets from the search URL
-                selected_facets = {}
+                if len(facets) > 0:
+                    # Facet search results
+                    context['facets'] = solr_response.get_facets()
+                    # Get the selected facets from the search URL
+                    selected_facets = {}
 
-                for request_field in request.GET.keys():
-                    if request_field in self.fields[search_type] and request_field in context['facets']:
-                        selected_facets[request_field] = request.GET.get(request_field, "").split('|')
-                context['selected_facets'] = selected_facets
-                # Provide human friendly facet labels to the web page and any custom snippets
-                facets_custom_snippets = {}
-                for f in context['facets']:
-                    context['facets'][f]['__label__'] = self.fields[search_type][f].label_fr if lang == 'fr' else self.fields[search_type][f].label_en
-                    if self.fields[search_type][f].solr_facet_snippet:
-                        facets_custom_snippets[f] = self.fields[search_type][f].solr_facet_snippet
-                context['facet_snippets'] = facets_custom_snippets
-            else:
-                context['facets'] = []
-                context['selected_facets'] = []
-            context['total_hits'] = solr_response.num_found
-            context['docs'] = solr_response.get_highlighting()
+                    for request_field in request.GET.keys():
+                        if request_field in self.fields[search_type] and request_field in context['facets']:
+                            selected_facets[request_field] = request.GET.get(request_field, "").split('|')
+                    context['selected_facets'] = selected_facets
+                    # Provide human friendly facet labels to the web page and any custom snippets
+                    facets_custom_snippets = {}
+                    for f in context['facets']:
+                        context['facets'][f]['__label__'] = self.fields[search_type][f].label_fr if lang == 'fr' else self.fields[search_type][f].label_en
+                        if self.fields[search_type][f].solr_facet_snippet:
+                            facets_custom_snippets[f] = self.fields[search_type][f].solr_facet_snippet
+                    context['facet_snippets'] = facets_custom_snippets
+                else:
+                    context['facets'] = []
+                    context['selected_facets'] = []
+                context['total_hits'] = solr_response.num_found
+                context['docs'] = solr_response.get_highlighting()
 
-            # Prepare a dictionary of language appropriate sort options
-            sort_options = {}
-            sort_labels = self.searches[search_type].results_sort_order_display_fr.split(',') if lang == 'fr' else self.searches[search_type].results_sort_order_display_en.split(',')
-            if lang == 'fr':
-                for i, v in enumerate(self.searches[search_type].results_sort_order_fr.split(',')):
-                    sort_options[v] = str(sort_labels[i]).strip()
-            else:
-                for i, v in enumerate(self.searches[search_type].results_sort_order_en.split(',')):
-                    sort_options[v] = str(sort_labels[i]).strip()
-            context['sort_options'] = sort_options
-            context['sort'] = solr_query['sort']
+                # Prepare a dictionary of language appropriate sort options
+                sort_options = {}
+                sort_labels = self.searches[search_type].results_sort_order_display_fr.split(',') if lang == 'fr' else self.searches[search_type].results_sort_order_display_en.split(',')
+                if lang == 'fr':
+                    for i, v in enumerate(self.searches[search_type].results_sort_order_fr.split(',')):
+                        sort_options[v] = str(sort_labels[i]).strip()
+                else:
+                    for i, v in enumerate(self.searches[search_type].results_sort_order_en.split(',')):
+                        sort_options[v] = str(sort_labels[i]).strip()
+                context['sort_options'] = sort_options
+                context['sort'] = solr_query['sort']
 
-            # Add code information
-            context['codes'] = self.codes_fr if lang == 'fr' else self.codes_en
+                # Add code information
+                context['codes'] = self.codes_fr if lang == 'fr' else self.codes_en
 
-            # Save display fields
-            context['default_display_fields'] = self.display_fields_fr[search_type] if lang == 'fr' else self.display_fields_en[search_type]
-            context['display_field_name'] = self.display_fields_names_fr[search_type] if lang == 'fr' else self.display_fields_names_en[search_type]
+                # Save display fields
+                context['default_display_fields'] = self.display_fields_fr[search_type] if lang == 'fr' else self.display_fields_en[search_type]
+                context['display_field_name'] = self.display_fields_names_fr[search_type] if lang == 'fr' else self.display_fields_names_en[search_type]
 
-            # Calculate pagination for the search page
-            context['pagination'] = calc_pagination_range(solr_response.num_found, 10, page)
-            context['previous_page'] = (1 if page == 1 else page - 1)
-            last_page = (context['pagination'][len(context['pagination']) - 1] if len(context['pagination']) > 0 else 1)
-            last_page = (1 if last_page < 1 else last_page)
-            context['last_page'] = last_page
-            next_page = page + 1
-            next_page = (last_page if next_page > last_page else next_page)
-            context['next_page'] = next_page
-            context['currentpage'] = page
+                # Calculate pagination for the search page
+                context['pagination'] = calc_pagination_range(solr_response.num_found, 10, page)
+                context['previous_page'] = (1 if page == 1 else page - 1)
+                last_page = (context['pagination'][len(context['pagination']) - 1] if len(context['pagination']) > 0 else 1)
+                last_page = (1 if last_page < 1 else last_page)
+                context['last_page'] = last_page
+                next_page = page + 1
+                next_page = (last_page if next_page > last_page else next_page)
+                context['next_page'] = next_page
+                context['currentpage'] = page
 
-            return render(request, self.searches[search_type].page_template, context)
+                return render(request, self.searches[search_type].page_template, context)
+            except (ConnectionError, SolrError) as ce:
+                return render(request, 'error.html', get_error_context(search_type, lang, ce.args[0]))
 
         else:
-
             return render(request, '404.html', get_error_context(search_type, lang))
 
 

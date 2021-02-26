@@ -192,6 +192,7 @@ MARKDOWN_FILTER_WHITELIST_TAGS = [
     'strong',
     'table', 'thead', 'th', 'tr', 'tbody', 'td'
 ]
+MARKDOWN_FILTER_EXTRAS = ["tables", "break-on-newline"]
 
 SESSION_ENGINE="django.contrib.sessions.backends.file"
 SESSION_FILE_PATH = os.path.join(BASE_DIR, 'session')

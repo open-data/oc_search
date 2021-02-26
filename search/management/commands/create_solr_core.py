@@ -123,6 +123,8 @@ class Command(BaseCommand):
                                      "stored": True,
                                      "indexed": True,
                                      "docValues": True}
+                    if solr_field.solr_field_multivalued:
+                        new_loc_field['multiValued'] = True
                     self._add_or_update_solr_field(solr, solr_core, new_loc_field)
                     new_loc_field["name"] = "{0}_fr".format(solr_field.field_id)
                     self._add_or_update_solr_field(solr, solr_core, new_loc_field)
@@ -134,6 +136,8 @@ class Command(BaseCommand):
                                          "stored": True,
                                          "indexed": True,
                                          "docValues": False}
+                        if solr_field.solr_field_multivalued:
+                            new_loc_field['multiValued'] = True
                         self._add_or_update_solr_field(solr, solr_core, new_loc_field)
                         export_copy_field = {'source': solr_field.field_id,
                                              'dest': extra_field}
@@ -157,13 +161,14 @@ class Command(BaseCommand):
                                         "indexed": False,
                                         "docValues": True
                                         }
+
                         export_copy_field = {'source': solr_field.field_id,
                                              'dest': export_field_name}
                         self._add_or_update_solr_field(solr, solr_core, export_field)
-                        if not solr.schema.does_copy_field_exist(solr_core, solr_field.field_id,
-                                                                 export_field_name):
-                            solr.schema.create_copy_field(solr_core, export_copy_field)
-                        extra_copy_fields.append(export_field['name'])
+                        if not solr.schema.does_copy_field_exist(solr_core, solr_field.field_id, export_field_name):
+                            if not solr_field.solr_field_multivalued:
+                                solr.schema.create_copy_field(solr_core, export_copy_field)
+                                extra_copy_fields.append(export_field['name'])
 
                 # Update the Field db record with the list of copy fields
                 solr_field.solr_extra_fields = ",".join(extra_copy_fields)

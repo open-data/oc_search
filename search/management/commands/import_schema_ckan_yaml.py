@@ -23,14 +23,14 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('--yaml_file', type=str, help='Filepath for the CKAN recombinant YAML file', required=True)
-        parser.add_argument('--search_id', type=str, help='A unique code identifier for the Search', required=True)
+        parser.add_argument('--search', type=str, help='A unique code identifier for the Search', required=True)
         parser.add_argument('--title_en', type=str, help='An English title to use for the search', required=True)
         parser.add_argument('--title_fr', type=str, help='A French title to use for the search', required=True)
         parser.add_argument('--reset', action='store_true', required=False, default=False,
                             help='Flag to overwrite previous Search settings that were loaded. '
                                  'By default the search is  updated, not overwritten')
 
-    def process_yaml_field(self, search, yaml_field, reset=False, is_ntr=False):
+    def process_yaml_field(self, search, yaml_field, resource_name, reset=False, is_ntr=False):
         '''
         Process a field record from the YAML file
         :param search: Unique search identifier
@@ -45,6 +45,7 @@ class Command(BaseCommand):
             field, created = Field.objects.get_or_create(field_id=yaml_field['datastore_id'],
                                                          search_id=search)
             field.search_id = search
+            field.format_name = resource_name
             if isinstance(yaml_field['label'], str):
                 field.label_en = yaml_field['label']
                 field.label_fr = yaml_field['label']
@@ -126,26 +127,7 @@ class Command(BaseCommand):
         field.solr_field_indexed = True
         field.default_export_value = "str|-"
         field.solr_field_is_coded = True
-        field.save()
-
-        field, created = Field.objects.get_or_create(field_id='owner_org_en', search_id=search)
-        field.solr_field_type = 'string'
-        field.solr_field_lang = 'en'
-        field.label_en = 'Organization'
-        field.label_fr = "Organisation"
-        field.solr_field_stored = True
-        field.solr_field_indexed = True
-        field.default_export_value = "str|-"
-        field.save()
-
-        field, created = Field.objects.get_or_create(field_id='owner_org_fr', search_id=search)
-        field.solr_field_type = 'string'
-        field.solr_field_lang = 'fr'
-        field.label_en = 'Organization'
-        field.label_fr = "Organisation"
-        field.solr_field_stored = True
-        field.solr_field_indexed = True
-        field.default_export_value = "str|-"
+        field.alt_format = 'ALL;'
         field.save()
 
     def add_format_field(selfself, search):
@@ -159,7 +141,6 @@ class Command(BaseCommand):
         field.default_export_value = "str|-"
         field.save()
 
-
     def handle(self, *args, **options):
 
         # Verify file exists, then load YAML
@@ -168,7 +149,7 @@ class Command(BaseCommand):
             try:
                 with open(options['yaml_file'], 'r', encoding='utf-8-sig', errors="ignore") as yaml_file:
                     schema = load(yaml_file, Loader=FullLoader)
-                    search, created = Search.objects.get_or_create(search_id=options['search_id'])
+                    search, created = Search.objects.get_or_create(search_id=options['search'])
                     search.label_en = options['title_en']
                     search.label_fr = options['title_fr']
                     # Set the ID according to the datastore_primary_key fields
@@ -177,12 +158,12 @@ class Command(BaseCommand):
 
                     # Process regular PD data file fields
                     for yaml_field in schema['resources'][0]['fields']:
-                        self.process_yaml_field(search, yaml_field, options['reset'], is_ntr=False)
+                        self.process_yaml_field(search, yaml_field, schema['resources'][0]['resource_name'], options['reset'], is_ntr=False)
 
                     # Process Nothing To report fields if present
                     if len(schema['resources']) > 1:
                         for yaml_field in schema['resources'][1]['fields']:
-                            self.process_yaml_field(search, yaml_field, options['reset'], is_ntr=True)
+                            self.process_yaml_field(search, yaml_field, schema['resources'][1]['resource_name'], options['reset'], is_ntr=True)
 
                     # always add default organization fields
                     self.add_org_fields(search)

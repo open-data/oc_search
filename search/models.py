@@ -6,13 +6,22 @@ class Search(models.Model):
     """
     Stores metadata about a Search application, related to :model: 'search.Field' and :model: 'search.Code'.
     """
-    search_id = models.CharField(primary_key=True, max_length=32, unique=True)
-    label_en = models.CharField(blank=False, max_length=132)
-    label_fr = models.CharField(blank=False, max_length=132)
-    desc_en = models.TextField(blank=True, default="")
-    desc_fr = models.TextField(blank=True, default="")
+    search_id = models.CharField(primary_key=True, max_length=32, unique=True, verbose_name="Search ID")
+    label_en = models.CharField(blank=False, max_length=132, verbose_name="Search Title (English)")
+    label_fr = models.CharField(blank=False, max_length=132, verbose_name="Search Title (Françias)")
+    desc_en = models.TextField(blank=True, default="", help_text="Brief description of the search (in English)",
+                               verbose_name="Description (English)")
+    desc_fr = models.TextField(blank=True, default="", help_text="Brief description of the search (en Français)",
+                               verbose_name="Description (Françias)")
+    about_message_en = models.TextField(blank=True, default="", help_text="Informational message displayed at the top "
+                                                                          "of the search page. Uses Markdown (in English)",
+                                        verbose_name="About the search message (English)")
+    about_message_fr = models.TextField(blank=True, default="", help_text="Informational message displayed at the top "
+                                                                          "of the search page. Uses Markdown (en Français)",
+                                        verbose_name="About the search message (Français)")
     imported_on = models.DateTimeField(blank=True, null=True, help_text="If an import script is used to create the "
-                                                                        "search, this is the last date it was run.")
+                                                                        "search, this is the last date it was run.",
+                                       verbose_name="Last imported on")
     solr_core_name = models.CharField(blank=False, default="solr_core", max_length=64, verbose_name="Solr Core name")
     results_page_size = models.IntegerField(blank=False, default=10, verbose_name="No. of Search Results Per Page")
     results_sort_order_en = models.CharField(blank=False, max_length=132, default="score desc", verbose_name="Sort-by Categories (English)")
@@ -21,25 +30,39 @@ class Search(models.Model):
     results_sort_order_display_fr = models.CharField(blank=False, max_length=200, default="Pertinence", verbose_name="Sort-by Category Labels (Français)")
     page_template = models.CharField(blank=False, default="search.html", max_length=132, verbose_name="Search Page Template")
     record_template = models.CharField(blank=False, default="record.html", max_length=132, verbose_name="Record Page Template")
-    breadcrumb_snippet = models.CharField(blank=False, default="search_snippets/default_breadcrumb.html", max_length=132)
-    footer_snippet = models.CharField(blank=False, default="search_snippets/default_footer.html", max_length=132)
-    info_message_snippet = models.CharField(blank=False, default="search_snippets/default_info_message.html", max_length=250)
-    about_message_snippet = models.CharField(blank=False, default="search_snippets/default_about_message.html", max_length=250)
-    header_js_snippet = models.CharField(blank=True, default="search_snippets/default_header.js", max_length=250)
-    header_css_snippet = models.CharField(blank=True, default="search_snippets/default_header.css", max_length=250)
-    body_js_snippet = models.CharField(blank=True, default="", max_length=250)
-    search_item_snippet = models.CharField(blank=True, default="search_snippets/default_search_item.html", max_length=250, verbose_name="Custom Search Item snippet",
-                                          help_text="Recommended custom snippet to used to display individual search result records on the search page")
+    breadcrumb_snippet = models.CharField(blank=False, default="search_snippets/default_breadcrumb.html", max_length=132,
+                                          verbose_name="Breadcrumb Snippet Path")
+    footer_snippet = models.CharField(blank=False, default="search_snippets/default_footer.html", max_length=132,
+                                      verbose_name="Footer Snippet Path")
+    info_message_snippet = models.CharField(blank=False, default="search_snippets/default_info_message.html", max_length=250,
+                                            verbose_name="Search Information Message Snippet Path")
+    about_message_snippet = models.CharField(blank=False, default="search_snippets/default_about_message.html", max_length=250,
+                                             verbose_name="About Search Message Snippet Path")
+    header_js_snippet = models.CharField(blank=True, default="search_snippets/default_header.js", max_length=250,
+                                         verbose_name="Custom Javascript for Header file path")
+    header_css_snippet = models.CharField(blank=True, default="search_snippets/default_header.css", max_length=250,
+                                          verbose_name="Custom CSS file path")
+    body_js_snippet = models.CharField(blank=True, default="", max_length=250, verbose_name="Custom Javascript for Body file path")
+    search_item_snippet = models.CharField(blank=True, default="search_snippets/default_search_item.html", max_length=250,
+                                           verbose_name="Custom Search Item snippet",
+                                           help_text="Recommended custom snippet to used to display individual search result records on the search page")
     record_detail_snippet = models.CharField(blank=True, default="", max_length=250, verbose_name="Custom Record snippet",
-                                          help_text="Optional custom snippet to used to display individual records")
-    record_breadcrumb_snippet = models.CharField(blank=True, default="search_snippets/default_record_breadcrumb.html", max_length=250, verbose_name="Custom Record Breadcrumb snippet",
-                                          help_text="Optional custom breadcrumb snippet for the records page")
+                                             help_text="Optional custom snippet to used to display individual records")
+    record_breadcrumb_snippet = models.CharField(blank=True, default="search_snippets/default_record_breadcrumb.html", max_length=250,
+                                                 verbose_name="Custom Record Breadcrumb snippet",
+                                                 help_text="Optional custom breadcrumb snippet for the records page")
     dataset_download_url_en = models.URLField(verbose_name="Download Dataset URL (English)", default="https://open.canada.ca")
-    dataset_download_url_fr = models.URLField(verbose_name="Download Dataset URL (Fench)", default="https://ouvert.canada.ca")
-    id_fields = models.CharField(blank=True, default="", max_length=132, help_text="Comma separated list of fields that form the Solr primiary key")
-    alt_formats = models.CharField(blank=True, default="", max_length=132, help_text="Comma separated list of alternate record formst, for example NTR (Nothing to Report)")
-    mlt_enabled = models.BooleanField(blank=True, default=False, verbose_name="Enable More-Like-This", help_text="Indicate if the this search will be using Solr's 'More Like This' functionality")
-    mlt_items = models.IntegerField(blank=True, default=10, verbose_name="No. Items returned for More-Like-This", help_text="Number of itemsto show on the More-Like-This search results page. Default is 10")
+    dataset_download_url_fr = models.URLField(verbose_name="Download Dataset URL (French)", default="https://ouvert.canada.ca")
+    dataset_download_text_en = models.CharField(blank=True, default="Download Complete Dataset", max_length=100, verbose_name="Download Dataset Link Text (English)")
+    dataset_download_text_fr = models.CharField(blank=True, default="Télécharger le jeu de données complet", max_length=100, verbose_name="Download Dataset Link Text (Frrançais)")
+    id_fields = models.CharField(blank=True, default="", max_length=132, help_text="Comma separated list of fields that form the Solr primiary key",
+                                 verbose_name="Unique ID Definition")
+    alt_formats = models.CharField(blank=True, default="", max_length=132, verbose_name="Alternate Record Formats",
+                                   help_text="Comma separated list of alternate record formst, for example NTR (Nothing to Report)")
+    mlt_enabled = models.BooleanField(blank=True, default=False, verbose_name="Enable More-Like-This",
+                                      help_text="Indicate if the this search will be using Solr's 'More Like This' functionality")
+    mlt_items = models.IntegerField(blank=True, default=10, verbose_name="No. Items returned for More-Like-This",
+                                    help_text="Number of itemsto show on the More-Like-This search results page. Default is 10")
 
     def __str__(self):
         return '%s (%s)' % (self.label_en, self.search_id)
@@ -68,6 +91,7 @@ class Field(models.Model):
     id = models.AutoField(primary_key=True)
     field_id = models.CharField(blank=False, max_length=64, verbose_name="Unique Field Identifier")
     search_id = models.ForeignKey(Search, on_delete=models.CASCADE)
+    format_name = models.CharField(default='', max_length=132, verbose_name="Format Name")
     label_en = models.CharField(blank=False, max_length=132, verbose_name="Engliah Label")
     label_fr = models.CharField(blank=False, max_length=132, verbose_name="French Label")
     solr_field_type = models.CharField(blank=False, choices=SOLR_FIELD_TYPES, default='string', max_length=20,
@@ -88,29 +112,25 @@ class Field(models.Model):
     solr_field_indexed = models.BooleanField(blank=False, default=True, verbose_name="Field is indexed on Solr")
     solr_field_multivalued = models.BooleanField(blank=False, default=False, verbose_name="Field supports multiple values")
     solr_field_is_currency = models.BooleanField(blank=False, default=False, verbose_name="Is a monetary field")
-
     is_search_facet = models.BooleanField(blank=False, default=False, help_text="Is a search facet field, should never have blank values",
                                           verbose_name="Search Facet field")
-    solr_facet_sort = models.CharField(blank=True, max_length=5, choices=[
-        ('count', 'By highest count'),
-        ('index', 'Lexicographic order')],
-                                       default='count',
+    solr_facet_sort = models.CharField(blank=True, max_length=5, choices=[('count', 'By highest count'), ('index', 'Lexicographic order')],
+                                       default='count', verbose_name="Sort Order",
                                        help_text='Select facet sort order when field is used as a facet field')
     solr_facet_limit = models.IntegerField(blank=True, default=100, help_text='Maximum number of facet values to return',
-                                          validators=[MinValueValidator(-1), MaxValueValidator(250)])
+                                           validators=[MinValueValidator(-1), MaxValueValidator(250)],
+                                           verbose_name="Facet Item Maximum")
     solr_facet_snippet = models.CharField(blank=True, default="", max_length=250, verbose_name="Custom facet snippet",
                                           help_text="Optional custom snippet to use if the field is a facet filter")
     solr_facet_display_reversed = models.BooleanField(blank=False, default=False, verbose_name="Display Facet in Reversed Orderd")
     solr_facet_display_order = models.IntegerField(blank=True, default=0, verbose_name="Facet Display Order",
                                                    help_text="Ordered place in which to display the facets on the page, if this field is a facet")
-
     alt_format = models.CharField(blank=True, default='', max_length=30, verbose_name="Alternate Record Type",
                                   help_text="This field is part of an alternate format (e.g. Nothing To Report). Use 'ALL' if the field appears in all formats")
     is_default_display = models.BooleanField(blank=False, default=False, verbose_name="Default search item field",
                                              help_text="Include field in default search item template")
     default_export_value = models.CharField(blank=True, default='str|-', verbose_name="Default value for empty fields", max_length=132,
                                          help_text="A default value used for empty or blank values. Examples: str:-, int:0, date:2000-01-01T00:00:00Z. ")
-
     is_default_year = models.BooleanField(blank=False, default=False, verbose_name="Field is the search's default year field")
     is_default_month = models.BooleanField(blank=False, default=False, verbose_name="Field is the search's default month field")
 
@@ -130,8 +150,8 @@ class Code(models.Model):
     id = models.AutoField(primary_key=True)
     code_id = models.CharField(blank=False, max_length=32, verbose_name="Unique code Identifier")
     field_id = models.ForeignKey(Field, on_delete=models.CASCADE)
-    label_en = models.CharField(blank=False, max_length=132)
-    label_fr = models.CharField(blank=False, max_length=132)
+    label_en = models.CharField(blank=False, max_length=132, verbose_name="English Code Value")
+    label_fr = models.CharField(blank=False, max_length=132, verbose_name="French Code Value")
 
     class Meta:
         unique_together = (('field_id', 'code_id'),)

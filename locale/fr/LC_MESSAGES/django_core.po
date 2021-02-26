@@ -234,4 +234,6 @@ msgstr "Recherche des dossiers similaires"
 msgid "Expenditures for year ended March 31, %(doc_year) ($ thousands)"
 msgstr "Dépenses pour l'exercice se terminant le 31 mars %(doc_year) (en milliers de dollars)"
 
+msgid "Filters:"
+msgstr "Filtres :"
 

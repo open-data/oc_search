@@ -202,3 +202,10 @@ def friendly_currency(value: int, currency_locale_str: str):
     currency_locale = currency_locale_str.split(",")
     return format_currency(value, currency=currency_locale[0], locale=currency_locale[1])
 
+
+@register.filter('is_list')
+def is_list(value):
+    if type(value) == list:
+        return True
+    else:
+        return False
