@@ -115,8 +115,11 @@ class Command(BaseCommand):
                     # code to customize the data that is loaded into Solr for a particular search.
                     search_type_plugin = 'search.plugins.{0}'.format(options['search'])
                     if search_type_plugin in self.discovered_plugins:
-                        if not self.discovered_plugins[search_type_plugin].filter_csv_record(csv_record, self.search_target, self.csv_fields, self.field_codes, 'NTR' if options['nothing_to_report'] else ''):
+                        include, filtered_record = self.discovered_plugins[search_type_plugin].filter_csv_record(csv_record, self.search_target, self.csv_fields, self.field_codes, 'NTR' if options['nothing_to_report'] else '')
+                        if not include:
                             continue
+                        else:
+                            csv_record = filtered_record
                     # Create a dictionary for each record loaded into  Solr
                     solr_record = {'format': 'NTR' if options['nothing_to_report'] else 'DEFAULT'}
                     for csv_field in csv_reader.fieldnames:
@@ -221,7 +224,6 @@ class Command(BaseCommand):
                         for countdown in reversed(range(10)):
                             try:
                                 solr.index(self.solr_core, solr_items)
-                                #solr.commit(self.solr_core, softCommit=True)
                                 print("{0} rows processed".format(total))
                                 cycle = 0
                                 solr_items.clear()
@@ -239,7 +241,6 @@ class Command(BaseCommand):
                         try:
                             solr.index(self.solr_core, solr_items)
                             total += len(solr_items)
-                            #solr.commit(self.solr_core, softCommit=True)
                             print("{0} rows processed".format(cycle))
                             cycle = 0
                             solr_items.clear()
