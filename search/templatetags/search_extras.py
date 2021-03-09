@@ -209,3 +209,13 @@ def is_list(value):
         return True
     else:
         return False
+
+
+@register.filter(name='split')
+def split(value, key):
+    if type(value) == str:
+        return value.split(key)
+    elif type(value) == list:
+        return value
+    else:
+        return [value]
