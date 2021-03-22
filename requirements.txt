@@ -1,5 +1,5 @@
 Babel==2.8.0
-bleach==3.2.1
+bleach==3.3.0
 django-import-export == 2.4.0
 django-jazzmin==2.4.1
 django-redis-cache==3.0.0
