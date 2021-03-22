@@ -21,12 +21,12 @@
     <meta name="dcterms:service" content="OG-GO"/>
     <meta name="dcterms:accessRights" content="2"/>
     <meta name="dcterms:language" content="{{ dcterms_lang }}"/>
-    <meta name="dcterms:title" content="{% translate 'Open Government' %}"/>
+    <meta name="dcterms:title" content="{% translate 'Open Government Portal' %}"/>
     {% endblock %}
 
     <!-- Analytics -->
-    {% if analytics_js %}
-        <script src="{{ analytics_js }}"></script>
+    {% if not DEBUG %}
+        {% include 'search_snippets/site_analytics_head.html' %}
     {% endif %}
 
     <script src="https://www.canada.ca/etc/designs/canada/cdts/gcweb/{{ cdts_version }}/cdts/compiled/soyutils.js"></script>
@@ -78,6 +78,10 @@
 
 </head>
 <body class="home" vocab="http://schema.org/" typeof="WebPage">
+<!-- Analytics -->
+{% if not DEBUG %}
+    {% include 'search_snippets/site_analytics_body_top.html' %}
+{% endif %}
 <div id="def-top">
     <!-- Write closure fall-back static file -->
     {% if LANGUAGE_CODE == 'fr' %}
@@ -148,7 +152,9 @@
 {% endblock %}
 
 {% if body_js_snippet %}<script>{% include body_js_snippet %}</script>{% endif %}
-
+{% if not DEBUG %}
+    {% include 'search_snippets/site_analytics_body_bottom.html' %}
+{% endif %}
 </body>
 </html>
 {% endlanguage %}

@@ -2,10 +2,14 @@ Babel==2.8.0
 bleach==3.2.1
 django-import-export == 2.4.0
 django-jazzmin==2.4.1
+django-redis-cache==3.0.0
+django-redis-sessions==0.6.2
 django == 3.1.2
 docutils==0.16
 markdown2==2.3.10
 nltk==3.5
+psycopg2==2.8.6
 python-dateutil==2.8.1
+uWSGI==2.0.19.1; sys_platform == 'linux'
 git+https://github.com/thriuin/SolrClient.git@master
 

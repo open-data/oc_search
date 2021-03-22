@@ -150,8 +150,8 @@ class Code(models.Model):
     id = models.AutoField(primary_key=True)
     code_id = models.CharField(blank=False, max_length=32, verbose_name="Unique code Identifier")
     field_id = models.ForeignKey(Field, on_delete=models.CASCADE)
-    label_en = models.CharField(blank=False, max_length=132, verbose_name="English Code Value")
-    label_fr = models.CharField(blank=False, max_length=132, verbose_name="French Code Value")
+    label_en = models.CharField(blank=False, max_length=512, verbose_name="English Code Value")
+    label_fr = models.CharField(blank=False, max_length=2512, verbose_name="French Code Value")
 
     class Meta:
         unique_together = (('field_id', 'code_id'),)

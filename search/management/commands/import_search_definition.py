@@ -87,6 +87,9 @@ class Command(BaseCommand):
             imported_data = tablib.Dataset().load(json_file)
             result = search_resource.import_data(dataset=imported_data, dry_run=True)
             if result.has_errors():
+                errors = result.row_errors()
+                for err in errors:
+                    logging.info(err)
                 raise CommandError('Errors raised while importing Search')
             result = search_resource.import_data(dataset=imported_data, dry_run=False)
             if not result.has_errors():
@@ -99,6 +102,9 @@ class Command(BaseCommand):
             imported_data = tablib.Dataset().load(json_file)
             result = field_resource.import_data(dataset=imported_data, dry_run=True)
             if result.has_errors():
+                errors = result.row_errors()
+                for err in errors:
+                    logging.info(err)
                 raise CommandError('Errors raised while importing Fields')
             result = field_resource.import_data(dataset=imported_data, dry_run=False)
             if not result.has_errors():
@@ -112,6 +118,9 @@ class Command(BaseCommand):
                 imported_data = tablib.Dataset().load(json_file)
                 result = code_resource.import_data(dataset=imported_data, dry_run=True)
                 if result.has_errors():
+                    errors = result.row_errors()
+                    for err in errors:
+                        logging.info(err)
                     raise CommandError('Errors raised while importing Codes')
                 result = code_resource.import_data(dataset=imported_data, dry_run=False)
                 if not result.has_errors():

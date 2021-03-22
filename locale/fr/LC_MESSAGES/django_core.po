@@ -237,3 +237,6 @@ msgstr "Dépenses pour l'exercice se terminant le 31 mars %(doc_year) (en millie
 msgid "Filters:"
 msgstr "Filtres :"
 
+msgid "Open Government Portal"
+msgstr "Portail du gouvernement ouvert"
+

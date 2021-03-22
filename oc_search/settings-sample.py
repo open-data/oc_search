@@ -93,13 +93,21 @@ WSGI_APPLICATION = 'oc_search.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
+# The search application specifies a separate configuration for the main functions of the search application
+# Future plugins are free to add other databaes if required but should not use the default database, or
+# the default Database router defined in the db_router.py class, but should instead add their own router.
+
 DATABASES = {
     'default': {
+        'ENGINE': '',
+    },
+    'search': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 
+DATABASE_ROUTERS = ['search.db_router.SearchRouter']
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -194,6 +202,16 @@ MARKDOWN_FILTER_WHITELIST_TAGS = [
 ]
 MARKDOWN_FILTER_EXTRAS = ["tables", "break-on-newline"]
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
+}
+
 SESSION_ENGINE="django.contrib.sessions.backends.file"
 SESSION_FILE_PATH = os.path.join(BASE_DIR, 'session')
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+ADOBE_ANALYTICS_URL = ''
+GOOGLE_ANALYTICS_GTM_ID = ''
+GOOGLE_ANALYTICS_PROPERTY_ID = ''
