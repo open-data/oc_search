@@ -9,10 +9,10 @@
                 "lang": "{{ language_code | SwapLangCode }}",
                 {% if url_uses_path %}
                 "href": "/search/{{ language_code | SwapLangCode }}/{% if search_type %}{{ search_type }}/{% if query_path %}?{{ query_path }}{% endif %}{% endif %}",
-                {% else %
+                {% else %}
                   {% if language_code == 'en' %}
                 "href": "https://{{ url_host_fr }}/{{ url_host_path }}{% if search_type %}{{ search_type }}/{% if query_path %}?{{ query_path }}{% endif %}{% endif %}",
-                  {% else %}}
+                  {% else %}
                 "href": "https://{{ url_host_en }}/{{ url_host_path }}{% if search_type %}{{ search_type }}/{% if query_path %}?{{ query_path }}{% endif %}{% endif %}",
                   {% endif %}
                 {% endif %}
