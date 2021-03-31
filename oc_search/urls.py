@@ -46,11 +46,15 @@ if settings.SEARCH_LANG_USE_PATH:
     ]
 else:
     urlpatterns += [
-        path('search/', DefaultView.as_view(), name="HomePage"),
-        path('search/<str:search_type>/', SearchView.as_view(), name="SearchForm"),
-        path('search/record/<str:search_type>/<str:record_id>', name='RecordForm'),
-        path('search/<str:search_type>/record/<str:record_id>', RecordView.as_view(), name='RecordForm'),
-        path('search/<str:search_type>/export/', ExportView.as_view(), name='RecordForm'),
-        path('search/<str:search_type>/similar/<str:record_id>', MoreLikeThisView.as_view(), name='MLTForm'),
-        path('search/<str:search_type>/similaire/<str:record_id>', MoreLikeThisView.as_view(), name='MLTForm'),
+        path(settings.SEARCH_HOST_PATH, DefaultView.as_view(), name="HomePage"),
+        path(settings.SEARCH_HOST_PATH + '<str:search_type>/', SearchView.as_view(), name="SearchForm"),
+        path(settings.SEARCH_HOST_PATH + 'record/<str:search_type>/<str:record_id>', RecordView.as_view(),
+             name='RecordForm'),
+        path(settings.SEARCH_HOST_PATH + '<str:search_type>/record/<str:record_id>', RecordView.as_view(),
+             name='RecordForm'),
+        path(settings.SEARCH_HOST_PATH + '<str:search_type>/export/', ExportView.as_view(), name='RecordForm'),
+        path(settings.SEARCH_HOST_PATH + '<str:search_type>/similar/<str:record_id>', MoreLikeThisView.as_view(),
+             name='MLTForm'),
+        path(settings.SEARCH_HOST_PATH + '<str:search_type>/similaire/<str:record_id>', MoreLikeThisView.as_view(),
+             name='MLTForm'),
     ]

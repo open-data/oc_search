@@ -161,6 +161,7 @@ SOLR_COLLECTION = "SolrClient_unittest"
 
 SEARCH_EN_HOSTNAME = ''
 SEARCH_FR_HOSTNAME = ''
+SEARCH_HOST_PATH = ''
 SEARCH_LANG_USE_PATH = True
 
 # Active CDTS Version
