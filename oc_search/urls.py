@@ -18,19 +18,13 @@ from django.contrib import admin
 from django.urls import path
 from django.conf.urls import include
 from search.views import SearchView, RecordView, ExportView, MoreLikeThisView, HomeView, DefaultView
+from ramp.views import RampView
 
 
 urlpatterns = [
     path('search/admin/doc/', include('django.contrib.admindocs.urls')),
     path('search/admin/', admin.site.urls),
 ]
-
-# Enable Rosetta for translation
-if 'rosetta' in settings.INSTALLED_APPS:
-    import rosetta
-    urlpatterns += [
-        path('search/rosetta/', include('rosetta.urls'))
-    ]
 
 if settings.SEARCH_LANG_USE_PATH:
     urlpatterns += [
@@ -44,6 +38,13 @@ if settings.SEARCH_LANG_USE_PATH:
         path('search/<str:lang>/<str:search_type>/similar/<str:record_id>', MoreLikeThisView.as_view(), name='MLTForm'),
         path('search/<str:lang>/<str:search_type>/similaire/<str:record_id>', MoreLikeThisView.as_view(), name='MLTForm'),
     ]
+    if 'ramp' in settings.INSTALLED_APPS:
+        urlpatterns += [
+            path('openmap/<str:lang>/', RampView.as_view(), name='RampForm'),
+            path('openmap/<str:lang>/<str:keys>', RampView.as_view(), name='RampForm'),
+            path('carteouverte/<str:lang>/', RampView.as_view(), name='RampForm'),
+            path('carteouverte/<str:lang>/<str:keys>', RampView.as_view(), name='RampForm'),
+        ]
 else:
     urlpatterns += [
         path(settings.SEARCH_HOST_PATH, DefaultView.as_view(), name="HomePage"),
@@ -58,3 +59,11 @@ else:
         path(settings.SEARCH_HOST_PATH + '<str:search_type>/similaire/<str:record_id>', MoreLikeThisView.as_view(),
              name='MLTForm'),
     ]
+    if 'ramp' in settings.INSTALLED_APPS:
+        urlpatterns += [
+            path(settings.SEARCH_HOST_PATH + 'openmap/', RampView.as_view(), name='RampForm'),
+            path(settings.SEARCH_HOST_PATH + 'openmap/<str:keys>', RampView.as_view(), name='RampForm'),
+            path(settings.SEARCH_HOST_PATH + 'carteouverte/', RampView.as_view(), name='RampForm'),
+            path(settings.SEARCH_HOST_PATH + 'carteouverte/<str:keys>', RampView.as_view(), name='RampForm'),
+        ]
+

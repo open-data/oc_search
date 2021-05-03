@@ -1,0 +1,39 @@
+{% load i18n %}
+{% load static %}
+
+<footer id="wb-info">
+    <div class="landscape">
+        <nav class="container wb-navcurr">
+            <h2 class="wb-inv">About government</h2>
+            <ul class="list-unstyled colcount-sm-2 colcount-md-3">
+                <li><a href="{% translate 'https://open.canada.ca/en/forms/contact-us' %}">{% translate 'Open Government Contact' %}</a></li>
+                <li><a href="{% translate 'https://www.canada.ca/en/government/dept.html' %}">{% translate 'Departments and agencies' %}</a></li>
+                <li><a href="{% translate 'https://www.canada.ca/en/government/publicservice.html' %}">{% translate 'Public service and military' %}</a></li>
+                <li><a href="{% translate 'http://news.gc.ca/' %}">{% translate 'News' %}</a></li>
+                <li><a href="{% translate 'https://www.canada.ca/en/government/system/laws.html' %}">{% translate 'Treaties, laws and regulations' %}</a></li>
+                <li><a href="{% translate 'https://www.canada.ca/en/transparency/reporting.html' %}">{% translate 'Government-wide reporting' %}</a></li>
+                <li><a href="{% translate 'https://www.canada.ca/en/government/system.html' %}">{% translate 'How government works' %}</a></li>
+            </ul>
+        </nav>
+    </div>
+    <div class="brand">
+        <div class="container">
+            <div class="row">
+                <nav class="col-md-9 col-lg-10 ftr-urlt-lnk">
+                    <h2 class="wb-inv">About this site</h2>
+                    <ul>
+                        <li><a href="{% translate 'https://www.canada.ca/en/contact.html' %}">{% translate 'Contact information' %}</a></li>
+                        <li><a href="{% translate 'https://www.canada.ca/en/transparency/terms.html' %}">{% translate 'Terms and conditions' %}</a></li>
+                        <li><a href="{% translate 'https://www.canada.ca/en/transparency/privacy.html' %}">{% translate 'Privacy' %}</a></li>
+                    </ul>
+                </nav>
+                <div class="col-xs-6 visible-sm visible-xs tofpg">
+                    <a href="#wb-cont">Top of page <span class="glyphicon glyphicon-chevron-up"></span></a>
+                </div>
+                <div class="col-xs-6 col-md-3 col-lg-2 text-right">
+                    <img src="{% static 'ramp/GCWeb/assets/wmms-blk.svg' %}" alt="Symbol of the Government of Canada">
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>

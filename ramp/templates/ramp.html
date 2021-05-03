@@ -1,0 +1,83 @@
+{% load static %}
+{% load humanize %}
+{% load i18n %}
+{% language language %} {% get_current_language as LANGUAGE_CODE %}
+
+<!DOCTYPE html>
+<html class="no-js" lang="en" dir="ltr">
+<head>
+    <meta charset="utf-8">
+    <title>Open Maps Data Viewer</title>
+    <meta content="width=device-width,initial-scale=1" name="viewport">
+    <meta property="dcterms:title" content="Open Maps Data Viewer" />
+    <link href="{% static 'ramp/GCWeb/assets/favicon.ico' %}" rel="icon" type="image/x-icon">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'ramp/GCWeb/css/theme.css' %}">
+    <link rel="stylesheet" href="{% static 'ramp/rv-styles.css' %}"/>
+    <style type="text/css">{% include 'snippets/ramp.css' %}</style>
+    <noscript><link rel="stylesheet" href="{% static 'ramp/wet-boew/css/noscript.css' %}" /></noscript>
+</head>
+
+<body vocab="http://schema.org/" resource="#wb-webpage" typeof="WebPage">
+<nav>
+<ul id="wb-tphp">
+    <li class="wb-slc">
+        <a class="wb-sl" href="#wb-cont">{% translate "Skip to main content" %}</a>
+    </li>
+    <li class="wb-slc visible-sm visible-md visible-lg">
+        <a class="wb-sl" href="#wb-info">{% translate 'Skip to "About this site"' %}</a>
+    </li>
+</ul>
+</nav>
+
+<!-- WET Menu -->
+{% if language == 'fr' %}{% include 'snippets/wet_menu-fr.html' %}{% else %}{% include 'snippets/wet_menu-en.html' %}{% endif %}
+
+<main role="main" property="mainContentOfPage" class="container">
+    <section>
+        <h1 property="name" id="wb-cont" class="fgp-h1-top">{% translate 'Open Maps' %}</h1>
+        <ul>{% for id, title in titles.items %}
+            <li><a href="{{ open_data_url }}{{ id }}">{{ title | safe }}</a></li>
+        {% endfor %}</ul>
+        <div id="fgpSignIn" class="row">
+            <div class="panel panel-default">
+                <div class="panel-body clearfix">
+
+                    <div id="fgpmap" is="rv-map" class="fgpMap" data-rv-config="{% static rcs_config %}"
+                         data-rv-langs='["{{ language }}-CA"]'
+                         data-rv-service-endpoint="https://maps.canada.ca/geonetwork/srv/api/" data-rv-keys=''
+                         data-rv-wait="true" rv-plugins="">
+                        <noscript>
+                            <p>{% translate 'This interactive map requires JavaScript. To view this content please enable JavaScript in your browser or download a browser that supports it.' %}</p>
+                        </noscript>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+{% include 'snippets/wet_footer.html' %}
+
+<script src="https://code.jquery.com/jquery-2.2.4.min.js"
+        integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+<script src="{% static 'ramp/wet-boew/js/wet-boew.js' %}"></script>
+<script src="{% static 'ramp/GCWeb/js/theme.min.js' %}"></script>
+
+
+<script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=default,Object.entries,Object.values,Array.prototype.find,Array.prototype.findIndex,Array.prototype.values,Array.prototype.includes,HTMLCanvasElement.prototype.toBlob,String.prototype.repeat,String.prototype.codePointAt,String.fromCodePoint,NodeList.prototype.@@iterator,Promise,Promise.prototype.finally"></script>
+<!-- Using Ramp configuration service so still need to use legacy API for now -->
+<script src="{% static 'ramp/legacy-api.js' %}"></script>
+<script src="{% static 'ramp/rv-main.js' %}"></script>
+
+<script>
+
+    // turn keys into an array, pass them to the map
+    let keys = '{{ keys }}';
+    let keysArr = keys.split(',');
+    RV.getMap('fgpmap').restoreSession(keysArr);
+
+</script>
+</body>
+</html>
+{% endlanguage %}
