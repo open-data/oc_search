@@ -33,6 +33,7 @@ class RampView(View):
         for uuid in uuids:
             if uuid_regex.match(uuid):
                 valid_uuids.append(uuid)
+        keys = ",".join(valid_uuids)
 
         # Get the titles
 
@@ -48,10 +49,17 @@ class RampView(View):
 
         context = {
             "language": lang,
-            "keys": ",".join(valid_uuids),
+            "keys": keys,
             "titles": titles,
             "open_data_url": settings.OPEN_DATA_BASE_URL_FR if lang == "fr" else settings.OPEN_DATA_BASE_URL_EN,
-            "rcs_config": 'ramp/config.rcs.fr-CA.json' if lang == "fr" else 'ramp/config.rcs.en-CA.json'
+            "rcs_config": 'ramp/config.rcs.fr-CA.json' if lang == "fr" else 'ramp/config.rcs.en-CA.json',
+            "toggle_url": self._get_toggle(lang, keys)
         }
         return render(request, 'ramp.html', context)
 
+    def _get_toggle(self, lang, keys):
+        if lang == 'fr':
+            toggle_url = '/openmap/en/{0}'.format(keys) if settings.SEARCH_LANG_USE_PATH else "https://{0}/openmap/{1}".format(settings.SEARCH_EN_HOSTNAME, keys)
+        else:
+            toggle_url = '/carteouverte/fr/{0}'.format(keys) if settings.SEARCH_LANG_USE_PATH else "https://{0}/carteouverte/{1}".format(settings.SEARCH_FR_HOSTNAME, keys)
+        return toggle_url
