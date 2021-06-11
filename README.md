@@ -3,6 +3,7 @@
 Open Canada Solr Search (OCS) is a Django 3.0 application that uses Solr 8.x to provide a customizable search interface
 for the Open Canada data catalog and the proactive disclosure data. OCS provides a standard web interface into Solr cores 
 .
+[![Visits Badge](https://badges.pufler.dev/visits/open-data/oc_search)](https://badges.pufler.dev)
 
 ## Installing OCS from Source
 
