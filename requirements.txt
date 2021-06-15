@@ -4,7 +4,7 @@ django-import-export ==2.5.0
 django-jazzmin==2.4.7
 django-redis-cache==3.0.0
 django-redis-sessions==0.6.2
-django ==3.2.3
+django ==3.2.4
 docutils==0.17.1
 markdown2==2.4.0
 nltk==3.6.2
