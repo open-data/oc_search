@@ -1,10 +1,12 @@
 # Open Canada Solr Search #
 
-Open Canada Solr Search (OCSS) is a Django 3.0 application that uses Solr 8.x to provide a customizable search interface
+
+[![Visits Badge](https://badges.pufler.dev/visits/open-data/oc_search)](https://badges.pufler.dev)
+
+Open Canada Solr Search (OCS) is a Django 3.0 application that uses Solr 8.x to provide a customizable search interface
 for the Open Canada data catalog and the proactive disclosure data. OCS provides a standard web interface into Solr cores 
 .
 
-OCSS also supports an optional Geospatial data viewer based on [FGP's RAMP2 viewer](https://github.com/fgpv-vpgf/fgpv-vpgf/).
 
 ## Installing OCS from Source
 
