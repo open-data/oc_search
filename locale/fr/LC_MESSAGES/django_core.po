@@ -163,8 +163,8 @@ msgid "Order By"
 msgstr "Trier par"
 
 #: .\search\templates\search.html:112
-msgid "Clear all choices"
-msgstr "Effacer tout"
+msgid "Reset Search"
+msgstr "Réinitialiser la recherche"
 
 #: .\search\templates\search.html:117
 msgid "Download Search Results"

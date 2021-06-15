@@ -13,9 +13,39 @@
     <div class="col-md-12">
         <ul class="list-unstyled lst-spcd">
             {% for s in search_list %}
-            <li><a href="{{ parent_path }}{{ s.search_id }}/"><strong>{% if LANGUAGE_CODE == 'en' %}{{ s.label_en }}{% else %}{{ s.label_fr }}{% endif %}</strong></a>{% if s.desc_en and LANGUAGE_CODE == 'en' %} - {{ s.desc_en }}{% elif s.desc_fr and LANGUAGE_CODE == 'fr' %} - {{ s.desc_fr }}{% endif %}</li>
+            <li><a href="{{ parent_path }}{{ s.search_id }}/"><strong>{% if LANGUAGE_CODE == 'en' %}{{ s.label_en }}{% else %}{{ s.label_fr }}{% endif %}</strong></a>{% if s.desc_en and LANGUAGE_CODE == 'en' %}<p>{{ s.desc_en | markdown_filter | safe }}</p>
+                {% elif s.desc_fr and LANGUAGE_CODE == 'fr' %}<p>{{ s.desc_fr | markdown_filter | safe }}</p>{% endif %}</li>
             {% endfor %}
         </ul>
     </div>
 </div>
 {% endblock main-content-body %}
+
+{% block breadcrumb %}
+<script>
+        var defTop = document.getElementById("def-top");
+        defTop.outerHTML = wet.builder.top({
+            "lngLinks": [{
+                "lang": "{{ language | SwapLangCode }}",
+                {% if url_uses_path %}
+                "href": "/search/{{ language | SwapLangCode }}/",
+                {% else %}
+                  {% if language == 'en' %}
+                "href": "https://{{ url_host_fr }}/{{ url_host_path }}",
+                  {% else %}
+                "href": "https://{{ url_host_en }}/{{ url_host_path }}",
+                  {% endif %}
+                {% endif %}
+                "text": "{{ language | SwapLangName}}"
+            }],
+            search: false,
+            "breadcrumbs": [{
+                "title": "Canada.ca",
+                "href": "https://www.canada.ca/{{ language_code }}.html",
+            },{
+                "title": "{% translate 'Open Government' %}",
+                "href": "{% translate 'https://open.canada.ca' %}/{{ LANGUAGE_CODE }}",
+            }]
+        });
+    </script>
+{% endblock %}

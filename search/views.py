@@ -209,7 +209,8 @@ class SearchView(View):
             core_name = self.searches[search_type].solr_core_name
 
             # Get the search result boundaries
-            start_row, page = calc_starting_row(request.GET.get('page', 1), rows_per_age=10)
+            start_row, page = calc_starting_row(request.GET.get('page', 1),
+                                                rows_per_page=self.searches[search_type].results_page_size)
 
             # Compose the Solr query
             facets = self.facets_fr[search_type] if lang == 'fr' else self.facets_en[search_type]
@@ -232,7 +233,8 @@ class SearchView(View):
 
             solr_query = create_solr_query(request, self.searches[search_type], self.fields[search_type],
                                            self.codes_fr if lang == 'fr' else self.codes_en,
-                                           facets, start_row, 10, record_id='', export=False, highlighting=True,
+                                           facets, start_row, self.searches[search_type].results_page_size,
+                                           record_id='', export=False, highlighting=True,
                                            default_sort=default_sort_order)
 
             # Call  plugin pre-solr-query if defined
@@ -307,7 +309,7 @@ class SearchView(View):
                 context['display_field_name'] = self.display_fields_names_fr[search_type] if lang == 'fr' else self.display_fields_names_en[search_type]
 
                 # Calculate pagination for the search page
-                context['pagination'] = calc_pagination_range(solr_response.num_found, 10, page)
+                context['pagination'] = calc_pagination_range(solr_response.num_found, self.searches[search_type].results_page_size, page, 3)
                 context['previous_page'] = (1 if page == 1 else page - 1)
                 last_page = (context['pagination'][len(context['pagination']) - 1] if len(context['pagination']) > 0 else 1)
                 last_page = (1 if last_page < 1 else last_page)
@@ -342,7 +344,7 @@ class RecordView(SearchView):
             core_name = self.searches[search_type].solr_core_name
 
             # Get the search result boundaries
-            start_row, page = calc_starting_row(request.GET.get('page', 1), rows_per_age=5)
+            start_row, page = calc_starting_row(request.GET.get('page', 1), rows_per_page=5)
 
             # Compose the Solr query
             facets = {}
@@ -526,7 +528,7 @@ class MoreLikeThisView(SearchView):
             core_name = self.searches[search_type].solr_core_name
 
             # Get the search result boundaries
-            start_row, page = calc_starting_row(request.GET.get('page', 1), rows_per_age=self.searches[search_type].mlt_items)
+            start_row, page = calc_starting_row(request.GET.get('page', 1), rows_per_page=self.searches[search_type].mlt_items)
             # Compose the Solr query
             solr_query = create_solr_mlt_query(request, self.searches[search_type], self.fields[search_type], start_row, record_id)
 
@@ -582,6 +584,7 @@ class HomeView(SearchView):
             "query_path": request.META["QUERY_STRING"],
             "path_info": request.META["PATH_INFO"],
             'parent_path': request.META["PATH_INFO"],
+            "url_uses_path": settings.SEARCH_LANG_USE_PATH,
             "footer_snippet": "search_snippets/default_footer.html",
             "breadcrumb_snippet": "search_snippets/default_breadcrumb.html",
             "info_message_snippet": "search_snippets/default_info_message.html",

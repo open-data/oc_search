@@ -1,8 +1,10 @@
 # Open Canada Solr Search #
 
-Open Canada Solr Search (OCS) is a Django 3.0 application that uses Solr 8.x to provide a customizable search interface
+Open Canada Solr Search (OCSS) is a Django 3.0 application that uses Solr 8.x to provide a customizable search interface
 for the Open Canada data catalog and the proactive disclosure data. OCS provides a standard web interface into Solr cores 
 .
+
+OCSS also supports an optional Geospatial data viewer based on [FGP's RAMP2 viewer](https://github.com/fgpv-vpgf/fgpv-vpgf/).
 
 ## Installing OCS from Source
 
@@ -13,15 +15,15 @@ which is built with Python 3. Version 3.6 or higher is recommended. For more det
 pages](https://docs.djangoproject.com/en/3.1/intro/install/). OCS has been tested on both Windows 10 and CentOS/RHEL 7.
 It is highly recommended that users have some basic familiarity with Django before using OCS.
 
-OCS requires a database backend that is supported by Django such as PostgreSQL or MySQL. Initial development can be done with the SQLite engine
+OCSS requires a database backend that is supported by Django such as PostgreSQL or MySQL. Initial development can be done with the SQLite engine
 that is included with Python. 
 
-OCS also requires access to a Solr server. For information on installing Solr, please visit the 
+OCSS also requires access to a Solr server. For information on installing Solr, please visit the 
 [Apache Solr Reference Guide](https://lucene.apache.org/solr/guide/).
 
 ### Installation Steps ###
 
-1. Clone the OCS project from GitHub: https://github.com/open-data/oc_search
+1. Clone the OCSS project from GitHub: https://github.com/open-data/oc_search
 
 1. Clone the SolrClient project from GitHub: https://github.com/open-data/SolrClient
 
@@ -49,13 +51,15 @@ project itself.
     `python manage.py makemigrations search`<br>
     `python manage.py sqlmigrate search 0001`<br>
     `python manage,py migrate`
-
+   
 ### Django Plugins ###
 
-Two Django plugins are used:
+Four Django plugins are used:
 
 1. [Django import/export](https://django-import-export.readthedocs.io/en/latest/)  Django application and library for importing and exporting data with included admin integration.
 1. [Django Jazzmin Admin Theme](https://django-jazzmin.readthedocs.io/) *(Optional)* Provides a more modern Ui for the Django admin interface
+1. [Django Redis Cache](https://django-redis-cache.readthedocs.io/en/latest/) *(Optional)* Let's Django use Redis to cache pages
+1. [Django Redis Sessions](https://github.com/martinrusev/django-redis-sessions) *(Optional)* Enables the use of Redis to maintain user sessions. 
 
 These Django plugins are enabled in the Django application's settings.py file. Example configuration can be found in 
 [settings-sample.py](https://github.com/open-data/oc_search/blob/master/oc_search/settings-sample.py)
@@ -195,4 +199,32 @@ run <a href="#create_solr_core"> `create_solr_core`</a> command line utility.
 ## Step 4 - Load Search Data ##
 
 Load CSV data into the search core using the <a href="#import_data_csv">import_data_csv</a> command.
+
+# Installing the RAMP viewer *(Optional)* #
+
+By default, the [RAMP viewer](https://github.com/fgpv-vpgf/fgpv-vpgf#usage) is not enabled, and it is not required for searching. It is used by
+Open Canada for visualizing [Open Maps](https://search.open.canada.ca/en/od/?od-search-col=Open%20Maps) geospatial data
+
+To install, 
+
+1. Download the latest [RAMP viewer release from GitHub](https://github.com/fgpv-vpgf/fgpv-vpgf/releases/latest).
+   Extract the contents into the `ramp/viewer` folder in the project. 
+
+1. Download [the Canada.ca design system distribution files](https://wet-boew.github.io/GCWeb/home.html) and extract 
+   the contents into `ramp/viewer/GCWeb`. 
+
+1. Download the non-CDN version of [the WET-BOEW design system distribution files](https://github.com/wet-boew/wet-boew/releases)
+   and extract the contents into `ramp/viewer/GCWeb`.
+
+1. Run Django's `collectstatic` command. The RAMP viewer will look for Canada.ca and WET-BOEW files in
+   the path `[static url root]/ramp/`. If using Nginx oor equivalent to server static files, be sure to set this 
+   path up.
+
+For [Open Maps](https://search.open.canada.ca/en/od/?od-search-col=Open%20Maps), the viewer is
+using the remote configuration services (RCS). The local RCS definition files are also located in the 
+`ramp/viewer` folder. The provided files are specific to Open Canada.
+
+![Viewer directory structure](./docs/images/viewer_folder.png "Viewer folder")
+
+
 

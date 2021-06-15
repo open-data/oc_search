@@ -5,72 +5,64 @@
 {% load search_extras %}
 
 {% block main-content-body %}
-<div class="row">
+<div class="row" xmlns="http://www.w3.org/1999/html">
 
-    <div class="col-md-8 col-md-push-4">
+
+    <div class="col-md-12 mrgn-bttm-md mrgn-tp-md form-inline">
+        <label for="search_text" class="wb-inv">{% translate 'Search' %}</label>
+        <input type="text" name="search_text" class="form-control"  id="search_text" style="float:left;"
+           value="{{ search_text }}" placeholder="{% translate 'Search' %}"
+           aria-label="{% translate 'Search' %}" size="50" />
+
+        <label for="search-button" class="wb-inv">{% translate "Search" %}</label>
+        <button type="button" class="btn btn-primary btn-small form-submit" id="search-button" onclick="submitForm();"
+             style="padding: 6px 12px"><span class="glyphicon glyphicon-search" aria-hidden="true"></span>  {% translate "Search" %}
+        </button>
+
+        <label class="control-label mrgn-lft-lg" for="sort"> {% translate "Order By" %}</label>
+        <select class="form-control" id="sort" name="sort" onchange="submitForm();" value="{{ sort }}">
+            {% for option, label in sort_options.items %}}
+            <option %} %}selected="selected" endif if option sort== value="{{ option }}" {% {%
+            >{{ label }}
+            </option>
+            {% endfor %}
+        </select>
+
+    </div>
+
+
+    <div class="col-md-8">
     {% block main-content-centre %}
-        <div class="row">
-            <div class="col-md-12 col-sm-12">
-                <p>{% blocktrans with result_num=total_hits|apnumber result_s=total_hits|pluralize %}Found {{result_num}} record{{result_s}}{% endblocktrans %}</p>
+        <div class="row mrgn-rght-lg">
+            <div class="col-md-12">
+            <p><b>{% blocktrans with result_num=total_hits|apnumber result_s=total_hits|pluralize %}Found {{result_num}} record{{result_s}}{% endblocktrans %}</b></p>
+            </div>
+        </div><div class="row">
+            <div class="col-md-12 mrgn-bttm-xl">
+                <a href="{{ download_ds_url }}" class="btn btn-secondary btn-sm mrgn-rght-sm" target="_blank">
+                    <span class="glyphicon glyphicon-new-window text-info"></span> {{ download_ds_text }}</a>
+                {% if total_hits > 1 or total_hits < 100000 %}
+                    <a href="{{ export_path }}" class="btn btn-secondary btn-sm mrgn-rght-sm">
+                        <span class="glyphicon glyphicon-download-alt text-success"></span> {% translate 'Download Search Results' %}</a>
+                {% else %}
+                    <button class="btn btn-secondary btn-sm mrgn-rght-sm" disabled>{% translate 'Download Search Results' %} {% translate '(100,000 row limit)' %}</button>
+                {% endif %}
+                <a onclick="resetSearch();" href="#" class="btn btn-secondary btn-default btn-sm"><span
+            class="glyphicon glyphicon-refresh text-danger"></span> {% translate "Reset Search" %}</a>
             </div>
         </div>
 
-         <div class="mrgn-bttm-lg form-inline">
-             <div class="row">
-                <div class="col-md-6 col-sm-12">
-                    <div class="input-group">
 
-                        <label for="search_text" class="wb-inv">{% translate 'Search' %}</label>
-                        <input type="text" name="search_text" class="form-control"  id="search_text"
-                               value="{{ search_text }}" placeholder="{% translate 'Search' %}"
-                               aria-label="{% translate 'Search' %}" size="60" />
-                        <span class="input-group-btn">
-                             <label for="search-button" class="wb-inv">{% translate "Search" %}</label>
-                             <button type="button" class="btn btn-primary btn-small form-submit" id="search-button" onclick="submitForm();"
-                                     style="padding: 6px 12px">{% translate "Search" %}
-                            </button>
-                        </span>
-                    </div>
-                </div>
-                <div class="col-md-6 col-sm-12">
-                    <div class="form-group">
-                        <label for="sort" class="control-label">{% translate "Order By" %}</label>
-                        <select class="form-control" name="sort" id="sort" value="{{ sort }}" onchange="submitForm();">
-                            {% for option, label in sort_options.items %}}
-                        <option value="{{ option }}" {% if sort == option %}selected="selected"{% endif %}
-                            >{{ label }}</option>
-                            {% endfor %}
-                    </select>
-                    </div>
-                </div>
-            </div>
-         </div>
-
-        {# When facets are selected, display a button to clear each individual facet filter #}
-        {% if selected_facets|length > 0 %}
-        <div class="row">
-            <div class="col-md-12 col-sm-12 mrgn-tp-md mrgn-bttm-md">
-                {% for f in selected_facets %}
-                    {# Handle Codes #}
-                    {% if f in codes.keys %}
-                        {% for v in selected_facets|get_dict_value:f %} <a class="btn btn-secondary btn-sm" onclick='selectFacet("{{f}}", "{{v}}");'><soan class="glyphicon glyphicon-remove"></soan>&nbsp;&nbsp;{{ facets|get_dict_value:f|get_dict_value:'__label__' }} -  <b>{{ codes|get_dict_value:f|get_dict_value:v }}</b></a> {% endfor %}
-                    {% else %}
-                        {% for v in selected_facets|get_dict_value:f %} <a class="btn btn-secondary btn-sm" onclick='selectFacet("{{f}}", "{{v}}");'> <soan class="glyphicon glyphicon-remove"></soan>&nbsp;&nbsp;{{ facets|get_dict_value:f|get_dict_value:'__label__' }} - <b>{{v|unspecified:language}}</b></a> {% endfor %}
-                    {% endif %}
-                {% endfor %}
-
-            </div>
-        </div>
-        {% endif %}
         {% block main-content-search-items %}
         {% for doc in docs %}
             {% include search_item_snippet %}
         {% endfor %}
         {% endblock main-content-search-items %}
 
-        <div class="col-md-12">
-         {% block main-content-pagination %}
-            <section>
+        <div class="row">
+            <div class="col-md-12">
+             {% block main-content-pagination %}
+
                 <ul class="pagination">
                     {% for pg in pagination %}
                         {% if pg == 1 %}
@@ -90,38 +82,46 @@
                                 <li class="next"><a href="#" onclick="gotoPage('{{ next_page }}')">{% translate 'Next' %} <span class="wb-inv">Go to page {{ next_page }}</span></a></li>
                             {% endif %}
                         {% elif pg == 0 %}
-                            <li><a href="#" onclick="">...<span class="wb-inv"></span></a></li>
+                            <li><a href="#" onclick="">&#8230;<span class="wb-inv"></span></a></li>
                         {% else %}
                             <li {% if currentpage == pg %}class="active" {% endif %}><a href="#" onclick="gotoPage('{{ pg }}')">{{ pg }} <span class="wb-inv">Go to page {{pg}}</span></a></li>
                         {% endif %}
                     {% endfor %}
                 </ul>
-            </section>
-        {% endblock main-content-pagination %}
+
+            {% endblock main-content-pagination %}
+            </div>
         </div>
     {% endblock main-content-centre %}
     </div>
 
-    <div class="col-md-4 col-md-pull-8">
+    <div class="col-md-4">
     {% block main-content-sidebar %}{% spaceless %}
-    <aside class="mrgn-tp-lg">
-        <div class="btn-block">
-            <div>
-                <a onclick="resetSearch();" href="#" class="btn btn-default mrgn-bttm-md btn-block"><span
-                class="glyphicon glyphicon-refresh"></span> {% translate "Clear all choices" %}</a>
+
+     <aside class="mrgn-tp-lg mrgn-lft-md">
+         <div class="mrgn-tp-md"><h2><span class="glyphicon glyphicon-filter" aria-hidden="true"></span> {% translate 'Filters' %}</h2></div>
+
+        {# When facets are selected, display a button to clear each individual facet filter #}
+        {% if selected_facets|length > 0 %}
+        <div class="row">
+            <div class="col-md-12 col-sm-12 mrgn-tp-md mrgn-bttm-md">
+                <div class="list-group">
+                {% for f in selected_facets %}
+                    {# Handle Codes #}
+                    {% if f in codes.keys %}
+                        {% for v in selected_facets|get_dict_value:f %}
+                        <a onclick='selectFacet("{{f}}", "{{v}}");' class="list-group-item btn btn-outline-secondary btn-sm"> <span class="glyphicon glyphicon-remove text-danger"></span>&nbsp;&nbsp;{{ facets|get_dict_value:f|get_dict_value:'__label__' }} -  <b>{{ codes|get_dict_value:f|get_dict_value:v }}</b></a>
+                        {% endfor %}
+                    {% else %}
+                        {% for v in selected_facets|get_dict_value:f %}
+                        <a onclick='selectFacet("{{f}}", "{{v}}");' class="list-group-item btn btn-outline-secondary btn-sm"> <span class="glyphicon glyphicon-remove text-danger"></span>&nbsp;&nbsp;{{ facets|get_dict_value:f|get_dict_value:'__label__' }} - <b>{{v|unspecified:language}}</b></a>
+                        {% endfor %}
+                    {% endif %}
+                {% endfor %}
+                </div>
             </div>
         </div>
-        <div>
-            <a href="{{ export_path }}" class="btn btn-default mrgn-bttm-md btn-block{% if total_hits < 1 or total_hits > 100000 %} disabled{% endif %}"><span
-                class="glyphicon glyphicon-download-alt"></span> {% translate 'Download Search Results' %}{% if total_hits > 100000 %}<br>{% translate '(100,000 row limit)' %}{% endif %}</a>
-        </div>
-        <div>
-            <a href="{{ download_ds_url }}" class="list-group-item aurora-list-group-item-info text-center">{{ download_ds_text }}</a>
-        </div>
-    </aside>
-
-     <aside>
-         <div class="mrgn-tp-md"><h2><span class="glyphicon glyphicon-filter" aria-hidden="true"></span> {% translate 'Filters:' %}</h2></div>
+        {% endif %}
             <div>
                 {% for key, value in facets.items %}
                 {% if key in facet_snippets.keys %}
@@ -135,19 +135,19 @@
                     {% if key in reversed_facets %}
                         {% for subkey, subvalue in value.items reversed %}
                             {% if subkey != '__label__' and subvalue > 0 %}
-                                <li class="list-group-item{% if subkey in selected_facets|get_dict_value:key %} active{% endif %}">
+                                <li class="list-group-item">
                                  <div class="row small">
                                     <div class="checkbox mrgn-tp-0 mrgn-bttm-0 col-sm-9">
                                         {% if key in codes.keys %}
                                         <label><input type="checkbox"
                                                  onclick='selectFacet("{{ key }}", "{{ subkey }}" )'
-                                                 style="vertical-align:middle;position:relative;top:-1px;" value="{{ key }}"
+                                                 style="vertical-align:middle;position:relative;top:-1px;height: 20px;width: 20px;" value="{{ key }}"
                                                  {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}
                                         >&nbsp;&nbsp;{{ codes|get_dict_value:key|get_dict_value:subkey }} </label></div>
                                         {% else %}
                                         <label><input type="checkbox"
                                                  onclick='selectFacet("{{ key }}", "{{ subkey }}" )'
-                                                 style="vertical-align:middle;position:relative;top:-1px;" value="{{ key }}"
+                                                 style="vertical-align:middle;position:relative;top:-1px;height: 20px;width: 20px;" value="{{ key }}"
                                                  {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}
                                         >&nbsp;&nbsp;{{ subkey }} </label></div>
                                         {% endif %}
@@ -158,19 +158,19 @@
                     {% else %}
                         {% for subkey, subvalue in value.items %}
                             {% if subkey != '__label__' and subvalue > 0 %}
-                                <li class="list-group-item{% if subkey in selected_facets|get_dict_value:key %} active{% endif %}">
+                                <li class="list-group-item">
                                  <div class="row small">
                                     <div class="checkbox mrgn-tp-0 mrgn-bttm-0 col-sm-9 h6">
                                         {% if key in codes.keys %}
                                         <label><input type="checkbox"
                                                  onclick='selectFacet("{{ key }}", "{{ subkey }}" )'
-                                                 style="vertical-align:middle;position:relative;top:-1px;" value="{{ key }}"
+                                                 style="vertical-align:middle;position:relative;top:-1px;height: 20px;width: 20px" value="{{ key }}"
                                                  {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}
                                         >&nbsp;&nbsp;{{ codes|get_dict_value:key|get_dict_value:subkey }} </label></div>
                                         {% else %}
                                         <label><input type="checkbox"
                                                  onclick='selectFacet("{{ key }}", "{{ subkey }}" )'
-                                                 style="vertical-align:middle;position:relative;top:-1px;" value="{{ key }}"
+                                                 style="vertical-align:middle;position:relative;top:-1px;height: 20px;width: 20px" value="{{ key }}"
                                                  {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}
                                         >&nbsp;&nbsp;{{ subkey }} </label></div>
                                         {% endif %}
@@ -185,6 +185,7 @@
                 {% endfor %}
             </div>
      </aside>
+
     {% endspaceless %}
     {% endblock main-content-sidebar %}
     </div>

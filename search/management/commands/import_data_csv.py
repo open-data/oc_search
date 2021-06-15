@@ -48,7 +48,7 @@ class Command(BaseCommand):
     def set_empty_fields(self, solr_record: dict):
 
         for sf in self.all_fields:
-            if sf.field_id not in solr_record and sf != 'default_fmt':
+            if (sf.field_id not in solr_record and sf != 'default_fmt') or solr_record[sf.field_id] == '':
                 if sf.default_export_value:
                     default_fmt = sf.default_export_value.split('|')
                     if default_fmt[0] in ['str', 'date']:
@@ -195,7 +195,7 @@ class Command(BaseCommand):
                                     else:
                                         self.logger.info("Unknown code value: {0} for field: {1}".format(csv_record[csv_field],
                                                                                                          csv_field))
-
+                    solr_record = self.set_empty_fields(solr_record)
                     # Set the Solr ID field (Nothing To Report records are excluded)
                     if not options['nothing_to_report']:
                         if self.search_target.id_fields:
@@ -204,7 +204,7 @@ class Command(BaseCommand):
                                 id_values.append(csv_record[id_field])
                             solr_record['id'] = ",".join(id_values)
                     else:
-                        solr_record = self.set_empty_fields(solr_record)
+
                         if 'month' in solr_record:
                             solr_record['id'] = "{0}-{1}-{2}".format(solr_record['owner_org'], solr_record['year'], solr_record['month'])
                         elif 'quarter' in solr_record:

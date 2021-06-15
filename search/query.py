@@ -45,9 +45,9 @@ def uuid_pattern(version):
     )
 
 
-def calc_pagination_range(num_found: int, pagesize, current_page):
+def calc_pagination_range(num_found: int, pagesize, current_page, delta=2):
+    # @TODO This is not very efficient - could be refactored
     pages = int(ceil(num_found / pagesize))
-    delta = 2
     if current_page > pages:
         current_page = pages
     elif current_page < 1:
@@ -74,11 +74,11 @@ def calc_pagination_range(num_found: int, pagesize, current_page):
     return spaced_pagination
 
 
-def calc_starting_row(page_num, rows_per_age=10):
+def calc_starting_row(page_num, rows_per_page=10):
     """
     Calculate a starting row for the Solr search results. We only retrieve one page at a time
     :param page_num: Current page number
-    :param rows_per_age: number of rows per page
+    :param rows_per_page: number of rows per page
     :return: starting row
     """
     page = 1
@@ -90,7 +90,7 @@ def calc_starting_row(page_num, rows_per_age=10):
         page = 1
     elif page > 100000:  # @magic_number: arbitrary upper range
         page = 100000
-    return rows_per_age * (page - 1), page
+    return rows_per_page * (page - 1), page
 
 
 def get_search_terms(search_text: str):
