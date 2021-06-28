@@ -12,7 +12,7 @@
         <label for="search_text" class="wb-inv">{% translate 'Search' %}</label>
         <input type="text" name="search_text" class="form-control"  id="search_text" style="float:left;"
            value="{{ search_text }}" placeholder="{% translate 'Search' %}"
-           aria-label="{% translate 'Search' %}" size="50" />
+           aria-label="{% translate 'Search' %}" size="60" />
 
         <label for="search-button" class="wb-inv">{% translate "Search" %}</label>
         <button type="button" class="btn btn-primary btn-small form-submit" id="search-button" onclick="submitForm();"
@@ -31,7 +31,7 @@
     </div>
 
 
-    <div class="col-md-8">
+    <div class="col-md-8 col-md-push-4">
     {% block main-content-centre %}
         <div class="row mrgn-rght-lg">
             <div class="col-md-12">
@@ -95,7 +95,7 @@
     {% endblock main-content-centre %}
     </div>
 
-    <div class="col-md-4">
+    <div class="col-md-4 col-md-pull-8">
     {% block main-content-sidebar %}{% spaceless %}
 
      <aside class="mrgn-tp-lg mrgn-lft-md">
@@ -122,68 +122,74 @@
             </div>
         </div>
         {% endif %}
-            <div>
-                {% for key, value in facets.items %}
-                {% if key in facet_snippets.keys %}
-                    {% include facet_snippets|get_dict_value:key %}
+
+        <div>
+            {% for key, value in facets.items %}
+            {% if key in facet_snippets.keys %}
+                {% include facet_snippets|get_dict_value:key %}
+            {% else %}
+            <details class="panel panel-default mrgn-bttm-0 provisional gc-chckbxrdio"{% if  selected_facets|get_dict_value:key|length > 0 %}open{% endif %}>
+                <summary class="panel-heading">
+                   <h3 class="panel-title">{{ value|get_dict_value:'__label__' }}</h3>
+                </summary>
+                <ul class="list-group">
+                {% if key in reversed_facets %}
+                    {% for subkey, subvalue in value.items reversed %}
+                        {% if subkey != '__label__' and subvalue > 0 %}
+                            <li class="list-group-item">
+                             <div class="row">
+                                <div class="mrgn-tp-0 mrgn-bttm-0 col-sm-10">
+                                    {% if key in codes.keys %}
+                                    <label><div class="small">
+                                        <input type="checkbox"
+                                             onclick='selectFacet("{{ key }}", "{{ subkey }}" )'
+                                             style="vertical-align:middle;position:relative;top:-1px;height: 20px;width: 20px;" value="{{ key }}"
+                                             {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}
+                                    >&nbsp;&nbsp;{{ codes|get_dict_value:key|get_dict_value:subkey }} </div></label>
+                                    {% else %}
+                                    <label><div class="small"><input type="checkbox"
+                                             onclick='selectFacet("{{ key }}", "{{ subkey }}" )'
+                                             style="vertical-align:middle;position:relative;top:-1px;height: 20px;width: 20px;" value="{{ key }}"
+                                             {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}
+                                    >&nbsp;&nbsp;{{ subkey }} </div></label>
+                                    {% endif %}
+                                 </div>
+                                 <div class="text-right col-sm-2"><span class="badge">{{ subvalue }}</span></div>
+                             </div>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
                 {% else %}
-                <details class="panel panel-default mrgn-bttm-0 provisional gc-chckbxrdio"{% if  selected_facets|get_dict_value:key|length > 0 %}open{% endif %}>
-                    <summary class="panel-heading">
-                       <h3 class="panel-title">{{ value|get_dict_value:'__label__' }}</h3>
-                    </summary>
-                    <ul class="list-group">
-                    {% if key in reversed_facets %}
-                        {% for subkey, subvalue in value.items reversed %}
-                            {% if subkey != '__label__' and subvalue > 0 %}
-                                <li class="list-group-item">
-                                 <div class="row small">
-                                    <div class="checkbox mrgn-tp-0 mrgn-bttm-0 col-sm-9">
-                                        {% if key in codes.keys %}
-                                        <label><input type="checkbox"
-                                                 onclick='selectFacet("{{ key }}", "{{ subkey }}" )'
-                                                 style="vertical-align:middle;position:relative;top:-1px;height: 20px;width: 20px;" value="{{ key }}"
-                                                 {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}
-                                        >&nbsp;&nbsp;{{ codes|get_dict_value:key|get_dict_value:subkey }} </label></div>
-                                        {% else %}
-                                        <label><input type="checkbox"
-                                                 onclick='selectFacet("{{ key }}", "{{ subkey }}" )'
-                                                 style="vertical-align:middle;position:relative;top:-1px;height: 20px;width: 20px;" value="{{ key }}"
-                                                 {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}
-                                        >&nbsp;&nbsp;{{ subkey }} </label></div>
-                                        {% endif %}
-                                    <div class="text-right col-sm-3"><span class="badge">{{ subvalue }}</span></div>
-                                </li>
-                            {% endif %}
-                        {% endfor %}
-                    {% else %}
-                        {% for subkey, subvalue in value.items %}
-                            {% if subkey != '__label__' and subvalue > 0 %}
-                                <li class="list-group-item">
-                                 <div class="row small">
-                                    <div class="checkbox mrgn-tp-0 mrgn-bttm-0 col-sm-9 h6">
-                                        {% if key in codes.keys %}
-                                        <label><input type="checkbox"
-                                                 onclick='selectFacet("{{ key }}", "{{ subkey }}" )'
-                                                 style="vertical-align:middle;position:relative;top:-1px;height: 20px;width: 20px" value="{{ key }}"
-                                                 {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}
-                                        >&nbsp;&nbsp;{{ codes|get_dict_value:key|get_dict_value:subkey }} </label></div>
-                                        {% else %}
-                                        <label><input type="checkbox"
-                                                 onclick='selectFacet("{{ key }}", "{{ subkey }}" )'
-                                                 style="vertical-align:middle;position:relative;top:-1px;height: 20px;width: 20px" value="{{ key }}"
-                                                 {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}
-                                        >&nbsp;&nbsp;{{ subkey }} </label></div>
-                                        {% endif %}
-                                    <div class="text-right col-sm-3"><span class="badge">{{ subvalue }}</span></div>
-                                </li>
-                            {% endif %}
-                        {% endfor %}
-                    {% endif %}
-                    </ul>
-                </details>
+                    {% for subkey, subvalue in value.items %}
+                        {% if subkey != '__label__' and subvalue > 0 %}
+                            <li class="list-group-item">
+                             <div class="row">
+                                <div class="mrgn-tp-0 mrgn-bttm-0 col-sm-10">
+                                    {% if key in codes.keys %}
+                                    <label><div class="small"><input type="checkbox"
+                                             onclick='selectFacet("{{ key }}", "{{ subkey }}" )'
+                                             style="vertical-align:middle;position:relative;top:-1px;height: 20px;width: 20px" value="{{ key }}"
+                                             {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}
+                                    >&nbsp;&nbsp;{{ codes|get_dict_value:key|get_dict_value:subkey }} </div></label>
+                                    {% else %}
+                                    <label class="small"><div class="small"><input type="checkbox"
+                                             onclick='selectFacet("{{ key }}", "{{ subkey }}" )'
+                                             style="vertical-align:middle;position:relative;top:-1px;height: 20px;width: 20px" value="{{ key }}"
+                                             {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}
+                                    >&nbsp;&nbsp;{{ subkey }} </div></label>
+                                    {% endif %}
+                                 </div>
+                                 <div class="text-right col-sm-2"><span class="badge">{{ subvalue }}</span></div>
+                             </div>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
                 {% endif %}
-                {% endfor %}
-            </div>
+                </ul>
+            </details>
+            {% endif %}
+            {% endfor %}
+        </div>
      </aside>
 
     {% endspaceless %}
