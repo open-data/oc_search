@@ -13,12 +13,12 @@ class RampView(View):
     def __init__(self):
         super().__init__()
 
-    def uuid_pattern(self, version):
+    def uuid_pattern(self):
         return re.compile(
             (
                     '[a-f0-9]{8}-' +
                     '[a-f0-9]{4}-' +
-                    version + '[a-f0-9]{3}-' +
+                    '[a-f0-9]{4}-' +
                     '[a-f0-9]{4}-' +
                     '[a-f0-9]{12}$'
             ),
@@ -27,7 +27,7 @@ class RampView(View):
 
     def get(self, request: HttpRequest, lang='en', keys=''):
         lang = request.LANGUAGE_CODE
-        uuid_regex = self.uuid_pattern('[1-5]')
+        uuid_regex = self.uuid_pattern()
         uuids = keys.split(',')
         valid_uuids = []
         for uuid in uuids:
