@@ -12,7 +12,7 @@
         {% else %}
             {% if language == 'fr' %}
                 <div class="row">
-                    <div class="col-md-8"><a href="{{ path_info }}record/{{ doc.id }}"><strong>{% if doc.name %}{{ doc.name | safe }}{% else %}{{ doc.id }}{% endif %}</strong> <span class="glyphicon glyphicon-menu-right"></span></a></div>
+                    <div class="col-md-8"><a href="{{ path_info }}record/{{ doc.id }}"><strong>{% if doc.name %}{{ doc.name | safe }}{% else %}{{ doc.id }}{% endif %}</strong></a></div>
                     <div class="col-md-4 text-right"><strong>{{ doc.total_fr | safe }}</strong></div>
                 </div>
                 {% if doc.start_date_fr == doc.end_date_fr %}
@@ -22,13 +22,13 @@
                     </div>
                 {% else %}
                     <div class="row">
-                        <div class="col-md-7 brdr-lft">{{ doc.title_fr | safe }}</div>
+                        <div class="col-md-7">{{ doc.title_fr | safe }}</div>
                         <div class="col-md-5 text-right">De {{ doc.start_date_fr | safe }} <small>á</small> {{ doc.end_date_fr | safe }}</div>
                     </div>
                 {% endif %}
                 <div class="row">
-                    <div class="col-md-4">{% trans 'Destination:' %}</div>
-                    <div class="col-md-8">{{ doc.destination_fr | safe }}</div>
+                    <div class="col-md-4 mrgn-tp-md">{% trans 'Destination:' %}</div>
+                    <div class="col-md-8 mrgn-tp-md">{{ doc.destination_fr | safe }}</div>
                 </div><div class="row">
                     <div class="col-md-4">Organisation :</div>
                     <div class="col-md-8">{{ doc.owner_org_fr | safe }}</div>
@@ -38,7 +38,7 @@
               </div>
             {% else %}
                 <div class="row">
-                    <div class="col-md-8"><a href="{{ parent_path }}record/{{ doc.id }}"><strong>{% if doc.name %}{{ doc.name | safe }}{% else %}{{ doc.id }}{% endif %}</strong> <span class="glyphicon glyphicon-menu-right"></span></a></div>
+                    <div class="col-md-8"><a href="{{ parent_path }}record/{{ doc.id }}"><strong>{% if doc.name %}{{ doc.name | safe }}{% else %}{{ doc.id }}{% endif %}</strong></a></div>
                     <div class="col-md-4 text-right"><strong>{{ doc.total_en | safe }}</strong></div>
                 {% if doc.start_date_en == doc.end_date_en %}
                     </div><div class="row">
@@ -47,13 +47,13 @@
                     </div>
                 {% else %}
                     </div><div class="row">
-                        <div class="col-md-7 brdr-lft">{{ doc.title_en | safe }}</div>
+                        <div class="col-md-7">{{ doc.title_en | safe }}</div>
                         <div class="col-md-5 text-right">{{ doc.start_date_en | safe }} <small>to</small> {{ doc.end_date_en | safe }}</div>
                     </div>
                 {% endif %}
                 <div class="row">
-                    <div class="col-md-4">{% trans 'Destination:' %}</div>
-                    <div class="col-md-8">{{ doc.destination_en | safe }}</div>
+                    <div class="col-md-4 mrgn-tp-md">{% trans 'Destination:' %}</div>
+                    <div class="col-md-8 mrgn-tp-md">{{ doc.destination_en | safe }}</div>
                 </div><div class="row">
                     <div class="col-md-4">Organization:</div>
                     <div class="col-md-8">{{ doc.owner_org_en | safe }}</div>
