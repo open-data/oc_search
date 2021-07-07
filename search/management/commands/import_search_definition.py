@@ -52,7 +52,8 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--import_dir', type=str, help='Directory to write export files to', required=True)
         parser.add_argument('--search', type=str, help='A unique code identifier for the Search', required=True)
-
+        parser.add_argument('--exclude_db', required=False, action='store_true',
+                            help='Do not update the database. Useful when deploying to multiple servers')
 
     def handle(self, *args, **options):
         if not path.exists(options['import_dir']):
@@ -79,52 +80,53 @@ class Command(BaseCommand):
         if not path.exists(locale_path):
             locale_path = ''
 
-        # Import Search
+        # Import Search - skip this if the option '--exclude-db'  was selected on the command line
 
-        search_resource = ExportSearchResource(options['search'])
-        searches_path = path.join(db_path, "{0}_search.json".format(options['search']))
-        with open(searches_path, 'r', encoding='utf-8-sig', errors="ignore") as json_file:
-            imported_data = tablib.Dataset().load(json_file)
-            result = search_resource.import_data(dataset=imported_data, dry_run=True)
-            if result.has_errors():
-                errors = result.row_errors()
-                for err in errors:
-                    logging.info(err)
-                raise CommandError('Errors raised while importing Search')
-            result = search_resource.import_data(dataset=imported_data, dry_run=False)
-            if not result.has_errors():
-                logging.info("Imported Search model")
-
-        # Import Fields
-        field_resource = ExportFieldResource(options['search'])
-        fields_path = path.join(db_path, "{0}_fields.json".format(options['search']))
-        with open(fields_path, 'r', encoding='utf-8-sig', errors="ignore") as json_file:
-            imported_data = tablib.Dataset().load(json_file)
-            result = field_resource.import_data(dataset=imported_data, dry_run=True)
-            if result.has_errors():
-                errors = result.row_errors()
-                for err in errors:
-                    logging.info(err)
-                raise CommandError('Errors raised while importing Fields')
-            result = field_resource.import_data(dataset=imported_data, dry_run=False)
-            if not result.has_errors():
-                logging.info("Imported Field models")
-
-        # Import Codes - A search may not necessarily have codes
-        code_resource = ExportCodeResource(options['search'])
-        codes_path = path.join(db_path, "{0}_codes.json".format(options['search']))
-        if path.exists(codes_path):
-            with open(codes_path, 'r', encoding='utf-8-sig', errors="ignore") as json_file:
+        if not options['exclude_db']:
+            search_resource = ExportSearchResource(options['search'])
+            searches_path = path.join(db_path, "{0}_search.json".format(options['search']))
+            with open(searches_path, 'r', encoding='utf-8-sig', errors="ignore") as json_file:
                 imported_data = tablib.Dataset().load(json_file)
-                result = code_resource.import_data(dataset=imported_data, dry_run=True)
+                result = search_resource.import_data(dataset=imported_data, dry_run=True)
                 if result.has_errors():
                     errors = result.row_errors()
                     for err in errors:
                         logging.info(err)
-                    raise CommandError('Errors raised while importing Codes')
-                result = code_resource.import_data(dataset=imported_data, dry_run=False)
+                    raise CommandError('Errors raised while importing Search')
+                result = search_resource.import_data(dataset=imported_data, dry_run=False)
                 if not result.has_errors():
-                    logging.info("Imported Code models")
+                    logging.info("Imported Search model")
+
+            # Import Fields
+            field_resource = ExportFieldResource(options['search'])
+            fields_path = path.join(db_path, "{0}_fields.json".format(options['search']))
+            with open(fields_path, 'r', encoding='utf-8-sig', errors="ignore") as json_file:
+                imported_data = tablib.Dataset().load(json_file)
+                result = field_resource.import_data(dataset=imported_data, dry_run=True)
+                if result.has_errors():
+                    errors = result.row_errors()
+                    for err in errors:
+                        logging.info(err)
+                    raise CommandError('Errors raised while importing Fields')
+                result = field_resource.import_data(dataset=imported_data, dry_run=False)
+                if not result.has_errors():
+                    logging.info("Imported Field models")
+
+            # Import Codes - A search may not necessarily have codes
+            code_resource = ExportCodeResource(options['search'])
+            codes_path = path.join(db_path, "{0}_codes.json".format(options['search']))
+            if path.exists(codes_path):
+                with open(codes_path, 'r', encoding='utf-8-sig', errors="ignore") as json_file:
+                    imported_data = tablib.Dataset().load(json_file)
+                    result = code_resource.import_data(dataset=imported_data, dry_run=True)
+                    if result.has_errors():
+                        errors = result.row_errors()
+                        for err in errors:
+                            logging.info(err)
+                        raise CommandError('Errors raised while importing Codes')
+                    result = code_resource.import_data(dataset=imported_data, dry_run=False)
+                    if not result.has_errors():
+                        logging.info("Imported Code models")
 
         # Copy custom snippets. The convention is for templates to be deployed to : BASE_DIr/templates/snippets/<search ID>/
         BASE_DIR = Path(__file__).resolve().parent.parent.parent
