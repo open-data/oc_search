@@ -103,6 +103,8 @@ class Command(BaseCommand):
                 csv_reader = csv.DictReader(csv_file, dialect='excel')
                 solr_items = []
                 for row_num, csv_record in enumerate(csv_reader):
+                    # Create a dictionary for each record loaded into  Solr
+                    solr_record = {'format': 'NTR' if options['nothing_to_report'] else 'DEFAULT'}
 
                     # Determine record ID for regular PD
                     record_id = ""
@@ -140,8 +142,7 @@ class Command(BaseCommand):
                             continue
                         else:
                             csv_record = filtered_record
-                    # Create a dictionary for each record loaded into  Solr
-                    solr_record = {'format': 'NTR' if options['nothing_to_report'] else 'DEFAULT'}
+
                     for csv_field in csv_reader.fieldnames:
                         # Verify that it is a known field
                         if csv_field not in self.csv_fields and csv_field not in ('owner_org_title', 'owner_org'):
