@@ -41,6 +41,8 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--search', type=str, help='The Search ID that is being loaded', required=True)
         parser.add_argument('--csv', type=str, help='CSV filename to import', required=True)
+        parser.add_argument('--quiet', required=False, action='store_true', default=False,
+                            help='Only display error messages')
         parser.add_argument('--nothing_to_report', required=False,  action='store_true', default=False,
                             help='Use this switch to indicate if the CSV files that is being loaded contains '
                                  '"Nothing To Report" data')
@@ -73,6 +75,8 @@ class Command(BaseCommand):
                 self.search_target = Search.objects.get(search_id=options['search'])
                 self.solr_core = self.search_target.solr_core_name
                 self.all_fields = Field.objects.filter(search_id=self.search_target)
+                if options['quiet']:
+                    self.logger.level = logging.ERROR
                 if options['nothing_to_report']:
                     self.search_fields = Field.objects.filter(search_id=self.search_target, alt_format='ALL') | Field.objects.filter(search_id=self.search_target, alt_format='NTR')
                 else:
@@ -98,16 +102,32 @@ class Command(BaseCommand):
             with open(options['csv'], 'r', encoding='utf-8-sig', errors="ignore") as csv_file:
                 csv_reader = csv.DictReader(csv_file, dialect='excel')
                 solr_items = []
-                for csv_record in csv_reader:
+                for row_num, csv_record in enumerate(csv_reader):
+
+                    # Determine record ID for regular PD
+                    record_id = ""
+                    if not options['nothing_to_report']:
+                        if self.search_target.id_fields:
+                            id_values = []
+                            for id_field in self.search_target.id_fields.split(","):
+                                id_values.append(csv_record[id_field])
+                            record_id = ",".join(id_values)
+                    else:
+
+                        if 'month' in solr_record:
+                            solr_record['id'] = "{0}-{1}-{2}".format(solr_record['owner_org'], solr_record['year'], solr_record['month'])
+                        elif 'quarter' in solr_record:
+                            solr_record['id'] = "{0}-{1}-{2}".format(solr_record['owner_org'], solr_record['year'],
+                                                                     solr_record['quarter'])
 
                     # Clear out the Solr core. on the first line
                     if total == 0 and not options['nothing_to_report']:
                         solr.delete_doc_by_query(self.solr_core, "*:*")
-                        print("Purging all records")
+                        self.logger.info("Purging all records")
                     elif total == 0 and options['nothing_to_report']:
                         solr.delete_doc_by_query(self.solr_core, "format:NTR")
                         solr.commit(self.solr_core, softCommit=True)
-                        print("Purging NTR records")
+                        self.logger.info("Purging NTR records")
                     total += 1
                     cycle += 1
 
@@ -155,7 +175,7 @@ class Command(BaseCommand):
                                     solr_record[csv_field + '_en'] = ''
                                     solr_record[csv_field + '_fr'] = ''
                             except ValueError as x2:
-                                self.logger.error('Invalid date: "{0}"'.format(x2))
+                                self.logger.error('Row {0}, Record {1}, Invalid date: "{1}"'.format(row_num + 2, record_id, x2))
                                 solr_record[csv_field] = ''
                                 continue
                         elif self.csv_fields[csv_field].solr_field_type in ['pint', 'pfloat']:
@@ -185,7 +205,8 @@ class Command(BaseCommand):
                                             codes_en.append(self.field_codes[csv_field][code_value.lower()].label_en)
                                             codes_fr.append(self.field_codes[csv_field][code_value.lower()].label_fr)
                                         else:
-                                            self.logger.info("Unknown code value: {0} for field: {1}".format(code_value, csv_field))
+                                            self.logger.error("Row {0}, Record {1}. Unknown code value: {2} for field: {3}".format(
+                                                row_num + 2, record_id, code_value, csv_field))
                                     solr_record[csv_field + '_en'] = codes_en
                                     solr_record[csv_field + '_fr'] = codes_fr
                                 else:
@@ -193,18 +214,14 @@ class Command(BaseCommand):
                                         solr_record[csv_field + '_en'] = self.field_codes[csv_field][csv_record[csv_field].lower()].label_en
                                         solr_record[csv_field + '_fr'] = self.field_codes[csv_field][csv_record[csv_field].lower()].label_fr
                                     else:
-                                        self.logger.info("Unknown code value: {0} for field: {1}".format(csv_record[csv_field],
-                                                                                                         csv_field))
+                                        self.logger.error("Row {0}, Record {1}. Unknown code value: {2} for field: {3}".format(
+                                            row_num + 2, record_id, csv_record[csv_field], csv_field))
                     solr_record = self.set_empty_fields(solr_record)
+
                     # Set the Solr ID field (Nothing To Report records are excluded)
                     if not options['nothing_to_report']:
-                        if self.search_target.id_fields:
-                            id_values = []
-                            for id_field in self.search_target.id_fields.split(","):
-                                id_values.append(csv_record[id_field])
-                            solr_record['id'] = ",".join(id_values)
+                        solr_record['id'] = record_id
                     else:
-
                         if 'month' in solr_record:
                             solr_record['id'] = "{0}-{1}-{2}".format(solr_record['owner_org'], solr_record['year'], solr_record['month'])
                         elif 'quarter' in solr_record:
@@ -224,14 +241,14 @@ class Command(BaseCommand):
                         for countdown in reversed(range(10)):
                             try:
                                 solr.index(self.solr_core, solr_items)
-                                print("{0} rows processed".format(total))
+                                self.logger.info("{0} rows processed".format(total))
                                 cycle = 0
                                 solr_items.clear()
                                 break
                             except ConnectionError as cex:
                                 if not countdown:
                                     raise
-                                print("Solr error: {0}. Waiting to try again ... {1}".format(cex, countdown))
+                                self.logger.info("Solr error: {0}. Waiting to try again ... {1}".format(cex, countdown))
                                 time.sleep((10 - countdown) * 5)
 
                 # Write and remaining records to Solr and commit
@@ -241,18 +258,18 @@ class Command(BaseCommand):
                         try:
                             solr.index(self.solr_core, solr_items)
                             total += len(solr_items)
-                            print("{0} rows processed".format(cycle))
+                            self.logger.info("{0} rows processed".format(cycle))
                             cycle = 0
                             solr_items.clear()
                             break
                         except ConnectionError as cex:
                             if not countdown:
                                 raise
-                            print("Solr error: {0}. Waiting to try again ... {1}".format(cex, countdown))
+                            self.logger.info("Solr error: {0}. Waiting to try again ... {1}".format(cex, countdown))
                             time.sleep((10 - countdown) * 5)
 
                 solr.commit(self.solr_core, softCommit=True, waitSearcher=True)
-                print("Total rows processed: {0}".format(total))
+                self.logger.info("Total rows processed: {0}".format(total))
 
         except Exception as x:
             self.logger.error('Unexpected Error "{0}"'.format(x))
