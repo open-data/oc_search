@@ -80,13 +80,15 @@ OCS is made of 3 components:
 
 ## Database ##
 
-Each search definition is made of three components:
+Each search definition is made of three or four components:
 1. **Search**: General information about the search such as labels and Solr core name
 1. **Fields**: Each search consists of a number of individual fields. Each field record is associated with a single Search record
    and contains metadata describing the field such as the data type and labels.
 1. **Codes** and code values (_optional_). Often structured data will contain code values or 'lookup' fields values where the
    field value must come from a predetermined list of values. For example, 'AB' maybe selected from a list of Canadian provincial 
    acronyms. Each row in the table represents a single code value and is associated with a single field. 
+1. **ChronologicCodes**: These are similar to codes, but have a start and end date time associated with a code value. This permits
+   the Englisn and French values of the codes to be associated with a specific time range.
 
 Combined, these three components, Search, Fields, and Codes, define a custom search application. 
 Django provides an administrative user interface for editing the search definitions. To use, 
