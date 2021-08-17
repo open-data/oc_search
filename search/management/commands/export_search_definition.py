@@ -1,11 +1,12 @@
 from distutils.dir_util import copy_tree
-from search.admin import SearchResource, FieldResource, CodeResource
-from search.models import Search, Field, Code
+from search.admin import SearchResource, FieldResource, CodeResource, ChronologicCodesResource
+from search.models import Search, Field, Code, ChronologicCode
 from django.core.management.base import BaseCommand, CommandError
 import logging
+import glob
 from os import path, mkdir
 from pathlib import Path
-from shutil import copyfile
+from shutil import copy,copyfile
 
 
 class ExportSearchResource(SearchResource):
@@ -38,6 +39,20 @@ class ExportCodeResource(CodeResource):
     def get_queryset(self):
         sid = Search.objects.get(search_id=self.search_id)
         return Code.objects.filter(field_id__search_id=sid)
+
+
+class ExportChronologicCodeResource(ChronologicCodesResource):
+
+    def __init__(self, search_id):
+        super().__init__()
+        self.search_id = search_id
+
+    def get_queryset(self):
+        sid = Search.objects.get(search_id=self.search_id)
+        cids = []
+        for cid in Code.objects.filter(field_id__search_id=sid):
+            cids.append(cid.id)
+        return ChronologicCode.objects.filter(code_id__id__in=cids)
 
 
 class Command(BaseCommand):
@@ -73,6 +88,9 @@ class Command(BaseCommand):
         locale_path = path.join(root_path, 'locale')
         if not path.exists(locale_path):
             mkdir(locale_path)
+        cmd_path = path.join(root_path, "commands")
+        if not path.exists(cmd_path):
+            mkdir(cmd_path)
 
         # Export Search
         dataset = ExportSearchResource(options['search']).export()
@@ -93,7 +111,14 @@ class Command(BaseCommand):
         code_path = path.join(db_path, "{0}_codes.json".format(options['search']))
         with open(code_path, 'w', encoding='utf-8', errors="ignore") as search_file:
             search_file.write(dataset.json)
-        logging.info("Fields exported to {0}".format(code_path))
+        logging.info("Codes exported to {0}".format(code_path))
+
+        # Export Chronologic Codes
+        dataset = ExportChronologicCodeResource(options['search']).export()
+        code_path = path.join(db_path, "{0}_chronologiccodes.json".format(options['search']))
+        with open(code_path, 'w', encoding='utf-8', errors="ignore") as search_file:
+            search_file.write(dataset.json)
+        logging.info("Chronologic Codes exported to {0}".format(code_path))
 
         # Copy custom snippets. The convention is for templates to be deployed to : BASE_DIr/templates/snippets/<search ID>/
         BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -113,3 +138,9 @@ class Command(BaseCommand):
         if path.exists(custom_locale):
             copyfile(custom_locale, path.join(locale_path, "{0}.po".format(options['search'])))
             logging.info("Copying custom locale file to {0}".format(path.join(plugin_path, "{0}.po".format(options['search']))))
+
+        # Copy command Django commands
+        custom_commands = path.join(BASE_DIR, 'management', 'commands', options['search'] + '_*.py')
+        for cmd in glob.glob(custom_commands):
+            copy(cmd, cmd_path)
+        logging.info("Copying custom commands to {0}".format(cmd_path))

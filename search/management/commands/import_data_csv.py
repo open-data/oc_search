@@ -103,156 +103,159 @@ class Command(BaseCommand):
                 csv_reader = csv.DictReader(csv_file, dialect='excel')
                 solr_items = []
                 for row_num, csv_record in enumerate(csv_reader):
-                    # Create a dictionary for each record loaded into  Solr
-                    solr_record = {'format': 'NTR' if options['nothing_to_report'] else 'DEFAULT'}
+                    try:
+                        # Create a dictionary for each record loaded into  Solr
+                        solr_record = {'format': 'NTR' if options['nothing_to_report'] else 'DEFAULT'}
 
-                    # Determine record ID for regular PD
-                    record_id = ""
-                    if not options['nothing_to_report']:
-                        if self.search_target.id_fields:
-                            id_values = []
-                            for id_field in self.search_target.id_fields.split(","):
-                                id_values.append(csv_record[id_field])
-                            record_id = ",".join(id_values)
-                    else:
-
-                        if 'month' in solr_record:
-                            solr_record['id'] = "{0}-{1}-{2}".format(solr_record['owner_org'], solr_record['year'], solr_record['month'])
-                        elif 'quarter' in solr_record:
-                            solr_record['id'] = "{0}-{1}-{2}".format(solr_record['owner_org'], solr_record['year'],
-                                                                     solr_record['quarter'])
-
-                    # Clear out the Solr core. on the first line
-                    if total == 0 and not options['nothing_to_report']:
-                        solr.delete_doc_by_query(self.solr_core, "*:*")
-                        self.logger.info("Purging all records")
-                    elif total == 0 and options['nothing_to_report']:
-                        solr.delete_doc_by_query(self.solr_core, "format:NTR")
-                        solr.commit(self.solr_core, softCommit=True)
-                        self.logger.info("Purging NTR records")
-                    total += 1
-                    cycle += 1
-
-                    # Call plugins if they exist for this search type. This is where a developer can introduce
-                    # code to customize the data that is loaded into Solr for a particular search.
-                    search_type_plugin = 'search.plugins.{0}'.format(options['search'])
-                    if search_type_plugin in self.discovered_plugins:
-                        include, filtered_record = self.discovered_plugins[search_type_plugin].filter_csv_record(csv_record, self.search_target, self.csv_fields, self.field_codes, 'NTR' if options['nothing_to_report'] else '')
-                        if not include:
-                            continue
+                        # Determine record ID for regular PD
+                        record_id = ""
+                        if not options['nothing_to_report']:
+                            if self.search_target.id_fields:
+                                id_values = []
+                                for id_field in self.search_target.id_fields.split(","):
+                                    id_values.append(csv_record[id_field])
+                                record_id = ",".join(id_values)
                         else:
-                            csv_record = filtered_record
 
-                    for csv_field in csv_reader.fieldnames:
-                        # Verify that it is a known field
-                        if csv_field not in self.csv_fields and csv_field not in ('owner_org_title', 'owner_org'):
-                            self.logger.error("CSV files contains unknown field: {0}".format(csv_field))
-                            exit(-1)
-                        if csv_field == 'owner_org_title':
-                            continue
+                            if 'month' in solr_record:
+                                solr_record['id'] = "{0}-{1}-{2}".format(solr_record['owner_org'], solr_record['year'], solr_record['month'])
+                            elif 'quarter' in solr_record:
+                                solr_record['id'] = "{0}-{1}-{2}".format(solr_record['owner_org'], solr_record['year'],
+                                                                         solr_record['quarter'])
 
-                        # Handle multi-valued fields here
-                        if self.csv_fields[csv_field].solr_field_multivalued:
-                            solr_record[csv_field] = csv_record[csv_field].split(',')
-                            # Copy fields fo report cannot use multi-values - so directly populate with original string
-                            if self.csv_fields[csv_field].solr_field_export:
-                                for extra_field in self.csv_fields[csv_field].solr_field_export.split(','):
-                                    solr_record[extra_field] = csv_record[csv_field]
-                        else:
-                            solr_record[csv_field] = csv_record[csv_field]
+                        # Clear out the Solr core. on the first line
+                        if total == 0 and not options['nothing_to_report']:
+                            solr.delete_doc_by_query(self.solr_core, "*:*")
+                            self.logger.info("Purging all records")
+                        elif total == 0 and options['nothing_to_report']:
+                            solr.delete_doc_by_query(self.solr_core, "format:NTR")
+                            solr.commit(self.solr_core, softCommit=True)
+                            self.logger.info("Purging NTR records")
+                        total += 1
+                        cycle += 1
 
-                        # Automatically expand out dates and numbers for use with Solr export handler
-                        if self.csv_fields[csv_field].solr_field_type == 'pdate':
-                            try:
-                                if csv_record[csv_field]:
-                                    csv_date = datetime.strptime(csv_record[csv_field], '%Y-%m-%d')
-                                    solr_record[csv_field + '_en'] = format_date(csv_date, locale='en')
-                                    solr_record[csv_field + '_fr'] = format_date(csv_date, locale='fr')
-                                    if self.csv_fields[csv_field].is_default_year:
-                                        solr_record['year'] = csv_date.year
-                                    if self.csv_fields[csv_field].is_default_month:
-                                        solr_record['month'] = csv_date.month
+                        # Call plugins if they exist for this search type. This is where a developer can introduce
+                        # code to customize the data that is loaded into Solr for a particular search.
+                        search_type_plugin = 'search.plugins.{0}'.format(options['search'])
+                        if search_type_plugin in self.discovered_plugins:
+                            include, filtered_record = self.discovered_plugins[search_type_plugin].filter_csv_record(csv_record, self.search_target, self.csv_fields, self.field_codes, 'NTR' if options['nothing_to_report'] else '')
+                            if not include:
+                                continue
+                            else:
+                                csv_record = filtered_record
+
+                        for csv_field in csv_reader.fieldnames:
+                            # Verify that it is a known field
+                            if csv_field not in self.csv_fields and csv_field not in ('owner_org_title', 'owner_org'):
+                                self.logger.error("CSV files contains unknown field: {0}".format(csv_field))
+                                exit(-1)
+                            if csv_field == 'owner_org_title':
+                                continue
+
+                            # Handle multi-valued fields here
+                            if self.csv_fields[csv_field].solr_field_multivalued:
+                                solr_record[csv_field] = csv_record[csv_field].split(',')
+                                # Copy fields fo report cannot use multi-values - so directly populate with original string
+                                if self.csv_fields[csv_field].solr_field_export:
+                                    for extra_field in self.csv_fields[csv_field].solr_field_export.split(','):
+                                        solr_record[extra_field] = csv_record[csv_field]
+                            else:
+                                solr_record[csv_field] = csv_record[csv_field]
+
+                            # Automatically expand out dates and numbers for use with Solr export handler
+                            if self.csv_fields[csv_field].solr_field_type == 'pdate':
+                                try:
+                                    if csv_record[csv_field]:
+                                        csv_date = datetime.strptime(csv_record[csv_field], '%Y-%m-%d')
+                                        solr_record[csv_field + '_en'] = format_date(csv_date, locale='en')
+                                        solr_record[csv_field + '_fr'] = format_date(csv_date, locale='fr')
+                                        if self.csv_fields[csv_field].is_default_year:
+                                            solr_record['year'] = csv_date.year
+                                        if self.csv_fields[csv_field].is_default_month:
+                                            solr_record['month'] = csv_date.month
+                                    else:
+                                        solr_record[csv_field + '_en'] = ''
+                                        solr_record[csv_field + '_fr'] = ''
+                                except ValueError as x2:
+                                    self.logger.error('Row {0}, Record {1}, Invalid date: "{1}"'.format(row_num + 2, record_id, x2))
+                                    solr_record[csv_field] = ''
+                                    continue
+                            elif self.csv_fields[csv_field].solr_field_type in ['pint', 'pfloat']:
+                                if solr_record[csv_field]:
+                                    if solr_record[csv_field] == '.':
+                                        solr_record[csv_field] = "0"
+                                    csv_decimal = parse_decimal(solr_record[csv_field], locale='en_US')
+                                    if self.csv_fields[csv_field].solr_field_is_currency:
+                                        solr_record[csv_field + '_en'] = format_currency(csv_decimal, 'CAD', locale='en_CA')
+                                        solr_record[csv_field + '_fr'] = format_currency(csv_decimal, 'CAD', locale='fr_CA')
+                                    else:
+                                        solr_record[csv_field + '_en'] = format_decimal(csv_decimal, locale='en_CA')
+                                        solr_record[csv_field + '_fr'] = format_decimal(csv_decimal, locale='fr_CA')
                                 else:
                                     solr_record[csv_field + '_en'] = ''
                                     solr_record[csv_field + '_fr'] = ''
-                            except ValueError as x2:
-                                self.logger.error('Row {0}, Record {1}, Invalid date: "{1}"'.format(row_num + 2, record_id, x2))
-                                solr_record[csv_field] = ''
-                                continue
-                        elif self.csv_fields[csv_field].solr_field_type in ['pint', 'pfloat']:
-                            if solr_record[csv_field]:
-                                if solr_record[csv_field] == '.':
-                                    solr_record[csv_field] = "0"
-                                csv_decimal = parse_decimal(solr_record[csv_field], locale='en_US')
-                                if self.csv_fields[csv_field].solr_field_is_currency:
-                                    solr_record[csv_field + '_en'] = format_currency(csv_decimal, 'CAD', locale='en_CA')
-                                    solr_record[csv_field + '_fr'] = format_currency(csv_decimal, 'CAD', locale='fr_CA')
-                                else:
-                                    solr_record[csv_field + '_en'] = format_decimal(csv_decimal, locale='en_CA')
-                                    solr_record[csv_field + '_fr'] = format_decimal(csv_decimal, locale='fr_CA')
-                            else:
-                                solr_record[csv_field + '_en'] = ''
-                                solr_record[csv_field + '_fr'] = ''
 
-                        # Lookup the expanded code value from the codes dict of dict
-                        if csv_field in self.field_codes:
-                            if csv_record[csv_field]:
+                            # Lookup the expanded code value from the codes dict of dict
+                            if csv_field in self.field_codes:
+                                if csv_record[csv_field]:
 
-                                if self.csv_fields[csv_field].solr_field_multivalued:
-                                    codes_en = []
-                                    codes_fr = []
-                                    for code_value in csv_record[csv_field].split(","):
-                                        if code_value.lower() in self.field_codes[csv_field]:
-                                            codes_en.append(self.field_codes[csv_field][code_value.lower()].label_en)
-                                            codes_fr.append(self.field_codes[csv_field][code_value.lower()].label_fr)
+                                    if self.csv_fields[csv_field].solr_field_multivalued:
+                                        codes_en = []
+                                        codes_fr = []
+                                        for code_value in csv_record[csv_field].split(","):
+                                            if code_value.lower() in self.field_codes[csv_field]:
+                                                codes_en.append(self.field_codes[csv_field][code_value.lower()].label_en)
+                                                codes_fr.append(self.field_codes[csv_field][code_value.lower()].label_fr)
+                                            else:
+                                                self.logger.error("Row {0}, Record {1}. Unknown code value: {2} for field: {3}".format(
+                                                    row_num + 2, record_id, code_value, csv_field))
+                                        solr_record[csv_field + '_en'] = codes_en
+                                        solr_record[csv_field + '_fr'] = codes_fr
+                                    else:
+                                        if csv_record[csv_field].lower() in self.field_codes[csv_field]:
+                                            solr_record[csv_field + '_en'] = self.field_codes[csv_field][csv_record[csv_field].lower()].label_en
+                                            solr_record[csv_field + '_fr'] = self.field_codes[csv_field][csv_record[csv_field].lower()].label_fr
                                         else:
                                             self.logger.error("Row {0}, Record {1}. Unknown code value: {2} for field: {3}".format(
-                                                row_num + 2, record_id, code_value, csv_field))
-                                    solr_record[csv_field + '_en'] = codes_en
-                                    solr_record[csv_field + '_fr'] = codes_fr
-                                else:
-                                    if csv_record[csv_field].lower() in self.field_codes[csv_field]:
-                                        solr_record[csv_field + '_en'] = self.field_codes[csv_field][csv_record[csv_field].lower()].label_en
-                                        solr_record[csv_field + '_fr'] = self.field_codes[csv_field][csv_record[csv_field].lower()].label_fr
-                                    else:
-                                        self.logger.error("Row {0}, Record {1}. Unknown code value: {2} for field: {3}".format(
-                                            row_num + 2, record_id, csv_record[csv_field], csv_field))
-                    solr_record = self.set_empty_fields(solr_record)
+                                                row_num + 2, record_id, csv_record[csv_field], csv_field))
+                        solr_record = self.set_empty_fields(solr_record)
 
-                    # Set the Solr ID field (Nothing To Report records are excluded)
-                    if not options['nothing_to_report']:
-                        solr_record['id'] = record_id
-                    else:
-                        if 'month' in solr_record:
-                            solr_record['id'] = "{0}-{1}-{2}".format(solr_record['owner_org'], solr_record['year'], solr_record['month'])
-                        elif 'quarter' in solr_record:
-                            solr_record['id'] = "{0}-{1}-{2}".format(solr_record['owner_org'], solr_record['year'],
-                                                                     solr_record['quarter'])
+                        # Set the Solr ID field (Nothing To Report records are excluded)
+                        if not options['nothing_to_report']:
+                            solr_record['id'] = record_id
+                        else:
+                            if 'month' in solr_record:
+                                solr_record['id'] = "{0}-{1}-{2}".format(solr_record['owner_org'], solr_record['year'], solr_record['month'])
+                            elif 'quarter' in solr_record:
+                                solr_record['id'] = "{0}-{1}-{2}".format(solr_record['owner_org'], solr_record['year'],
+                                                                         solr_record['quarter'])
 
-                    # Call plugins if they exist for this search type. This is where a developer can introduce
-                    # code to customize the data that is loaded into Solr for a particular search.
-                    if search_type_plugin in self.discovered_plugins:
-                        solr_record = self.discovered_plugins[search_type_plugin].load_csv_record(csv_record, solr_record, self.search_target, self.csv_fields, self.field_codes, 'NTR' if options['nothing_to_report'] else '')
+                        # Call plugins if they exist for this search type. This is where a developer can introduce
+                        # code to customize the data that is loaded into Solr for a particular search.
+                        if search_type_plugin in self.discovered_plugins:
+                            solr_record = self.discovered_plugins[search_type_plugin].load_csv_record(csv_record, solr_record, self.search_target, self.csv_fields, self.field_codes, 'NTR' if options['nothing_to_report'] else '')
 
-                    solr_items.append(solr_record)
+                        solr_items.append(solr_record)
 
-                    # Write to Solr whenever the cycle threshold is reached
-                    if cycle >= self.cycle_on:
-                        # try to connect to Solr up to 10 times
-                        for countdown in reversed(range(10)):
-                            try:
-                                solr.index(self.solr_core, solr_items)
-                                self.logger.info("{0} rows processed".format(total))
-                                cycle = 0
-                                solr_items.clear()
-                                break
-                            except ConnectionError as cex:
-                                if not countdown:
-                                    raise
-                                self.logger.info("Solr error: {0}. Waiting to try again ... {1}".format(cex, countdown))
-                                time.sleep((10 - countdown) * 5)
+                        # Write to Solr whenever the cycle threshold is reached
+                        if cycle >= self.cycle_on:
+                            # try to connect to Solr up to 10 times
+                            for countdown in reversed(range(10)):
+                                try:
+                                    solr.index(self.solr_core, solr_items)
+                                    self.logger.info("{0} rows processed".format(total))
+                                    cycle = 0
+                                    solr_items.clear()
+                                    break
+                                except ConnectionError as cex:
+                                    if not countdown:
+                                        raise
+                                    self.logger.info("Solr error: {0}. Waiting to try again ... {1}".format(cex, countdown))
+                                    time.sleep((10 - countdown) * 5)
+                    except Exception as x:
+                        self.logger.error('Unexpected Error "{0}" while processing row {1}'.format(x, row_num + 1))
+                    # Write and remaining records to Solr and commit
 
-                # Write and remaining records to Solr and commit
                 if cycle > 0:
                     # try to connect to Solr up to 10 times
                     for countdown in reversed(range(10)):

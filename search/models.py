@@ -1,6 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
-
+from datetime import datetime, timezone, MINYEAR, MAXYEAR
 
 class Search(models.Model):
     """
@@ -153,5 +153,27 @@ class Code(models.Model):
     label_en = models.CharField(blank=False, max_length=512, verbose_name="English Code Value")
     label_fr = models.CharField(blank=False, max_length=2512, verbose_name="French Code Value")
 
+    def __str__(self):
+        return '%s - (%s) %s' % (self.label_en, self.code_id, self.field_id)
+
     class Meta:
         unique_together = (('field_id', 'code_id'),)
+
+
+class ChronologicCode(models.Model):
+    """
+    Codes with a date range.
+    """
+    id = models.AutoField(primary_key=True)
+    code_id = models.ForeignKey(Code, on_delete=models.CASCADE)
+    label = models.CharField(blank=False, max_length=512, verbose_name="Unique code Identifier")
+    label_en = models.CharField(blank=False, max_length=512, verbose_name="English Code Value")
+    label_fr = models.CharField(blank=False, max_length=512, verbose_name="French Code Value")
+    start_date = models.DateTimeField (blank=False, verbose_name="Start Date", default=datetime(MINYEAR, 1, 1, 0, 0, 0, 0, timezone.utc))
+    end_date = models.DateTimeField(blank=False, verbose_name="End Date", default=datetime(MAXYEAR, 12, 31, 23, 59,59, 999999, timezone.utc))
+
+    class Meta:
+        unique_together = (('code_id', 'start_date'),)
+
+
+

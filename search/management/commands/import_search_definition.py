@@ -1,8 +1,8 @@
 import csv
 from import_export import resources
 from distutils.dir_util import copy_tree
-from search.admin import SearchResource, FieldResource, CodeResource
-from search.models import Search, Field, Code
+from search.admin import SearchResource, FieldResource, CodeResource, ChronologicCodesResource
+from search.models import Search, Field, Code, ChronologicCode
 from django.core.management.base import BaseCommand, CommandError
 import logging
 from os import path, mkdir
@@ -42,6 +42,20 @@ class ExportCodeResource(CodeResource):
     def get_queryset(self):
         sid = Search.objects.get(search_id=self.search_id)
         return Code.objects.filter(field_id__search_id=sid)
+
+
+class ExportChronologicCodeResource(ChronologicCodesResource):
+
+    def __init__(self, search_id):
+        super().__init__()
+        self.search_id = search_id
+
+    def get_queryset(self):
+        sid = Search.objects.get(search_id=self.search_id)
+        cids = []
+        for cid in Code.objects.filter(field_id__search_id=sid):
+            cids.append(cid.id)
+        return ChronologicCode.objects.filter(code_id__id__in=cids)
 
 
 class Command(BaseCommand):
@@ -127,6 +141,22 @@ class Command(BaseCommand):
                     result = code_resource.import_data(dataset=imported_data, dry_run=False)
                     if not result.has_errors():
                         logging.info("Imported Code models")
+
+            # Import Chronological Codes - A search may not necessarily have chronologic odes
+            ccode_resource = ExportChronologicCodeResource(options['search'])
+            ccodes_path = path.join(db_path, "{0}_chronologiccodes.json".format(options['search']))
+            if path.exists(ccodes_path):
+                with open(ccodes_path, 'r', encoding='utf-8-sig', errors="ignore") as json_file:
+                    imported_data = tablib.Dataset().load(json_file)
+                    result = ccode_resource.import_data(dataset=imported_data, dry_run=True)
+                    if result.has_errors():
+                        errors = result.row_errors()
+                        for err in errors:
+                            logging.info(err[1][0].error)
+                        raise CommandError('Errors raised while importing Codes')
+                    result = ccode_resource.import_data(dataset=imported_data, dry_run=False)
+                    if not result.has_errors():
+                        logging.info("Imported Chronologic Code models")
 
         # Copy custom snippets. The convention is for templates to be deployed to : BASE_DIr/templates/snippets/<search ID>/
         BASE_DIR = Path(__file__).resolve().parent.parent.parent

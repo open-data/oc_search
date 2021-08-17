@@ -1,7 +1,9 @@
 from django.contrib import admin
+from django.urls import reverse
+from django.utils.html import format_html
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
-from .models import Search, Field, Code
+from .models import Search, Field, Code, ChronologicCode
 
 # -- Searches ---
 
@@ -115,7 +117,36 @@ class CodeAdmin(ImportExportModelAdmin):
     list_filter = [('field_id', admin.RelatedOnlyFieldListFilter)]
     save_as = True
 
+# -- ChronologicCode ---
+
+class ChronologicCodesResource(resources.ModelResource):
+
+    class Meta:
+        model = ChronologicCode
+        import_id_fields = ('id', 'code_id', 'start_date')
+        fields = ('code_id__field_id', 'code_id__code_id', 'id', 'code_id', 'label','label_en', 'label_fr', 'start_date', 'end_date')
+        skip_unchanged = True
+        report_skipped = True
+
+    def before_import_row(self, row, row_number=None, **kwargs):
+        fq = Code.objects.filter(field_id_id=row['code_id__field_id']).filter(code_id=row['code_id__code_id'])
+        for f in fq:
+            row['id'] = f.id
+
+
+class ChronologicCodesAdmin(ImportExportModelAdmin):
+
+    resource_class = ChronologicCodesResource
+    list_display = ['label', 'codes', 'label_en', 'start_date', 'end_date']
+    search_fields = ['code_id__code_id', 'label', 'label_en', 'label_fr']
+    list_filter = [('code_id', admin.RelatedOnlyFieldListFilter)]
+    save_as = True
+
+    def codes(self, obj):
+        return format_html('<a href="{0}?q={1}">{2}</a>', reverse('admin:search_chronologiccode_changelist'), obj.code_id.code_id, obj.code_id.code_id)
+
 
 admin.site.register(Search, SearchAdmin)
 admin.site.register(Field, FieldAdmin)
 admin.site.register(Code, CodeAdmin)
+admin.site.register(ChronologicCode, ChronologicCodesAdmin)
