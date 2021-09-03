@@ -78,6 +78,8 @@ OCS is made of 3 components:
 
 ![High Level Architecture Diagram](./docs/images/high_level_diagram.png "High Level Architecture")
 
+![Source Code Visualization](./diagram.svg)
+
 ## Database ##
 
 Each search definition is made of three or four components:
