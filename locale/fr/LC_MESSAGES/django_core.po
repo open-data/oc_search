@@ -246,3 +246,6 @@ msgstr "Cartes ouvertes"
 msgid "This interactive map requires JavaScript. To view this content please enable JavaScript in your browser or download a browser that supports it."
 msgstr "Cette carte interactive nécessite JavaScript. Pour voir ce contenu, s'il vous plaît, activer JavaScript dans votre navigateur ou télécharger un navigateur qui le prend en charge."
 
+msgid "Limited service availability:"
+msgstr "Perturbation de service :"
+

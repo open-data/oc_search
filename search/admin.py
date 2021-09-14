@@ -24,6 +24,7 @@ class SearchAdmin(ImportExportModelAdmin):
                            'dataset_download_text_en', 'dataset_download_url_en',
                            'dataset_download_text_fr', 'dataset_download_url_fr', 'desc_en', 'desc_fr',
                            'about_message_en', 'about_message_fr', 'imported_on')}),
+        ('Disabled', {'fields': ('is_disabled', 'disabled_message_en', 'disabled_message_fr')}),
         ('Results', {'fields': ('results_page_size', 'results_sort_order_en', 'results_sort_order_fr',
                                 'results_sort_order_display_en', 'results_sort_order_display_fr')}),
         ('Templates', {'fields': ('page_template', 'record_template', 'breadcrumb_snippet', 'footer_snippet',

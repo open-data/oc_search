@@ -193,7 +193,7 @@ class SearchView(View):
     def get(self, request: HttpRequest, lang='en', search_type=''):
         lang = request.LANGUAGE_CODE
         request.session['prev_search'] = request.build_absolute_uri()
-        if search_type in self.searches:
+        if search_type in self.searches and not self.searches[search_type].is_disabled:
             context = self.default_context(request, search_type, lang)
             context["search_item_snippet"] = self.searches[search_type].search_item_snippet
             context["download_ds_url"] = self.searches[search_type].dataset_download_url_fr if lang == 'fr' else self.searches[search_type].dataset_download_url_en
@@ -322,7 +322,13 @@ class SearchView(View):
                 return render(request, self.searches[search_type].page_template, context)
             except (ConnectionError, SolrError) as ce:
                 return render(request, 'error.html', get_error_context(search_type, lang, ce.args[0]))
-
+        elif search_type in self.searches and self.searches[search_type].is_disabled:
+            context = self.default_context(request, search_type, lang)
+            context['label_en'] = self.searches[search_type].label_en
+            context['label_fr'] = self.searches[search_type].label_fr
+            context['message_en'] = self.searches[search_type].disabled_message_en
+            context['message_fr'] = self.searches[search_type].disabled_message_fr
+            return render(request, 'no_service.html', context)
         else:
             return render(request, '404.html', get_error_context(search_type, lang))
 
@@ -419,7 +425,6 @@ class RecordView(SearchView):
             return render(request, self.searches[search_type].record_template, context)
 
         else:
-
             return render(request, '404.html', get_error_context(search_type, lang))
 
 

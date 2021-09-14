@@ -19,6 +19,12 @@ class Search(models.Model):
     about_message_fr = models.TextField(blank=True, default="", help_text="Informational message displayed at the top "
                                                                           "of the search page. Uses Markdown (en Français)",
                                         verbose_name="About the search message (Français)")
+    is_disabled = models.BooleanField(blank=False, default=False, verbose_name="Search is disabled",
+                                      help_text="Disable the search. Useful for applying code updates.")
+    disabled_message_en = models.TextField(blank=False, default="This search is currently unavailable for maintenance",
+                                           verbose_name="Disabled Search Message - English")
+    disabled_message_fr = models.TextField(blank=False, default="Ce service de recherche est actuellement indisponible pour cause de maintenance.",
+                                           verbose_name="Disabled Search Message - French")
     imported_on = models.DateTimeField(blank=True, null=True, help_text="If an import script is used to create the "
                                                                         "search, this is the last date it was run.",
                                        verbose_name="Last imported on")

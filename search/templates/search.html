@@ -21,10 +21,8 @@
 
         <label class="control-label mrgn-lft-lg" for="sort"> {% translate "Order By" %}</label>
         <select class="form-control" id="sort" name="sort" onchange="submitForm();" value="{{ sort }}">
-            {% for option, label in sort_options.items %}}
-            <option %} %}selected="selected" endif if option sort== value="{{ option }}" {% {%
-            >{{ label }}
-            </option>
+            {% for option, label in sort_options.items %}
+                <option value="{{ option }}" {% if sort == option %}selected="selected"{% endif %}>{{ label }}</option>
             {% endfor %}
         </select>
 
