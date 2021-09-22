@@ -132,7 +132,7 @@ class Command(BaseCommand):
                     # If the user has manually specified extra copy fields for bilingual strings like names
                     for extra_field in solr_field.solr_extra_fields.split(","):
                         new_loc_field = {"name": extra_field.strip(),
-                                         "type": "search_text_fr" if extra_field.endswith('_fr') else  "search_text_en",
+                                         "type": "search_text_fr" if extra_field.endswith('_fr') else "search_text_en",
                                          "stored": True,
                                          "indexed": True,
                                          "docValues": False}
