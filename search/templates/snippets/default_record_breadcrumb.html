@@ -9,7 +9,7 @@
                 "lang": "{{ language_code | SwapLangCode }}", {% if url_uses_path %}
                 "href": "/search/{{ language_code | SwapLangCode }}/{{ search_type }}/record/{{ docs.0.id }}{% if query_path %}/?{{ query_path }}{% endif %}",
                 {% else %}
-                "href": "{% if language_code == 'en' %}{{ url_host_fr }}{% else %}{{ url_host_en }}{% endif %}/{{ url_host_path }}/{{ search_type }}/record/{{ docs.0.id }}{% if query_path %}/?{{ query_path }}{% endif %}",{% endif %}
+                "href": "https://{% if language_code == 'en' %}{{ url_host_fr }}{% else %}{{ url_host_en }}{% endif %}/{{ url_host_path }}/{{ search_type }}/record/{{ docs.0.id }}{% if query_path %}/?{{ query_path }}{% endif %}",{% endif %}
                 "text": "{{ language_code | SwapLangName}}"
             }],
             search: false,
