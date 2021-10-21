@@ -20,86 +20,88 @@
 <div class="row mrgn-tp-md">
 
     {% block main-content-centre %}
-        <div class="col-md-12">
-        {% block main-content-search-items %}
-        {% for doc in docs %}
-            {% if record_detail_snippet %}
-                {% include record_detail_snippet %}
-            {% else %}
-                {% for field_name, field_value in doc.items %}
+    <div class="col-md-12">
+    {% block main-content-search-items %}
+    {% for doc in docs %}
+        {% if record_detail_snippet %}
+            {% include record_detail_snippet %}
+        {% else %}
+            {% for field_name, field_value in doc.items %}
 
-                    {% if field_name in display_fields %}
-                    <div class="row">
-                        {% if field_name in display_field_name %}
-                            <div class="col-md-4"><strong>{{ display_field_name|get_dict_value:field_name }}</strong></div>
-                        {% else %}
-                            <div class="col-md-4"><strong>{{ field_name }}</strong></div>
-                        {% endif %}
-                        {% if field_name in codes %}
-                            <div class="col-md-8">
-                            {% if field_value|is_list %}
-                                {% for field_list_value in field_value %}
-                                    {{ codes|get_dict_value:field_name|get_dict_value:field_list_value }}<br>
-                                {% endfor %}
-                            {% else %}
-                                {{ codes|get_dict_value:field_name|get_dict_value:field_value }}
-                            {% endif %}
-                            </div>
-                        {% else %}
+                {% if field_name in display_fields %}
+                <div class="row">
+                    {% if field_name in display_field_name %}
+                        <div class="col-md-4"><strong>{{ display_field_name|get_dict_value:field_name }}</strong></div>
+                    {% else %}
+                        <div class="col-md-4"><strong>{{ field_name }}</strong></div>
+                    {% endif %}
+                    {% if field_name in codes %}
                         <div class="col-md-8">
-                            {% if field_value|is_list %}
-                                {% for field_list_value in field_value %}
-                                    {{ field_list_value }}<br>
-                                {% endfor %}
-                            {% else %}
-                                {{ field_value }}
-                            {% endif %}
+                        {% if field_value|is_list %}
+                            {% for field_list_value in field_value %}
+                                {{ codes|get_dict_value:field_name|get_dict_value:field_list_value }}<br>
+                            {% endfor %}
+                        {% else %}
+                            {{ codes|get_dict_value:field_name|get_dict_value:field_value }}
+                        {% endif %}
                         </div>
+                    {% else %}
+                    <div class="col-md-8">
+                        {% if field_value|is_list %}
+                            {% for field_list_value in field_value %}
+                                {{ field_list_value }}<br>
+                            {% endfor %}
+                        {% else %}
+                            {{ field_value }}
                         {% endif %}
                     </div>
                     {% endif %}
-                {% endfor %}
-                {% if mlt_enabled %}
-                    <div class="row">
-                        <div class="col-md-12"> <a href="{{ parent_path }}similar/{{ doc.id }}"><button type="button" class="btn btn-secondary">{% translate "Find similar records" %}</button></a></div>
-                    </div>
+                </div>
                 {% endif %}
+            {% endfor %}
+            {% if mlt_enabled %}
+                <div class="row">
+                    <div class="col-md-12"> <a href="{{ parent_path }}similar/{{ doc.id }}"><button type="button" class="btn btn-secondary">{% translate "Find similar records" %}</button></a></div>
+                </div>
             {% endif %}
-        {% endfor %}
-        {% endblock main-content-search-items %}
-        </div>
+        {% endif %}
+    {% endfor %}
+    {% endblock main-content-search-items %}
+    </div>
     {% endblock main-content-centre %}
 
-         <div class="col-md-12">
-         {% block main-content-pagination %}
-         <section>
-            <ul class="pagination">
-                {% for pg in pagination %}
-                    {% if pg == 1 %}
-                        {% if currentpage == 1 %}
-                            <li class="previous disabled"><a href="#" rel="prev">{% translate 'Previous' %}</a></li>
-                        {% else %}
-                            <li class="previous"><a href="#" onclick="gotoPage('{{ previous_page }}')">{% translate 'Previous' %} <span class="wb-inv">Go to page {{ previous_page }}</span></a></li>
-                        {% endif %}
-                        <li{% if currentpage == 1 %} class="active" {% endif %}><a href="#" onclick="gotoPage('1')">1<span class="wb-inv">(current) {% translate 'Go to' %} 1 </span></a></li>
-                     {% elif pg == last_page %}
-                        <li{% if currentpage == last_page %} class="active"{% endif %}>
-                          <a href="#" onclick="gotoPage('{{ last_page }}')">{{ pg }}<span class="wb-inv">(current) {% translate 'Go to' %} 1 </span></a>
-                        </li>
-                        {% if currentpage == last_page %}
-                        <li class="next disabled"><a href="#" rel="next">{% translate 'Next' %}</a></li>
-                        {% else %}
-                            <li class="next"><a href="#" onclick="gotoPage('{{ next_page }}')">{% translate 'Next' %} <span class="wb-inv">Go to page {{ next_page }}</span></a></li>
-                        {% endif %}
-                    {% elif pg == 0 %}
-                        <li><a href="#" onclick="">...<span class="wb-inv"></span></a></li>
-                    {% else %}
-                        <li {% if currentpage == pg %}class="active" {% endif %}><a href="#" onclick="gotoPage('{{ pg }}')">{{ pg }} <span class="wb-inv">Go to page {{pg}}</span></a></li>
-                    {% endif %}
-                {% endfor %}
-            </ul>
-        </section>
-    {% endblock main-content-pagination %}
+    <div class="col-md-12">
+       {% block main-content-pagination %}
+       {% if show_pagination %}
+       <section>
+          <ul class="pagination">
+              {% for pg in pagination %}
+                  {% if pg == 1 %}
+                      {% if currentpage == 1 %}
+                          <li class="previous disabled"><a href="#" rel="prev">{% translate 'Previous' %}</a></li>
+                      {% else %}
+                          <li class="previous"><a href="#" onclick="gotoPage('{{ previous_page }}')">{% translate 'Previous' %} <span class="wb-inv">Go to page {{ previous_page }}</span></a></li>
+                      {% endif %}
+                      <li{% if currentpage == 1 %} class="active" {% endif %}><a href="#" onclick="gotoPage('1')">1<span class="wb-inv">(current) {% translate 'Go to' %} 1 </span></a></li>
+                   {% elif pg == last_page %}
+                      <li{% if currentpage == last_page %} class="active"{% endif %}>
+                        <a href="#" onclick="gotoPage('{{ last_page }}')">{{ pg }}<span class="wb-inv">(current) {% translate 'Go to' %} 1 </span></a>
+                      </li>
+                      {% if currentpage == last_page %}
+                      <li class="next disabled"><a href="#" rel="next">{% translate 'Next' %}</a></li>
+                      {% else %}
+                          <li class="next"><a href="#" onclick="gotoPage('{{ next_page }}')">{% translate 'Next' %} <span class="wb-inv">Go to page {{ next_page }}</span></a></li>
+                      {% endif %}
+                  {% elif pg == 0 %}
+                      <li><a href="#" onclick="">...<span class="wb-inv"></span></a></li>
+                  {% else %}
+                      <li {% if currentpage == pg %}class="active" {% endif %}><a href="#" onclick="gotoPage('{{ pg }}')">{{ pg }} <span class="wb-inv">Go to page {{pg}}</span></a></li>
+                  {% endif %}
+              {% endfor %}
+          </ul>
+      </section>
+      {% endif %}
+      {% endblock main-content-pagination %}
     </div>
-    </div>
+  </div>
 {% endblock main-content-body %}

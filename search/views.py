@@ -310,14 +310,18 @@ class SearchView(View):
 
                 # Calculate pagination for the search page
                 context['pagination'] = calc_pagination_range(solr_response.num_found, self.searches[search_type].results_page_size, page, 3)
-                context['previous_page'] = (1 if page == 1 else page - 1)
-                last_page = (context['pagination'][len(context['pagination']) - 1] if len(context['pagination']) > 0 else 1)
-                last_page = (1 if last_page < 1 else last_page)
-                context['last_page'] = last_page
-                next_page = page + 1
-                next_page = (last_page if next_page > last_page else next_page)
-                context['next_page'] = next_page
-                context['currentpage'] = page
+                if len(context['pagination']) == 1:
+                    context['show_pagination'] = False
+                else:
+                    context['show_pagination'] = True
+                    context['previous_page'] = (1 if page == 1 else page - 1)
+                    last_page = (context['pagination'][len(context['pagination']) - 1] if len(context['pagination']) > 0 else 1)
+                    last_page = (1 if last_page < 1 else last_page)
+                    context['last_page'] = last_page
+                    next_page = page + 1
+                    next_page = (last_page if next_page > last_page else next_page)
+                    context['next_page'] = next_page
+                    context['currentpage'] = page
 
                 return render(request, self.searches[search_type].page_template, context)
             except (ConnectionError, SolrError) as ce:
@@ -413,14 +417,18 @@ class RecordView(SearchView):
 
             # Calculate pagination for the search page
             context['pagination'] = calc_pagination_range(solr_response.num_found, 10, page)
-            context['previous_page'] = (1 if page == 1 else page - 1)
-            last_page = (context['pagination'][len(context['pagination']) - 1] if len(context['pagination']) > 0 else 1)
-            last_page = (1 if last_page < 1 else last_page)
-            context['last_page'] = last_page
-            next_page = page + 1
-            next_page = (last_page if next_page > last_page else next_page)
-            context['next_page'] = next_page
-            context['currentpage'] = page
+            if len(context['pagination']) == 1:
+                context['show_pagination'] = False
+            else:
+                context['show_pagination'] = True
+                context['previous_page'] = (1 if page == 1 else page - 1)
+                last_page = (context['pagination'][len(context['pagination']) - 1] if len(context['pagination']) > 0 else 1)
+                last_page = (1 if last_page < 1 else last_page)
+                context['last_page'] = last_page
+                next_page = page + 1
+                next_page = (last_page if next_page > last_page else next_page)
+                context['next_page'] = next_page
+                context['currentpage'] = page
 
             return render(request, self.searches[search_type].record_template, context)
 
