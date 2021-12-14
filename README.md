@@ -4,7 +4,7 @@
 [![Visits Badge](https://badges.pufler.dev/visits/open-data/oc_search)](https://badges.pufler.dev)
 
 Open Canada Solr Search (OCS) is a Django 3.0 application that uses Solr 8.x to provide a customizable search interface
-for the Open Canada data catalog and the proactive disclosure data. OCS provides a standard web interface into Solr cores 
+for the Open Canada data catalog and the proactive disclosure data. OCS provides a standard web interface into Solr cores
 .
 
 
@@ -18,9 +18,9 @@ pages](https://docs.djangoproject.com/en/3.1/intro/install/). OCS has been teste
 It is highly recommended that users have some basic familiarity with Django before using OCS.
 
 OCSS requires a database backend that is supported by Django such as PostgreSQL or MySQL. Initial development can be done with the SQLite engine
-that is included with Python. 
+that is included with Python.
 
-OCSS also requires access to a Solr server. For information on installing Solr, please visit the 
+OCSS also requires access to a Solr server. For information on installing Solr, please visit the
 [Apache Solr Reference Guide](https://lucene.apache.org/solr/guide/).
 
 ### Installation Steps ###
@@ -30,18 +30,18 @@ OCSS also requires access to a Solr server. For information on installing Solr, 
 1. Clone the SolrClient project from GitHub: https://github.com/open-data/SolrClient
 
 1. Create a python virtual environment using Python 3.6 or higher.
-   
+
    For example `python -m venv venv`.
-   
-1. Activate the new virtual environment. 
+
+1. Activate the new virtual environment.
 
    For example `source venv/bin/activate` on Linux, or `venv\Scripts\activate` for Windows
 
 1. Install the prerequisites from the requirements.txt file for the SolrClient project. and install the
 project itself.
-   
+
      `pip install -r requirements.txt`
-   
+
      `python setup.py develop`
 
 1. Install the prerequisites from the requirements.txt file for the OCS project
@@ -53,7 +53,7 @@ project itself.
     `python manage.py makemigrations search`<br>
     `python manage.py sqlmigrate search 0001`<br>
     `python manage,py migrate`
-   
+
 ### Django Plugins ###
 
 Four Django plugins are used:
@@ -61,9 +61,9 @@ Four Django plugins are used:
 1. [Django import/export](https://django-import-export.readthedocs.io/en/latest/)  Django application and library for importing and exporting data with included admin integration.
 1. [Django Jazzmin Admin Theme](https://django-jazzmin.readthedocs.io/) *(Optional)* Provides a more modern Ui for the Django admin interface
 1. [Django Redis Cache](https://django-redis-cache.readthedocs.io/en/latest/) *(Optional)* Let's Django use Redis to cache pages
-1. [Django Redis Sessions](https://github.com/martinrusev/django-redis-sessions) *(Optional)* Enables the use of Redis to maintain user sessions. 
+1. [Django Redis Sessions](https://github.com/martinrusev/django-redis-sessions) *(Optional)* Enables the use of Redis to maintain user sessions.
 
-These Django plugins are enabled in the Django application's settings.py file. Example configuration can be found in 
+These Django plugins are enabled in the Django application's settings.py file. Example configuration can be found in
 [settings-sample.py](https://github.com/open-data/oc_search/blob/master/oc_search/settings-sample.py)
 
 ---
@@ -87,16 +87,16 @@ Each search definition is made of three or four components:
 1. **Fields**: Each search consists of a number of individual fields. Each field record is associated with a single Search record
    and contains metadata describing the field such as the data type and labels.
 1. **Codes** and code values (_optional_). Often structured data will contain code values or 'lookup' fields values where the
-   field value must come from a predetermined list of values. For example, 'AB' maybe selected from a list of Canadian provincial 
-   acronyms. Each row in the table represents a single code value and is associated with a single field. 
+   field value must come from a predetermined list of values. For example, 'AB' maybe selected from a list of Canadian provincial
+   acronyms. Each row in the table represents a single code value and is associated with a single field.
 1. **ChronologicCodes**: These are similar to codes, but have a start and end date time associated with a code value. This permits
    the Englisn and French values of the codes to be associated with a specific time range.
 
-Combined, these three components, Search, Fields, and Codes, define a custom search application. 
-Django provides an administrative user interface for editing the search definitions. To use, 
-[create an admin account](https://docs.djangoproject.com/en/3.1/intro/tutorial02/#creating-an-admin-user), and 
-[login to the admin system](https://docs.djangoproject.com/en/3.1/intro/tutorial02/#enter-the-admin-site). 
-The OC Search admin screens have been modified with helpful customizations to make it easier to 
+Combined, these three components, Search, Fields, and Codes, define a custom search application.
+Django provides an administrative user interface for editing the search definitions. To use,
+[create an admin account](https://docs.djangoproject.com/en/3.1/intro/tutorial02/#creating-an-admin-user), and
+[login to the admin system](https://docs.djangoproject.com/en/3.1/intro/tutorial02/#enter-the-admin-site).
+The OC Search admin screens have been modified with helpful customizations to make it easier to
 customize a search.
 
 Note tha actual search data is not stored in the relational database, but is stored only in the Solr search engine. The
@@ -108,14 +108,14 @@ and the search interface,
 ### Generating a Search from CKAN yaml ###
 
 Creating a new search from scratch can be laborious. There are two command line utilities that can be used to
-generate new search definitions from existing data sources. 
-One works with the CKAN yaml files that are used by Open Canada's proactive disclosure system, 
+generate new search definitions from existing data sources.
+One works with the CKAN yaml files that are used by Open Canada's proactive disclosure system,
 and another that createa a simple search derives from a basic search from a  generic CSV files with a header.
 
 Use the custom **import_schema_ckan_yaml** Django command to create a new search definition based on a schema defined
 in a CKAN scheming yaml file.
 
-For example: 
+For example:
 
 `python manage.py import_schema_ckan_yaml --yaml_file .\data\travela.yaml --search_id travela --title_en "Travel Expenses" --title_fr "Dépenses de voyage gouvernementaux"`
 
@@ -129,11 +129,11 @@ For example:
 
 ## OCS Commands ##
 
-Several custom Django management commands are available  
+Several custom Django management commands are available
 
 <div id="create_solr_core">
-   
-### create_solr_core ### 
+
+### create_solr_core ###
 
 To run: `python manage.py create_solr_core <search name>`
 
@@ -142,7 +142,7 @@ through the Django admin UI.
 </div>
 
 <div id="import_schema_ckan_yaml">
-   
+
 ### import_schema_ckan_yaml ###
 
 To run: `python manage.py import_schema_ckan_yaml --yaml_file <yaml file> --search_id <unique search ID> --title_en <English Title> --title_fr <French Title> [--reset]`
@@ -151,7 +151,7 @@ This command will parse the CKAN YAML file and load it into the search model dat
 </div>
 
 <div id="import_data_csv">
-   
+
 ### import_data_csv ###
 
 To run: `python manage.py --csv <CSV file> --search <Unique search ID> --core <Solr Core Name> [--nothing_to_report]`
@@ -170,12 +170,13 @@ Creating a new proactive disclosure search requires several steps
 
 ## Step 1 - Create a new Solr core ##
 
-Using Solr 8.x, create a new Solr core from the command line using the `solr` command, and copy the 
-custom synonyms files to the new Solr core's configuration folder.
+Using Solr 8.x, create a new Solr core from the command line using the `solr` command, and copy the
+custom synonyms files to the new Solr core's configuration folder. The default solrconfig.xml file
+generated by the solr create command does not need to be modified.
 
 Example:
 
-``` 
+```
 sudo -u solr /opt/solr/bin/solr create -c search_core1
 cp oc_search/solr/conf/synonyms_*.txt /var/solr/data/search_core1/conf/lang/
 ```
@@ -190,9 +191,9 @@ The search model consists of three components: search, fields, and codes (option
 <img src="./docs/images/search_definition.svg" alt="Search Components" width="200"/>
 
 It is possible to create a new search module using the Django admin UI, but this would
-be laborious and error prone. Instead, there are two custom commands that can be used to 
-create new searches based on either an existing CKAN Recombinant YAML file or from a 
-basic CSV file with a header. See <a href="#import_schema_ckan_yaml">import_schema_ckan_yaml</a> and 
+be laborious and error prone. Instead, there are two custom commands that can be used to
+create new searches based on either an existing CKAN Recombinant YAML file or from a
+basic CSV file with a header. See <a href="#import_schema_ckan_yaml">import_schema_ckan_yaml</a> and
 `generic_csv_schema` commands for details.
 
 ## Step 3 - Set up Solr Core/Collection schema ##
@@ -211,23 +212,23 @@ Load CSV data into the search core using the <a href="#import_data_csv">import_d
 By default, the [RAMP viewer](https://github.com/fgpv-vpgf/fgpv-vpgf#usage) is not enabled, and it is not required for searching. It is used by
 Open Canada for visualizing [Open Maps](https://search.open.canada.ca/en/od/?od-search-col=Open%20Maps) geospatial data
 
-To install, 
+To install,
 
 1. Download the latest [RAMP viewer release from GitHub](https://github.com/fgpv-vpgf/fgpv-vpgf/releases/latest).
-   Extract the contents into the `ramp/viewer` folder in the project. 
+   Extract the contents into the `ramp/viewer` folder in the project.
 
-1. Download [the Canada.ca design system distribution files](https://wet-boew.github.io/GCWeb/home.html) and extract 
-   the contents into `ramp/viewer/GCWeb`. 
+1. Download [the Canada.ca design system distribution files](https://wet-boew.github.io/GCWeb/home.html) and extract
+   the contents into `ramp/viewer/GCWeb`.
 
 1. Download the non-CDN version of [the WET-BOEW design system distribution files](https://github.com/wet-boew/wet-boew/releases)
    and extract the contents into `ramp/viewer/GCWeb`.
 
 1. Run Django's `collectstatic` command. The RAMP viewer will look for Canada.ca and WET-BOEW files in
-   the path `[static url root]/ramp/`. If using Nginx oor equivalent to server static files, be sure to set this 
+   the path `[static url root]/ramp/`. If using Nginx oor equivalent to server static files, be sure to set this
    path up.
 
 For [Open Maps](https://search.open.canada.ca/en/od/?od-search-col=Open%20Maps), the viewer is
-using the remote configuration services (RCS). The local RCS definition files are also located in the 
+using the remote configuration services (RCS). The local RCS definition files are also located in the
 `ramp/viewer` folder. The provided files are specific to Open Canada.
 
 ![Viewer directory structure](./docs/images/viewer_folder.png "Viewer folder")
