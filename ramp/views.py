@@ -53,7 +53,8 @@ class RampView(View):
             "titles": titles,
             "open_data_url": settings.OPEN_DATA_BASE_URL_FR if lang == "fr" else settings.OPEN_DATA_BASE_URL_EN,
             "rcs_config": 'ramp/config.rcs.fr-CA.json' if lang == "fr" else 'ramp/config.rcs.en-CA.json',
-            "toggle_url": self._get_toggle(lang, keys)
+            "toggle_url": self._get_toggle(lang, keys),
+            "show_alert_info": settings.RAMP_SHOW_ALERT_INFO if hasattr(settings, "RAMP_SHOW_ALERT_INFO") else False,
         }
         return render(request, 'ramp.html', context)
 

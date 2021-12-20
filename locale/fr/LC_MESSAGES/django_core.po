@@ -249,3 +249,5 @@ msgstr "Cette carte interactive nécessite JavaScript. Pour voir ce contenu, s'i
 msgid "Limited service availability:"
 msgstr "Perturbation de service :"
 
+msgid "Open Maps is undergoing maintenance. Certain features will be unavailable during this time. For questions or concerns, please <a href=\"https://open.canada.ca/en/forms/contact-us\">contact us</a>."
+msgstr "Cartes ouvertes est en cours de maintenance. Certaines fonctionnalités ne seront pas disponible pendant cette période. Si vous avez des questions ou préoccupations, n’hésitez pas à nous <a href=\"https://ouvert.canada.ca/fr/formulaire/faites-nous-part-de-vos-commentaires\">contacter</a>."
