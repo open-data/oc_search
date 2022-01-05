@@ -2,6 +2,7 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from datetime import datetime, timezone, MINYEAR, MAXYEAR
 
+
 class Search(models.Model):
     """
     Stores metadata about a Search application, related to :model: 'search.Field' and :model: 'search.Code'.
@@ -120,7 +121,8 @@ class Field(models.Model):
     solr_field_is_currency = models.BooleanField(blank=False, default=False, verbose_name="Is a monetary field")
     is_search_facet = models.BooleanField(blank=False, default=False, help_text="Is a search facet field, should never have blank values",
                                           verbose_name="Search Facet field")
-    solr_facet_sort = models.CharField(blank=True, max_length=5, choices=[('count', 'By highest count'), ('index', 'Lexicographic order')],
+    solr_facet_sort = models.CharField(blank=True, max_length=5,
+                                       choices=[('count', 'By highest count'), ('index', 'By value A-Z'), ('label', 'By Label A-Z (for codes)')],
                                        default='count', verbose_name="Sort Order",
                                        help_text='Select facet sort order when field is used as a facet field')
     solr_facet_limit = models.IntegerField(blank=True, default=100, help_text='Maximum number of facet values to return',
@@ -136,7 +138,7 @@ class Field(models.Model):
     is_default_display = models.BooleanField(blank=False, default=False, verbose_name="Default search item field",
                                              help_text="Include field in default search item template")
     default_export_value = models.CharField(blank=True, default='str|-', verbose_name="Default value for empty fields", max_length=132,
-                                         help_text="A default value used for empty or blank values. Examples: str:-, int:0, date:2000-01-01T00:00:00Z. ")
+                                            help_text="A default value used for empty or blank values. Examples: str:-, int:0, date:2000-01-01T00:00:00Z. ")
     is_default_year = models.BooleanField(blank=False, default=False, verbose_name="Field is the search's default year field")
     is_default_month = models.BooleanField(blank=False, default=False, verbose_name="Field is the search's default month field")
 
@@ -175,11 +177,8 @@ class ChronologicCode(models.Model):
     label = models.CharField(blank=False, max_length=512, verbose_name="Unique code Identifier")
     label_en = models.CharField(blank=False, max_length=512, verbose_name="English Code Value")
     label_fr = models.CharField(blank=False, max_length=512, verbose_name="French Code Value")
-    start_date = models.DateTimeField (blank=False, verbose_name="Start Date", default=datetime(MINYEAR, 1, 1, 0, 0, 0, 0, timezone.utc))
-    end_date = models.DateTimeField(blank=False, verbose_name="End Date", default=datetime(MAXYEAR, 12, 31, 23, 59,59, 999999, timezone.utc))
+    start_date = models.DateTimeField(blank=False, verbose_name="Start Date", default=datetime(MINYEAR, 1, 1, 0, 0, 0, 0, timezone.utc))
+    end_date = models.DateTimeField(blank=False, verbose_name="End Date", default=datetime(MAXYEAR, 12, 31, 23, 59, 59, 999999, timezone.utc))
 
     class Meta:
         unique_together = (('code_id', 'start_date'),)
-
-
-

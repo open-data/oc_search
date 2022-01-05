@@ -133,7 +133,7 @@
                 <ul class="list-group">
                 {% if key in reversed_facets %}
                     {% for subkey, subvalue in value.items reversed %}
-                        {% if subkey != '__label__' and subvalue > 0 %}
+                        {% if subkey not in system_facet_fields and subvalue > 0 %}
                             <li class="list-group-item">
                              <div class="row">
                                 <div class="mrgn-tp-0 mrgn-bttm-0 col-sm-10">
@@ -159,7 +159,7 @@
                     {% endfor %}
                 {% else %}
                     {% for subkey, subvalue in value.items %}
-                        {% if subkey != '__label__' and subvalue > 0 %}
+                        {% if subkey not in system_facet_fields and subvalue > 0 %}
                             <li class="list-group-item">
                              <div class="row">
                                 <div class="mrgn-tp-0 mrgn-bttm-0 col-sm-10">

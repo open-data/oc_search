@@ -187,7 +187,7 @@ def create_solr_query(request: HttpRequest, search: Search, fields: dict, Codes:
         ef = ['id']
         for f in fields:
             if fields[f].solr_field_lang in [request.LANGUAGE_CODE, 'bi']:
-                if fields[f].solr_field_type in ['string', 'pint', 'pfloat', 'pdate'] and f != 'format':
+                if fields[f].solr_field_type in ['string', 'pint', 'pfloat', 'pdate']:
                     ef.append(f)
                 elif fields[f].solr_field_type in ["search_text_en", "search_text_fr", 'text_general']:
                     if fields[f].solr_field_export:

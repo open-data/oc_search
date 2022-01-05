@@ -1,3 +1,4 @@
+import collections
 import csv
 from django.conf import settings
 from django.http import HttpRequest, HttpResponseRedirect, FileResponse
@@ -14,6 +15,7 @@ import search.plugins
 from SolrClient import SolrClient, SolrResponse
 from SolrClient.exceptions import ConnectionError, SolrError
 from time import time
+from unidecode import unidecode
 
 
 def iter_namespace(ns_pkg):
@@ -265,7 +267,7 @@ class SearchView(View):
                         self.codes_fr if lang == 'fr' else self.codes_en,
                         facets,
                         '')
-
+                context['system_facet_fields'] = ['__label__', '__sortorder__']
                 if len(facets) > 0:
                     # Facet search results
                     context['facets'] = solr_response.get_facets()
@@ -280,12 +282,36 @@ class SearchView(View):
                     facets_custom_snippets = {}
                     for f in context['facets']:
                         context['facets'][f]['__label__'] = self.fields[search_type][f].label_fr if lang == 'fr' else self.fields[search_type][f].label_en
+                        context['facets'][f]['__sortorder__'] = self.fields[search_type][f].solr_facet_sort
+                        # If the facet is a code and sorting by label, then the facet needs to be resorted
+                        if self.fields[search_type][f].solr_facet_sort == 'label':
+                            # Create an inverted index of the facet values
+                            facet_values = {}
+                            for facet_value in context['facets'][f].keys():
+                                if facet_value not in context['system_facet_fields']:
+                                    if request.LANGUAGE_CODE == 'fr':
+                                        facet_values[self.codes_fr[f][facet_value]] = facet_value
+                                    else:
+                                        facet_values[self.codes_en[f][facet_value]] = facet_value
+                            # Sort the facet values - use French locale for sorting
+                            if lang == "fr":
+                                sorted_facet_values = sorted(facet_values.keys(), key=unidecode)
+                            else:
+                                sorted_facet_values = sorted(facet_values.keys())
+                            new_facet = collections.OrderedDict()
+                            for facet_value in sorted_facet_values:
+                                new_facet[facet_values[facet_value]] = context['facets'][f][facet_values[facet_value]]
+                            new_facet['__label__'] = context['facets'][f]['__label__']
+                            new_facet['__sortorder__'] = context['facets'][f]['__sortorder__']
+                            context['facets'][f] = new_facet
+
                         if self.fields[search_type][f].solr_facet_snippet:
                             facets_custom_snippets[f] = self.fields[search_type][f].solr_facet_snippet
                     context['facet_snippets'] = facets_custom_snippets
                 else:
                     context['facets'] = []
                     context['selected_facets'] = []
+
                 context['total_hits'] = solr_response.num_found
                 context['docs'] = solr_response.get_highlighting()
 

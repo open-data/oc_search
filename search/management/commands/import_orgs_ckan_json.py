@@ -27,7 +27,10 @@ class Command(BaseCommand):
                         code, created = Code.objects.get_or_create(field_id_id=field.id, code_id=org['name'])
                         owner_org_titles = org['title'].split('|')
                         code.label_en = owner_org_titles[0].strip()
-                        code.label_fr = owner_org_titles[1].strip()
+                        if len(owner_org_titles) == 1:
+                            code.label_fr = owner_org_titles[0].strip()
+                        else:
+                            code.label_fr = owner_org_titles[1].strip()
                         code.save()
             except Exception as x:
                 self.logger.error(x)
