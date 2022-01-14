@@ -178,7 +178,7 @@ class ChronologicCode(models.Model):
     label_en = models.CharField(blank=False, max_length=512, verbose_name="English Code Value")
     label_fr = models.CharField(blank=False, max_length=512, verbose_name="French Code Value")
     start_date = models.DateTimeField(blank=False, verbose_name="Start Date", default=datetime(MINYEAR, 1, 1, 0, 0, 0, 0, timezone.utc))
-    end_date = models.DateTimeField(blank=False, verbose_name="End Date", default=datetime(MAXYEAR, 12, 31, 23, 59, 59, 999999, timezone.utc))
+    end_date = models.DateTimeField(blank=False, verbose_name="End Date", default=datetime(2999, 12, 31, 23, 59, 59, 999999, timezone.utc))
 
     class Meta:
         unique_together = (('code_id', 'start_date'),)
