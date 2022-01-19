@@ -5,6 +5,7 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 import importlib
 import pkgutil
+import re
 from search.models import Search, Field, Code
 import search.plugins
 from SolrClient import SolrClient
@@ -146,15 +147,18 @@ class Command(BaseCommand):
 
                         for csv_field in csv_reader.fieldnames:
                             # Verify that it is a known field
-                            if csv_field not in self.csv_fields and csv_field not in ('owner_org_title', 'owner_org'):
+                            fields_to_ignore = ('owner_org_title', 'owner_org', 'record_created', 'record_modified', 'user_modified')
+                            fields_not_loaded = ('owner_org_title', 'record_created', 'user_modified', 'record_modified',)
+                            if csv_field not in self.csv_fields and csv_field not in fields_to_ignore:
                                 self.logger.error("CSV files contains unknown field: {0}".format(csv_field))
                                 exit(-1)
-                            if csv_field == 'owner_org_title':
+                            if csv_field in fields_not_loaded:
                                 continue
 
                             # Handle multi-valued fields here
                             if self.csv_fields[csv_field].solr_field_multivalued:
-                                solr_record[csv_field] = csv_record[csv_field].split(',')
+                                delimiter = self.csv_fields[csv_field].solr_field_multivalue_delimeter
+                                solr_record[csv_field] = csv_record[csv_field].split(delimiter)
                                 # Copy fields fo report cannot use multi-values - so directly populate with original string
                                 if self.csv_fields[csv_field].solr_field_export:
                                     for extra_field in self.csv_fields[csv_field].solr_field_export.split(','):
@@ -184,11 +188,17 @@ class Command(BaseCommand):
                                 if solr_record[csv_field]:
                                     if solr_record[csv_field] == '.':
                                         solr_record[csv_field] = "0"
-                                    csv_decimal = parse_decimal(solr_record[csv_field], locale='en_US')
                                     if self.csv_fields[csv_field].solr_field_is_currency:
+                                        csv_normalized = re.sub("[^-0-9.,]", '', solr_record[csv_field])
+                                        csv_decimal = parse_decimal(csv_normalized, locale='en_US')
+                                        if self.csv_fields[csv_field].solr_field_type == 'pfloat':
+                                            solr_record[csv_field] = float(csv_decimal)
+                                        elif self.csv_fields[csv_field].solr_field_type == 'pint':
+                                            solr_record[csv_field] = int(csv_decimal)
                                         solr_record[csv_field + '_en'] = format_currency(csv_decimal, 'CAD', locale='en_CA')
                                         solr_record[csv_field + '_fr'] = format_currency(csv_decimal, 'CAD', locale='fr_CA')
                                     else:
+                                        csv_decimal = parse_decimal(solr_record[csv_field], locale='en_US')
                                         solr_record[csv_field + '_en'] = format_decimal(csv_decimal, locale='en_CA')
                                         solr_record[csv_field + '_fr'] = format_decimal(csv_decimal, locale='fr_CA')
                                 else:

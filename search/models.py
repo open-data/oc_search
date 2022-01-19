@@ -109,7 +109,7 @@ class Field(models.Model):
                                          default='',
                                          help_text='Name of a string field that will be created to hold export values. '
                                                    'Note that export fields are automatically created for '
-                                                   'Interger and Date fields')
+                                                   'Interger and Date fields. *Note* Add manually for multi-valued string fields.')
     solr_field_is_coded = models.BooleanField(blank=False, default=False, verbose_name="Contains Code Values",
                                               help_text="The values in this field are code values whose values are in the Code tabke")
     solr_extra_fields = models.CharField(blank=True, default="", verbose_name="Extra Solr Copyfields", max_length=132,
@@ -118,6 +118,8 @@ class Field(models.Model):
     solr_field_stored = models.BooleanField(blank=False, default=True, verbose_name="Field is stored on Solr")
     solr_field_indexed = models.BooleanField(blank=False, default=True, verbose_name="Field is indexed on Solr")
     solr_field_multivalued = models.BooleanField(blank=False, default=False, verbose_name="Field supports multiple values")
+    solr_field_multivalue_delimeter = models.CharField(blank=True, default=",", max_length=1, verbose_name="Multivalue Field Delimeter",
+                                                       help_text="Delimeter character for use with multi-value fields")
     solr_field_is_currency = models.BooleanField(blank=False, default=False, verbose_name="Is a monetary field")
     is_search_facet = models.BooleanField(blank=False, default=False, help_text="Is a search facet field, should never have blank values",
                                           verbose_name="Search Facet field")
