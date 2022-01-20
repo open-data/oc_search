@@ -125,6 +125,7 @@ class Command(BaseCommand):
                                                                          solr_record['quarter'])
 
                         # Clear out the Solr core. on the first line
+
                         if total == 0 and not options['nothing_to_report']:
                             solr.delete_doc_by_query(self.solr_core, "*:*")
                             self.logger.info("Purging all records")
@@ -137,6 +138,7 @@ class Command(BaseCommand):
 
                         # Call plugins if they exist for this search type. This is where a developer can introduce
                         # code to customize the data that is loaded into Solr for a particular search.
+
                         search_type_plugin = 'search.plugins.{0}'.format(options['search'])
                         if search_type_plugin in self.discovered_plugins:
                             include, filtered_record = self.discovered_plugins[search_type_plugin].filter_csv_record(csv_record, self.search_target, self.csv_fields, self.field_codes, 'NTR' if options['nothing_to_report'] else '')
@@ -145,8 +147,12 @@ class Command(BaseCommand):
                             else:
                                 csv_record = filtered_record
 
+                        # Process every field in the record
+
                         for csv_field in csv_reader.fieldnames:
+
                             # Verify that it is a known field
+
                             fields_to_ignore = ('owner_org_title', 'owner_org', 'record_created', 'record_modified', 'user_modified')
                             fields_not_loaded = ('owner_org_title', 'record_created', 'user_modified', 'record_modified',)
                             if csv_field not in self.csv_fields and csv_field not in fields_to_ignore:
@@ -155,10 +161,12 @@ class Command(BaseCommand):
                             if csv_field in fields_not_loaded:
                                 continue
 
-                            # Handle multi-valued fields here
+                            # Handle multi-valued fields here. Use custom delimiter and strip whitespace from values
+
                             if self.csv_fields[csv_field].solr_field_multivalued:
                                 delimiter = self.csv_fields[csv_field].solr_field_multivalue_delimeter
-                                solr_record[csv_field] = csv_record[csv_field].split(delimiter)
+                                solr_record[csv_field] = list(map(lambda c: c.strip(), csv_record[csv_field].split(delimiter)))
+                                # Copy fields fo report cannot use multi-values - so directly populate with original string
                                 # Copy fields fo report cannot use multi-values - so directly populate with original string
                                 if self.csv_fields[csv_field].solr_field_export:
                                     for extra_field in self.csv_fields[csv_field].solr_field_export.split(','):
@@ -167,6 +175,7 @@ class Command(BaseCommand):
                                 solr_record[csv_field] = csv_record[csv_field]
 
                             # Automatically expand out dates and numbers for use with Solr export handler
+
                             if self.csv_fields[csv_field].solr_field_type == 'pdate':
                                 try:
                                     if csv_record[csv_field]:
@@ -205,9 +214,12 @@ class Command(BaseCommand):
                                     solr_record[csv_field + '_en'] = ''
                                     solr_record[csv_field + '_fr'] = ''
 
-                            # Lookup the expanded code value from the codes dict of dict
+                            # Lookup the expanded code value from the preloaded codes dict of values dict
+
                             if csv_field in self.field_codes:
                                 if csv_record[csv_field]:
+
+                                    #  Handle multi-valued codes
 
                                     if self.csv_fields[csv_field].solr_field_multivalued:
                                         codes_en = []
@@ -221,6 +233,9 @@ class Command(BaseCommand):
                                                     row_num + 2, record_id, code_value, csv_field))
                                         solr_record[csv_field + '_en'] = codes_en
                                         solr_record[csv_field + '_fr'] = codes_fr
+
+                                    # Handle single codes
+
                                     else:
                                         if csv_record[csv_field].lower() in self.field_codes[csv_field]:
                                             solr_record[csv_field + '_en'] = self.field_codes[csv_field][csv_record[csv_field].lower()].label_en
@@ -228,9 +243,13 @@ class Command(BaseCommand):
                                         else:
                                             self.logger.error("Row {0}, Record {1}. Unknown code value: {2} for field: {3}".format(
                                                 row_num + 2, record_id, csv_record[csv_field], csv_field))
+
+                        # Ensure all empty CSV fields are set to appropriate or default values
+
                         solr_record = self.set_empty_fields(solr_record)
 
                         # Set the Solr ID field (Nothing To Report records are excluded)
+
                         if not options['nothing_to_report']:
                             solr_record['id'] = record_id
                         else:
@@ -242,8 +261,11 @@ class Command(BaseCommand):
 
                         # Call plugins if they exist for this search type. This is where a developer can introduce
                         # code to customize the data that is loaded into Solr for a particular search.
+
                         if search_type_plugin in self.discovered_plugins:
                             solr_record = self.discovered_plugins[search_type_plugin].load_csv_record(csv_record, solr_record, self.search_target, self.csv_fields, self.field_codes, 'NTR' if options['nothing_to_report'] else '')
+
+                        # Add the prepared record to the list of records to be loaded into Solr
 
                         solr_items.append(solr_record)
 
