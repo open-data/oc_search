@@ -156,7 +156,7 @@ class Command(BaseCommand):
                 if solr_field.solr_field_export != "":
                     for export_field_name in solr_field.solr_field_export.split(","):
                         export_field = {"name": export_field_name,
-                                        "type": "string",
+                                        "type": "text_gen_sort",
                                         "stored": True,
                                         "indexed": False,
                                         "docValues": True
