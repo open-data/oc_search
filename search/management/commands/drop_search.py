@@ -10,7 +10,7 @@ class Command(BaseCommand):
     logger = logging.getLogger(__name__)
 
     def add_arguments(self, parser):
-        parser.add_argument('--search_id', type=str, help='Unique code identifier for the search', required=True)
+        parser.add_argument('--search', type=str, help='Unique code identifier for the search', required=True)
 
     def handle(self, *args, **options):
 

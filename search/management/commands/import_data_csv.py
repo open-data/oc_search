@@ -14,6 +14,9 @@ import csv
 import logging
 import time
 
+# Magic Solr String field max length
+MAX_FIELD_LENGTH = 31000
+
 
 class Command(BaseCommand):
 
@@ -51,18 +54,21 @@ class Command(BaseCommand):
     def set_empty_fields(self, solr_record: dict):
 
         for sf in self.all_fields:
-            if (sf.field_id not in solr_record and sf != 'default_fmt') or solr_record[sf.field_id] == '':
-                if sf.default_export_value:
-                    default_fmt = sf.default_export_value.split('|')
-                    if default_fmt[0] in ['str', 'date']:
-                        solr_record[sf.field_id] = str(default_fmt[1])
-                    elif default_fmt[0] == 'int':
-                        solr_record[sf.field_id] = int(default_fmt[1])
-                    elif default_fmt[0] == 'float':
-                        solr_record[sf.field_id] = float(default_fmt[1])
-                    else:
-                        solr_record[sf.field_id] = ''
+            self.set_empty_field(solr_record, sf)
         return solr_record
+
+    def set_empty_field(self, solr_record: dict, sf: Field):
+        if (sf.field_id not in solr_record and sf != 'default_fmt') or solr_record[sf.field_id] == '':
+            if sf.default_export_value:
+                default_fmt = sf.default_export_value.split('|')
+                if default_fmt[0] in ['str', 'date']:
+                    solr_record[sf.field_id] = str(default_fmt[1])
+                elif default_fmt[0] == 'int':
+                    solr_record[sf.field_id] = int(default_fmt[1])
+                elif default_fmt[0] == 'float':
+                    solr_record[sf.field_id] = float(default_fmt[1])
+                else:
+                    solr_record[sf.field_id] = ''
 
     def handle(self, *args, **options):
 
@@ -213,6 +219,24 @@ class Command(BaseCommand):
                                 else:
                                     solr_record[csv_field + '_en'] = ''
                                     solr_record[csv_field + '_fr'] = ''
+                            elif self.csv_fields[csv_field].solr_field_type == 'search_text_en':
+                                if len(solr_record[csv_field]) == 0:
+                                    self.set_empty_field(solr_record, self.csv_fields[csv_field])
+                                    solr_record[csv_field + 'g'] = solr_record[csv_field]
+                                elif len(solr_record[csv_field]) > MAX_FIELD_LENGTH:
+                                    solr_record[csv_field + 'g'] = solr_record[csv_field][:MAX_FIELD_LENGTH] + " ..."
+                                    print("Row {0}, Length of {1} is {2}, truncated to {3}".format(total, csv_field + 'g', len(solr_record[csv_field]), len(solr_record[csv_field + 'g'])))
+                                else:
+                                    solr_record[csv_field + 'g'] = solr_record[csv_field]
+                            elif self.csv_fields[csv_field].solr_field_type == 'search_text_fr':
+                                if len(solr_record[csv_field]) == 0:
+                                    self.set_empty_field(solr_record, self.csv_fields[csv_field])
+                                    solr_record[csv_field + 'a'] = solr_record[csv_field]
+                                elif len(solr_record[csv_field]) > MAX_FIELD_LENGTH:
+                                    solr_record[csv_field + 'a'] = solr_record[csv_field][:MAX_FIELD_LENGTH] + " ..."
+                                    print("Row {0}, Length of {1} is {2}, truncated to {3}".format(total, csv_field + 'a', len(solr_record[csv_field]), len(solr_record[csv_field + 'a'])))
+                                else:
+                                    solr_record[csv_field + 'a'] = solr_record[csv_field]
 
                             # Lookup the expanded code value from the preloaded codes dict of values dict
 

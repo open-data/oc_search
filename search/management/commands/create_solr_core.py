@@ -155,20 +155,25 @@ class Command(BaseCommand):
                 # create a string copy field for export
                 if solr_field.solr_field_export != "":
                     for export_field_name in solr_field.solr_field_export.split(","):
+
                         export_field = {"name": export_field_name,
-                                        "type": "text_gen_sort",
+                                        "type": "string",
                                         "stored": True,
                                         "indexed": False,
-                                        "docValues": True
+                                        "docValues": True,
+                                        "multiValued": False
                                         }
 
                         export_copy_field = {'source': solr_field.field_id,
                                              'dest': export_field_name}
                         self._add_or_update_solr_field(solr, solr_core, export_field)
-                        if not solr.schema.does_copy_field_exist(solr_core, solr_field.field_id, export_field_name):
-                            if not solr_field.solr_field_multivalued:
-                                solr.schema.create_copy_field(solr_core, export_copy_field)
-                                extra_copy_fields.append(export_field['name'])
+                        # For text fields, do not create a Solr copy field because string fields are limited
+                        # to 32K characters.
+                        if solr_field.solr_field_type not in ['search_text_en', 'search_text_fr']:
+                            if not solr.schema.does_copy_field_exist(solr_core, solr_field.field_id, export_field_name):
+                                if not solr_field.solr_field_multivalued:
+                                    solr.schema.create_copy_field(solr_core, export_copy_field)
+                                    extra_copy_fields.append(export_field['name'])
 
                 # Update the Field db record with the list of copy fields
                 solr_field.solr_extra_fields = ",".join(extra_copy_fields)
