@@ -17,7 +17,10 @@
     <link rel="stylesheet" href="{% static 'ramp/rv-styles.css' %}"/>
     <link rel="stylesheet" href="{% static 'ramp/range-slider.css' %}"/>
     <script src="{% static 'ramp/range-slider.js' %}"></script>
-
+    <!-- Analytics -->
+    {% if not DEBUG %}
+        {% include 'search_snippets/site_analytics_head.html' %}
+    {% endif %}
     <noscript><link rel="stylesheet" href="{% static 'ramp/wet-boew/css/noscript.css' %}" /></noscript>
 </head>
 

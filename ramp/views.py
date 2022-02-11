@@ -55,6 +55,9 @@ class RampView(View):
             "rcs_config": 'ramp/config.rcs.fr-CA.json' if lang == "fr" else 'ramp/config.rcs.en-CA.json',
             "toggle_url": self._get_toggle(lang, keys),
             "show_alert_info": settings.RAMP_SHOW_ALERT_INFO if hasattr(settings, "RAMP_SHOW_ALERT_INFO") else False,
+            "ADOBE_ANALYTICS_URL": settings.ADOBE_ANALYTICS_URL,
+            "GOOGLE_ANALYTICS_GTM_ID": settings.GOOGLE_ANALYTICS_GTM_ID,
+            "GOOGLE_ANALYTICS_PROPERTY_ID": settings.GOOGLE_ANALYTICS_PROPERTY_ID,
         }
         return render(request, 'ramp.html', context)
 
