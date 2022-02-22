@@ -222,18 +222,18 @@ class Command(BaseCommand):
                             elif self.csv_fields[csv_field].solr_field_type == 'search_text_en':
                                 if len(solr_record[csv_field]) == 0:
                                     self.set_empty_field(solr_record, self.csv_fields[csv_field])
-                                    solr_record[csv_field + 'g'] = solr_record[csv_field]
+                                    solr_record[csv_field + 'g'] = str(solr_record[csv_field]).strip()
                                 elif len(solr_record[csv_field]) > MAX_FIELD_LENGTH:
-                                    solr_record[csv_field + 'g'] = solr_record[csv_field][:MAX_FIELD_LENGTH] + " ..."
+                                    solr_record[csv_field + 'g'] = str(solr_record[csv_field][:MAX_FIELD_LENGTH]).strip() + " ..."
                                     print("Row {0}, Length of {1} is {2}, truncated to {3}".format(total, csv_field + 'g', len(solr_record[csv_field]), len(solr_record[csv_field + 'g'])))
                                 else:
                                     solr_record[csv_field + 'g'] = solr_record[csv_field]
                             elif self.csv_fields[csv_field].solr_field_type == 'search_text_fr':
                                 if len(solr_record[csv_field]) == 0:
                                     self.set_empty_field(solr_record, self.csv_fields[csv_field])
-                                    solr_record[csv_field + 'a'] = solr_record[csv_field]
+                                    solr_record[csv_field + 'a'] = str(solr_record[csv_field]).strip()
                                 elif len(solr_record[csv_field]) > MAX_FIELD_LENGTH:
-                                    solr_record[csv_field + 'a'] = solr_record[csv_field][:MAX_FIELD_LENGTH] + " ..."
+                                    solr_record[csv_field + 'a'] = str(solr_record[csv_field][:MAX_FIELD_LENGTH]).strip() + " ..."
                                     print("Row {0}, Length of {1} is {2}, truncated to {3}".format(total, csv_field + 'a', len(solr_record[csv_field]), len(solr_record[csv_field + 'a'])))
                                 else:
                                     solr_record[csv_field + 'a'] = solr_record[csv_field]

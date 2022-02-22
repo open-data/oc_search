@@ -66,8 +66,8 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--import_dir', type=str, help='Directory to write export files to', required=True)
         parser.add_argument('--search', type=str, help='A unique code identifier for the Search', required=True)
-        parser.add_argument('--exclude_db', required=False, action='store_true',
-                            help='Do not update the database. Useful when deploying to multiple servers')
+        parser.add_argument('--include_db', required=False, action='store_true',
+                            help='Update the database from JSON exported by the the export_search_definition command. Not recommended when using more than one search.')
 
     def handle(self, *args, **options):
         if not path.exists(options['import_dir']):
@@ -96,7 +96,7 @@ class Command(BaseCommand):
 
         # Import Search - skip this if the option '--exclude-db'  was selected on the command line
 
-        if not options['exclude_db']:
+        if options['include_db']:
             search_resource = ExportSearchResource(options['search'])
             searches_path = path.join(db_path, "{0}_search.json".format(options['search']))
             with open(searches_path, 'r', encoding='utf-8-sig', errors="ignore") as json_file:

@@ -107,6 +107,11 @@ DATABASES = {
     }
 }
 
+# Smuggler settings
+SMUGGLER_FIXTURE_DIR = os.path.join(BASE_DIR, 'smuggler')
+SMUGGLER_EXCLUDE_LIST = ['admin.logentry', 'auth.permission', 'auth.group', 'auth.user',
+                         'contenttypes.contenttype']
+
 DATABASE_ROUTERS = ['search.db_router.SearchRouter']
 
 # Password validation

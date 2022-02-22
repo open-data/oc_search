@@ -22,6 +22,7 @@ from ramp.views import RampView
 
 
 urlpatterns = [
+    path('search/admin/', include('smuggler.urls')),  # before admin url patterns!
     path('search/admin/doc/', include('django.contrib.admindocs.urls')),
     path('search/admin/', admin.site.urls),
 ]

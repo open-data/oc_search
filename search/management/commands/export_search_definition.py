@@ -63,6 +63,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--export_dir', type=str, help='Directory to write export files to', required=True)
         parser.add_argument('--search', type=str, help='A unique code identifier for the Search', required=True)
+        parser.add_argument('--include_db', action='store_true', help='Include the database in the export')
 
     def handle(self, *args, **options):
         if not path.exists(options['export_dir']):
@@ -92,33 +93,35 @@ class Command(BaseCommand):
         if not path.exists(cmd_path):
             mkdir(cmd_path)
 
-        # Export Search
-        dataset = ExportSearchResource(options['search']).export()
-        searches_path = path.join(db_path, "{0}_search.json".format(options['search']))
-        with open(searches_path, 'w', encoding='utf-8', errors="ignore") as search_file:
-            search_file.write(dataset.json)
-        logging.info("Search exported to {0}".format(searches_path))
+        # Export Database values - this is no longer recommended, instead use the database dump command
+        if options['include_db']:
+            # Export Search
+            dataset = ExportSearchResource(options['search']).export()
+            searches_path = path.join(db_path, "{0}_search.json".format(options['search']))
+            with open(searches_path, 'w', encoding='utf-8', errors="ignore") as search_file:
+                search_file.write(dataset.json)
+            logging.info("Search exported to {0}".format(searches_path))
 
-        # Export Fields
-        dataset = ExportFieldResource(options['search']).export()
-        field_path = path.join(db_path, "{0}_fields.json".format(options['search']))
-        with open(field_path, 'w', encoding='utf-8', errors="ignore") as search_file:
-            search_file.write(dataset.json)
-        logging.info("Fields exported to {0}".format(field_path))
+            # Export Fields
+            dataset = ExportFieldResource(options['search']).export()
+            field_path = path.join(db_path, "{0}_fields.json".format(options['search']))
+            with open(field_path, 'w', encoding='utf-8', errors="ignore") as search_file:
+                search_file.write(dataset.json)
+            logging.info("Fields exported to {0}".format(field_path))
 
-        # Export Codes
-        dataset = ExportCodeResource(options['search']).export()
-        code_path = path.join(db_path, "{0}_codes.json".format(options['search']))
-        with open(code_path, 'w', encoding='utf-8', errors="ignore") as search_file:
-            search_file.write(dataset.json)
-        logging.info("Codes exported to {0}".format(code_path))
+            # Export Codes
+            dataset = ExportCodeResource(options['search']).export()
+            code_path = path.join(db_path, "{0}_codes.json".format(options['search']))
+            with open(code_path, 'w', encoding='utf-8', errors="ignore") as search_file:
+                search_file.write(dataset.json)
+            logging.info("Codes exported to {0}".format(code_path))
 
-        # Export Chronologic Codes
-        dataset = ExportChronologicCodeResource(options['search']).export()
-        code_path = path.join(db_path, "{0}_chronologiccodes.json".format(options['search']))
-        with open(code_path, 'w', encoding='utf-8', errors="ignore") as search_file:
-            search_file.write(dataset.json)
-        logging.info("Chronologic Codes exported to {0}".format(code_path))
+            # Export Chronologic Codes
+            dataset = ExportChronologicCodeResource(options['search']).export()
+            code_path = path.join(db_path, "{0}_chronologiccodes.json".format(options['search']))
+            with open(code_path, 'w', encoding='utf-8', errors="ignore") as search_file:
+                search_file.write(dataset.json)
+            logging.info("Chronologic Codes exported to {0}".format(code_path))
 
         # Copy custom snippets. The convention is for templates to be deployed to : BASE_DIr/templates/snippets/<search ID>/
         BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -139,7 +142,7 @@ class Command(BaseCommand):
             copyfile(custom_locale, path.join(locale_path, "{0}.po".format(options['search'])))
             logging.info("Copying custom locale file to {0}".format(path.join(plugin_path, "{0}.po".format(options['search']))))
 
-        # Copy command Django commands
+        # Copy custom Django commands
         custom_commands = path.join(BASE_DIR, 'management', 'commands', options['search'] + '_*.py')
         for cmd in glob.glob(custom_commands):
             copy(cmd, cmd_path)

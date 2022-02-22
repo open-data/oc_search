@@ -35,6 +35,8 @@ class Search(models.Model):
     results_sort_order_fr = models.CharField(blank=False, max_length=132, default="score desc", verbose_name="Sort-by Categories (Français)")
     results_sort_order_display_en = models.CharField(blank=False, max_length=200, default="Best Match", verbose_name="Sort-by Category Labels (English)")
     results_sort_order_display_fr = models.CharField(blank=False, max_length=200, default="Pertinence", verbose_name="Sort-by Category Labels (Français)")
+    results_sort_default_en = models.CharField(blank=False, max_length=132, default="score desc", verbose_name="Default Sort-by Category used when no search terms provided (English)")
+    results_sort_default_fr = models.CharField(blank=False, max_length=132, default="score desc", verbose_name="Default Sort-by Category used when no search terms provided (Français)")
     page_template = models.CharField(blank=False, default="search.html", max_length=132, verbose_name="Search Page Template")
     record_template = models.CharField(blank=False, default="record.html", max_length=132, verbose_name="Record Page Template")
     breadcrumb_snippet = models.CharField(blank=False, default="search_snippets/default_breadcrumb.html", max_length=132,

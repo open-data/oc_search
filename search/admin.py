@@ -17,6 +17,8 @@ class SearchResource(resources.ModelResource):
 
 
 class SearchAdmin(ImportExportModelAdmin):
+
+    change_list_template = 'smuggler/change_list.html'
     resource_class = SearchResource
     list_display = ['search_id', 'label_en', 'solr_core_name']
     fieldsets = (
@@ -26,7 +28,8 @@ class SearchAdmin(ImportExportModelAdmin):
                            'about_message_en', 'about_message_fr', 'imported_on')}),
         ('Disabled', {'fields': ('is_disabled', 'disabled_message_en', 'disabled_message_fr')}),
         ('Results', {'fields': ('results_page_size', 'results_sort_order_en', 'results_sort_order_fr',
-                                'results_sort_order_display_en', 'results_sort_order_display_fr')}),
+                                'results_sort_order_display_en', 'results_sort_order_display_fr',
+                                'results_sort_default_en','results_sort_default_fr')}),
         ('Templates', {'fields': ('page_template', 'record_template', 'breadcrumb_snippet', 'footer_snippet',
                                   'info_message_snippet', 'about_message_snippet', 'header_js_snippet',
                                   'header_css_snippet', 'body_js_snippet', 'search_item_snippet',
@@ -81,6 +84,8 @@ make_currency_field.short_description = 'Mark selected fields as currency, float
 
 
 class FieldAdmin(ImportExportModelAdmin):
+
+    change_list_template = 'smuggler/change_list.html'
     resource_class = FieldResource
     list_display = ('field_id', 'is_search_facet', 'is_default_display', 'search_id', 'format_name', 'solr_field_type')
     actions = [make_facet_field, make_default_display_field, clear_facet_field, clear_default_display_field, make_currency_field]
@@ -112,6 +117,8 @@ class CodeResource(resources.ModelResource):
 
 
 class CodeAdmin(ImportExportModelAdmin):
+
+    change_list_template = 'smuggler/change_list.html'
     resource_class = CodeResource
     list_display = ['code_id', 'field_id', 'label_en', 'label_fr']
     search_fields = ['code_id', 'label_en', 'label_fr']
@@ -137,6 +144,7 @@ class ChronologicCodesResource(resources.ModelResource):
 
 class ChronologicCodesAdmin(ImportExportModelAdmin):
 
+    change_list_template = 'smuggler/change_list.html'
     resource_class = ChronologicCodesResource
     list_display = ['label', 'codes', 'label_en', 'start_date', 'end_date']
     search_fields = ['code_id__code_id', 'label', 'label_en', 'label_fr']

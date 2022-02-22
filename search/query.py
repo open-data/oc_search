@@ -137,7 +137,8 @@ def get_mlt_fields(request: HttpRequest, fields: dict):
 
 
 def create_solr_query(request: HttpRequest, search: Search, fields: dict, Codes: dict, facets: list, start_row: int,
-                      rows: int, record_id: str, export=False, highlighting=False, default_sort='score desc'):
+                      rows: int, record_id: str, export=False, highlighting=False, default_sort='score desc',
+                      override_sort=False):
     """
     Create a complete query to send to the SolrClient query.
     :param request:
@@ -173,9 +174,12 @@ def create_solr_query(request: HttpRequest, search: Search, fields: dict, Codes:
     if 'sort' not in solr_query:
         solr_query['sort'] = default_sort
 
+    # Sometimes, the soft order will be forced to the default value
+    if override_sort:
+        solr_query['sort'] = default_sort
+
     # This happens for record reviews
     if record_id:
-        #record_id_esc = url_part_escape(record_id)
         solr_query['q'] = 'id:"{0}"'.format(record_id)
 
     solr_query['q.op'] = "AND"

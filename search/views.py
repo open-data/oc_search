@@ -9,6 +9,7 @@ import hashlib
 import importlib
 import os
 import pkgutil
+import re
 from .query import calc_pagination_range, calc_starting_row, create_solr_query, create_solr_mlt_query
 from search.models import Search, Field, Code
 import search.plugins
@@ -194,7 +195,16 @@ class SearchView(View):
 
     def get(self, request: HttpRequest, lang='en', search_type=''):
         lang = request.LANGUAGE_CODE
+
+        # Track if this is a new text search
+
+        new_text_search = False
+        if 'prev_search' in request.session:
+            if not re.search("search_text=\S+", request.session['prev_search']) and \
+            str(request.GET.get('search_text', '')).strip() != '':
+                new_text_search = True
         request.session['prev_search'] = request.build_absolute_uri()
+
         if search_type in self.searches and not self.searches[search_type].is_disabled:
             context = self.default_context(request, search_type, lang)
             context["search_item_snippet"] = self.searches[search_type].search_item_snippet
@@ -222,22 +232,23 @@ class SearchView(View):
                     reversed_facets.append(facet)
             context['reversed_facets'] = reversed_facets
 
-            # Determine a default sort  - only used by the query if a valid sort order is not specified. Use the
-            # first soft specified in the search model, or use score if nothing is specified
+            # Determine a default sort order - used by the query if a valid sort order is not specified --
+            # unless this is the first time a user is using search text, then use best match order.
+            # Use the default specified in the search model and if none is specified used best match.
 
-            default_sort_order = 'score desc'
-            if request.LANGUAGE_CODE == 'fr':
-                if self.searches[search_type].results_sort_order_fr:
-                    default_sort_order = self.searches[search_type].results_sort_order_fr.split(',')[0]
+            if new_text_search:
+                default_sort_order = 'score desc'
+            elif request.LANGUAGE_CODE == 'fr':
+                default_sort_order = self.searches[search_type].results_sort_default_fr if self.searches[
+                    search_type].results_sort_default_fr else 'score desc'
             else:
-                if self.searches[search_type].results_sort_order_en:
-                    default_sort_order = self.searches[search_type].results_sort_order_en.split(',')[0]
+                default_sort_order = self.searches[search_type].results_sort_default_en if self.searches[search_type].results_sort_default_en else 'score desc'
 
             solr_query = create_solr_query(request, self.searches[search_type], self.fields[search_type],
                                            self.codes_fr if lang == 'fr' else self.codes_en,
                                            facets, start_row, self.searches[search_type].results_page_size,
                                            record_id='', export=False, highlighting=True,
-                                           default_sort=default_sort_order)
+                                           default_sort=default_sort_order, override_sort=new_text_search)
 
             # Call  plugin pre-solr-query if defined
             search_type_plugin = 'search.plugins.{0}'.format(search_type)

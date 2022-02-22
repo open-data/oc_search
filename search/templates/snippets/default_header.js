@@ -50,6 +50,7 @@ function selectFacet(param, value) {
         search_params.set(param, value);
     }
     search_params.set('page', '1');
+    search_params.set('sort', $('#sort').val());
     window.location.search = search_params.toString();
 }
 
