@@ -105,6 +105,9 @@ and the search interface,
 
 ![Database Schema](./docs/images/database.png "Database schema")
 
+Importing and exporting of search definitions is done using [Django Smuggler](https://github.com/semente/django-smuggler).
+
+
 ### Generating a Search from CKAN yaml ###
 
 Creating a new search from scratch can be laborious. There are two command line utilities that can be used to

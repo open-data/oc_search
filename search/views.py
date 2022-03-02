@@ -71,6 +71,8 @@ class FieldFormView(View):
 class SearchView(View):
 
     searches = {}
+    search_alias_en = {}
+    search_alias_fr = {}
     fields = {}
     facets_en = {}
     facets_fr = {}
@@ -97,6 +99,10 @@ class SearchView(View):
         search_queryset = Search.objects.all()
         for s in search_queryset:
             self.searches[s.search_id] = s
+            if s.search_alias_en:
+                self.search_alias_en[s.search_alias_en] = s.search_id
+            if s.search_alias_fr:
+                self.search_alias_fr[s.search_alias_fr] = s.search_id
         for sid in self.searches.keys():
             sfields = {}
             facet_list_en = []
@@ -204,6 +210,14 @@ class SearchView(View):
             str(request.GET.get('search_text', '')).strip() != '':
                 new_text_search = True
         request.session['prev_search'] = request.build_absolute_uri()
+
+        # Replace search_type alias with actual search type
+        if lang == 'fr':
+            if search_type in self.search_alias_fr:
+                search_type = self.search_alias_fr[search_type]
+        else:
+            if search_type in self.search_alias_en:
+                search_type = self.search_alias_en[search_type]
 
         if search_type in self.searches and not self.searches[search_type].is_disabled:
             context = self.default_context(request, search_type, lang)

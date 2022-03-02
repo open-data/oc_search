@@ -20,6 +20,10 @@ class Search(models.Model):
     about_message_fr = models.TextField(blank=True, default="", help_text="Informational message displayed at the top "
                                                                           "of the search page. Uses Markdown (en Français)",
                                         verbose_name="About the search message (Français)")
+    search_alias_en = models.CharField(blank=True, max_length=64, default="", help_text="Optional search ID alias (in English)",
+                                       verbose_name="Search alias (English)")
+    search_alias_fr = models.CharField(blank=True, max_length=64, default="", help_text="Optional search ID alias (en Français)",
+                                       verbose_name="Search alias (Français)")
     is_disabled = models.BooleanField(blank=False, default=False, verbose_name="Search is disabled",
                                       help_text="Disable the search. Useful for applying code updates.")
     disabled_message_en = models.TextField(blank=False, default="This search is currently unavailable for maintenance",

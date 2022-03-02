@@ -33,7 +33,7 @@
     <script src="https://www.canada.ca/etc/designs/canada/cdts/gcweb/{{ cdts_version }}/cdts/compiled/wet-{{ LANGUAGE_CODE }}.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.css">
     <!-- Polyfill needed while WET still supports IE 11 :-( -->
-        <script src="https://unpkg.com/@ungap/url-search-params@0.2.2/min.js"></script>
+    <script src="{% static 'search_snippets/index.js' %}"></script>
     <noscript>
 
         <!-- Write closure fall-back static file -->
