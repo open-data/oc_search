@@ -1,12 +1,10 @@
-# Open Canada Solr Search #
-
+# Open Canada Solr Search
 
 [![Visits Badge](https://badges.pufler.dev/visits/open-data/oc_search)](https://badges.pufler.dev)
 
 Open Canada Solr Search (OCS) is a Django 3.0 application that uses Solr 8.x to provide a customizable search interface
 for the Open Canada data catalog and the proactive disclosure data. OCS provides a standard web interface into Solr cores
 .
-
 
 ## Installing OCS from Source
 
@@ -23,73 +21,68 @@ that is included with Python.
 OCSS also requires access to a Solr server. For information on installing Solr, please visit the
 [Apache Solr Reference Guide](https://lucene.apache.org/solr/guide/).
 
-### Installation Steps ###
+### Installation Steps
 
 1. Clone the OCSS project from GitHub: https://github.com/open-data/oc_search
-
-1. Clone the SolrClient project from GitHub: https://github.com/open-data/SolrClient
-
-1. Create a python virtual environment using Python 3.6 or higher.
+2. Clone the SolrClient project from GitHub: https://github.com/open-data/SolrClient
+3. Create a python virtual environment using Python 3.6 or higher.
 
    For example `python -m venv venv`.
-
-1. Activate the new virtual environment.
+4. Activate the new virtual environment.
 
    For example `source venv/bin/activate` on Linux, or `venv\Scripts\activate` for Windows
+5. Install the prerequisites from the requirements.txt file for the SolrClient project. and install the
+   project itself.
 
-1. Install the prerequisites from the requirements.txt file for the SolrClient project. and install the
-project itself.
+   `pip install -r requirements.txt`
 
-     `pip install -r requirements.txt`
+   `python setup.py develop`
+6. Install the prerequisites from the requirements.txt file for the OCS project
 
-     `python setup.py develop`
+   `pip install -r requirements.txt`
+7. Edit the settings.py file with the appropriate database settings and create the database tables
 
-1. Install the prerequisites from the requirements.txt file for the OCS project
+   `python manage.py makemigrations search`<br>
+   `python manage.py sqlmigrate search 0001`<br>
+   `python manage,py migrate`
 
-    `pip install -r requirements.txt`
-
-1. Edit the settings.py file with the appropriate database settings and create the database tables
-
-    `python manage.py makemigrations search`<br>
-    `python manage.py sqlmigrate search 0001`<br>
-    `python manage,py migrate`
-
-### Django Plugins ###
+### Django Plugins
 
 Four Django plugins are used:
 
 1. [Django import/export](https://django-import-export.readthedocs.io/en/latest/)  Django application and library for importing and exporting data with included admin integration.
-1. [Django Jazzmin Admin Theme](https://django-jazzmin.readthedocs.io/) *(Optional)* Provides a more modern Ui for the Django admin interface
-1. [Django Redis Cache](https://django-redis-cache.readthedocs.io/en/latest/) *(Optional)* Let's Django use Redis to cache pages
-1. [Django Redis Sessions](https://github.com/martinrusev/django-redis-sessions) *(Optional)* Enables the use of Redis to maintain user sessions.
+2. [Django Jazzmin Admin Theme](https://django-jazzmin.readthedocs.io/) *(Optional)* Provides a more modern Ui for the Django admin interface
+3. [Django Redis Cache](https://django-redis-cache.readthedocs.io/en/latest/) *(Optional)* Let's Django use Redis to cache pages
+4. [Django Redis Sessions](https://github.com/martinrusev/django-redis-sessions) *(Optional)* Enables the use of Redis to maintain user sessions.
 
 These Django plugins are enabled in the Django application's settings.py file. Example configuration can be found in
 [settings-sample.py](https://github.com/open-data/oc_search/blob/master/oc_search/settings-sample.py)
 
 ---
 
-# Overview #
+# Overview
 
 OCS is made of 3 components:
-1. A relational database like SQLite or PostgreSQL that stores the search definitions
-1. The Django-based web application that provides the search and administration web interface
-1. A [Solr](https://lucene.apache.org/solr/) text search engine that provides the semantic search functionality.
 
+1. A relational database like SQLite or PostgreSQL that stores the search definitions
+2. The Django-based web application that provides the search and administration web interface
+3. A [Solr](https://lucene.apache.org/solr/) text search engine that provides the semantic search functionality.
 
 ![High Level Architecture Diagram](./docs/images/high_level_diagram.png "High Level Architecture")
 
 ![Source Code Visualization](./diagram.svg)
 
-## Database ##
+## Database
 
 Each search definition is made of three or four components:
+
 1. **Search**: General information about the search such as labels and Solr core name
-1. **Fields**: Each search consists of a number of individual fields. Each field record is associated with a single Search record
+2. **Fields**: Each search consists of a number of individual fields. Each field record is associated with a single Search record
    and contains metadata describing the field such as the data type and labels.
-1. **Codes** and code values (_optional_). Often structured data will contain code values or 'lookup' fields values where the
+3. **Codes** and code values (_optional_). Often structured data will contain code values or 'lookup' fields values where the
    field value must come from a predetermined list of values. For example, 'AB' maybe selected from a list of Canadian provincial
    acronyms. Each row in the table represents a single code value and is associated with a single field.
-1. **ChronologicCodes**: These are similar to codes, but have a start and end date time associated with a code value. This permits
+4. **ChronologicCodes**: These are similar to codes, but have a start and end date time associated with a code value. This permits
    the Englisn and French values of the codes to be associated with a specific time range.
 
 Combined, these three components, Search, Fields, and Codes, define a custom search application.
@@ -107,8 +100,7 @@ and the search interface,
 
 Importing and exporting of search definitions is done using [Django Smuggler](https://github.com/semente/django-smuggler).
 
-
-### Generating a Search from CKAN yaml ###
+### Generating a Search from CKAN yaml
 
 Creating a new search from scratch can be laborious. There are two command line utilities that can be used to
 generate new search definitions from existing data sources.
@@ -122,7 +114,7 @@ For example:
 
 `python manage.py import_schema_ckan_yaml --yaml_file .\data\travela.yaml --search_id travela --title_en "Travel Expenses" --title_fr "Dépenses de voyage gouvernementaux"`
 
-### Generate for CSV ###
+### Generate for CSV
 
 Use the custom **generic_csv_schema** Django command to create a simple search definition based on an existing CSV files with headers.
 
@@ -130,39 +122,42 @@ For example:
 
 `python manage.py generic_csv_schema --csv_file tpsgc-pwgsc_ao-t_a.csv --search_id tendernotices --title_en "Tender Notices" --title_fr "Appels d'offres"`
 
-## OCS Commands ##
+## OCS Commands
 
 Several custom Django management commands are available
 
 <div id="create_solr_core">
 
-### create_solr_core ###
+### create_solr_core
 
 To run: `python manage.py create_solr_core <search name>`
 
 `<search name` Is the name of a search that has been  defined either by running a load script or
 through the Django admin UI.
+
 </div>
 
 <div id="import_schema_ckan_yaml">
 
-### import_schema_ckan_yaml ###
+### import_schema_ckan_yaml
 
 To run: `python manage.py import_schema_ckan_yaml --yaml_file <yaml file> --search_id <unique search ID> --title_en <English Title> --title_fr <French Title> [--reset]`
 
 This command will parse the CKAN YAML file and load it into the search model database
+
 </div>
 
 <div id="import_data_csv">
 
-### import_data_csv ###
+### import_data_csv
 
 To run: `python manage.py --csv <CSV file> --search <Unique search ID> --core <Solr Core Name> [--nothing_to_report]`
+
 </div>
 
 ---
 
-# Creating a New Search #
+# Creating a New Search
 
 Creating a new proactive disclosure search requires several steps
 
@@ -171,7 +166,7 @@ Creating a new proactive disclosure search requires several steps
 3. Customize the Solr core schema for the seacrh model using the `create_solr_core` command
 4. Import the data from the proactive disclosure CSV file using the `import_data_csv` command
 
-## Step 1 - Create a new Solr core ##
+## Step 1 - Create a new Solr core
 
 Using Solr 8.x, create a new Solr core from the command line using the `solr` command, and copy the
 custom synonyms files to the new Solr core's configuration folder. The default solrconfig.xml file
@@ -187,7 +182,7 @@ cp oc_search/solr/conf/synonyms_*.txt /var/solr/data/search_core1/conf/lang/
 After copying the synonym text files to the new Solr core<s language configuration directory, restart Solr
 or reload the new core in order to activate the new configuration files.
 
-## Step 2 - Create a search model ##
+## Step 2 - Create a search model
 
 The search model consists of three components: search, fields, and codes (optional).
 
@@ -199,18 +194,18 @@ create new searches based on either an existing CKAN Recombinant YAML file or fr
 basic CSV file with a header. See <a href="#import_schema_ckan_yaml">import_schema_ckan_yaml</a> and
 `generic_csv_schema` commands for details.
 
-## Step 3 - Set up Solr Core/Collection schema ##
+## Step 3 - Set up Solr Core/Collection schema
 
 In order to take advantage of the language features of Solr, the search application requires
 that the search core use a schema. OCS is able to use Solr's dynamic schema functionality to
 create a custom schema based on the search definition. Once you have finalized the search defintion,
 run <a href="#create_solr_core"> `create_solr_core`</a> command line utility.
 
-## Step 4 - Load Search Data ##
+## Step 4 - Load Search Data
 
 Load CSV data into the search core using the <a href="#import_data_csv">import_data_csv</a> command.
 
-# Installing the RAMP viewer *(Optional)* #
+# Installing the RAMP viewer *(Optional)*
 
 By default, the [RAMP viewer](https://github.com/fgpv-vpgf/fgpv-vpgf#usage) is not enabled, and it is not required for searching. It is used by
 Open Canada for visualizing [Open Maps](https://search.open.canada.ca/en/od/?od-search-col=Open%20Maps) geospatial data
@@ -219,14 +214,11 @@ To install,
 
 1. Download the latest [RAMP viewer release from GitHub](https://github.com/fgpv-vpgf/fgpv-vpgf/releases/latest).
    Extract the contents into the `ramp/viewer` folder in the project.
-
-1. Download [the Canada.ca design system distribution files](https://wet-boew.github.io/GCWeb/home.html) and extract
+2. Download [the Canada.ca design system distribution files](https://wet-boew.github.io/GCWeb/home.html) and extract
    the contents into `ramp/viewer/GCWeb`.
-
-1. Download the non-CDN version of [the WET-BOEW design system distribution files](https://github.com/wet-boew/wet-boew/releases)
+3. Download the non-CDN version of [the WET-BOEW design system distribution files](https://github.com/wet-boew/wet-boew/releases)
    and extract the contents into `ramp/viewer/GCWeb`.
-
-1. Run Django's `collectstatic` command. The RAMP viewer will look for Canada.ca and WET-BOEW files in
+4. Run Django's `collectstatic` command. The RAMP viewer will look for Canada.ca and WET-BOEW files in
    the path `[static url root]/ramp/`. If using Nginx oor equivalent to server static files, be sure to set this
    path up.
 
@@ -236,5 +228,14 @@ using the remote configuration services (RCS). The local RCS definition files ar
 
 ![Viewer directory structure](./docs/images/viewer_folder.png "Viewer folder")
 
+# Plugin API Changes
 
+## Version 1.1
 
+Added two new API functions that are called just before the search page is rendered and just before the record page is rendered:
+
+```python
+def pre_render_search(context: dict, template: str, request: HttpRequest, lang: str, search: Search, fields: dict, codes: dict):
+
+def pre_render_record(context: dict, template: str, request: HttpRequest, lang: str, search: Search, fields: dict, codes: dict):
+```

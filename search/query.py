@@ -216,7 +216,7 @@ def create_solr_query(request: HttpRequest, search: Search, fields: dict, Codes:
                             hl_fields.append(extra_field.strip())
         solr_query.update({
             'hl': 'on',
-            'hl.method': 'original',
+            'hl.method': 'unified',
             'hl.simple.pre': '<mark>',
             'hl.simple.post': '</mark>',
             'hl.snippets': 10,

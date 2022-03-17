@@ -373,7 +373,14 @@ class SearchView(View):
                     next_page = (last_page if next_page > last_page else next_page)
                     context['next_page'] = next_page
                     context['currentpage'] = page
-
+                if search_type_plugin in self.discovered_plugins and self.discovered_plugins[search_type_plugin].plugin_api_version() >= 1.1:
+                    context, template = self.discovered_plugins[search_type_plugin].pre_render_search(context,
+                                                                                                      self.searches[search_type].page_template,
+                                                                                                      request,
+                                                                                                      lang,
+                                                                                                      self.searches[search_type],
+                                                                                                      self.fields[search_type],
+                                                                                                      self.codes_fr if lang == 'fr' else self.codes_en)
                 return render(request, self.searches[search_type].page_template, context)
             except (ConnectionError, SolrError) as ce:
                 return render(request, 'error.html', get_error_context(search_type, lang, ce.args[0]))
@@ -481,6 +488,14 @@ class RecordView(SearchView):
                 context['next_page'] = next_page
                 context['currentpage'] = page
 
+            if search_type_plugin in self.discovered_plugins and self.discovered_plugins[search_type_plugin].plugin_api_version() >= 1.1:
+                context, template = self.discovered_plugins[search_type_plugin].pre_render_record(context,
+                                                                                                  self.searches[search_type].record_template,
+                                                                                                  request,
+                                                                                                  lang,
+                                                                                                  self.searches[search_type],
+                                                                                                  self.fields[search_type],
+                                                                                                  self.codes_fr if lang == 'fr' else self.codes_en)
             return render(request, self.searches[search_type].record_template, context)
 
         else:

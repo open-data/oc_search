@@ -219,3 +219,8 @@ def split(value, key):
         return value
     else:
         return [value]
+
+
+@register.filter(name='add_str')
+def add_str(value: str, arg1: str):
+    return value + arg1
