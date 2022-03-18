@@ -1,6 +1,7 @@
 import collections
 import csv
 from django.conf import settings
+from django.core.cache import caches
 from django.http import HttpRequest, HttpResponseRedirect, FileResponse
 from django.views.generic import View
 from django.shortcuts import render, redirect
@@ -95,59 +96,101 @@ class SearchView(View):
             in iter_namespace(search.plugins)
         }
 
+        # Use a local memory cache for the DB objects
+        cache = caches['local']
         # Load Search and Field configuration
-        search_queryset = Search.objects.all()
-        for s in search_queryset:
-            self.searches[s.search_id] = s
-            if s.search_alias_en:
-                self.search_alias_en[s.search_alias_en] = s.search_id
-            if s.search_alias_fr:
-                self.search_alias_fr[s.search_alias_fr] = s.search_id
-        for sid in self.searches.keys():
-            sfields = {}
-            facet_list_en = []
-            facet_list_fr = []
-            display_list_en = []
-            display_list_fr = []
-            field_queryset = Field.objects.filter(search_id_id=sid)
-            for f in field_queryset:
-                sfields[f.field_id] = f
-            field_queryset = Field.objects.filter(search_id_id=sid).filter(is_search_facet=True).order_by('solr_facet_display_order')
-            for f in field_queryset:
-                if f.solr_field_lang == 'en':
-                    facet_list_en.append(f.field_id)
-                elif f.solr_field_lang == 'fr':
-                    facet_list_fr.append(f.field_id)
-                elif f.solr_field_lang == 'bi':
-                    facet_list_en.append(f.field_id)
-                    facet_list_fr.append(f.field_id)
-            field_queryset = Field.objects.filter(search_id_id=sid).filter(is_default_display=True)
-            for f in field_queryset:
-                if f.is_default_display and f.solr_field_lang == 'en':
-                    display_list_en.append(f.field_id)
-                elif f.is_default_display and f.solr_field_lang == 'fr':
-                    display_list_fr.append(f.field_id)
-                elif f.is_default_display and f.solr_field_lang == 'bi':
-                    display_list_en.append(f.field_id)
-                    display_list_fr.append(f.field_id)
 
-            self.fields[sid] = sfields
-            self.facets_en[sid] = facet_list_en
-            self.facets_fr[sid] = facet_list_fr
-            self.display_fields_en[sid] = display_list_en
-            self.display_fields_fr[sid] = display_list_fr
-            self.display_fields_names_en[sid] = self.get_default_display_fields('en', sid)
-            self.display_fields_names_fr[sid] = self.get_default_display_fields('fr', sid)
+        if cache.get('searches') is None:
+            search_queryset = Search.objects.all()
+            for s in search_queryset:
+                self.searches[s.search_id] = s
+                if s.search_alias_en:
+                    self.search_alias_en[s.search_alias_en] = s.search_id
+                if s.search_alias_fr:
+                    self.search_alias_fr[s.search_alias_fr] = s.search_id
+            cache.set('searches', self.searches, 3600)
+            cache.set('search_alias_en', self.search_alias_en, 3610)
+            cache.set('search_alias_fr', self.search_alias_fr, 3610)
+        else:
+            self.searches = cache.get('searches')
+            self.search_alias_en = cache.get('search_alias_en')
+            self.search_alias_fr = cache.get('search_alias_fr')
+
+        if cache.get('fields') is None:
+            for sid in self.searches.keys():
+                sfields = {}
+                facet_list_en = []
+                facet_list_fr = []
+                display_list_en = []
+                display_list_fr = []
+                field_queryset = Field.objects.filter(search_id_id=sid)
+                for f in field_queryset:
+                    sfields[f.field_id] = f
+                field_queryset = Field.objects.filter(search_id_id=sid).filter(is_search_facet=True).order_by('solr_facet_display_order')
+                for f in field_queryset:
+                    if f.solr_field_lang == 'en':
+                        facet_list_en.append(f.field_id)
+                    elif f.solr_field_lang == 'fr':
+                        facet_list_fr.append(f.field_id)
+                    elif f.solr_field_lang == 'bi':
+                        facet_list_en.append(f.field_id)
+                        facet_list_fr.append(f.field_id)
+                field_queryset = Field.objects.filter(search_id_id=sid).filter(is_default_display=True)
+                for f in field_queryset:
+                    if f.is_default_display and f.solr_field_lang == 'en':
+                        display_list_en.append(f.field_id)
+                    elif f.is_default_display and f.solr_field_lang == 'fr':
+                        display_list_fr.append(f.field_id)
+                    elif f.is_default_display and f.solr_field_lang == 'bi':
+                        display_list_en.append(f.field_id)
+                        display_list_fr.append(f.field_id)
+
+                self.fields[sid] = sfields
+                self.facets_en[sid] = facet_list_en
+                self.facets_fr[sid] = facet_list_fr
+                self.display_fields_en[sid] = display_list_en
+                self.display_fields_fr[sid] = display_list_fr
+                self.display_fields_names_en[sid] = self.get_default_display_fields('en', sid)
+                self.display_fields_names_fr[sid] = self.get_default_display_fields('fr', sid)
+
+            cache.set('fields', self.fields, 3600)
+            cache.set('facets_en', self.facets_en, 3610)
+            cache.set('facets_fr', self.facets_fr, 3610)
+            cache.set('display_fields_en', self.display_fields_en, 3610)
+            cache.set('display_fields_fr', self.display_fields_fr, 3610)
+            cache.set('display_fields_names_en', self.display_fields_names_en, 3610)
+            cache.set('display_fields_names_fr', self.display_fields_names_fr, 3610)
+
+        else:
+            self.fields = cache.get('fields')
+            self.facets_en = cache.get('facets_en')
+            self.facets_fr = cache.get('facets_fr')
+            self.display_fields_en = cache.get('display_fields_en')
+            self.display_fields_fr = cache.get('display_fields_fr')
+            self.display_fields_names_en = cache.get('display_fields_names_en')
+            self.display_fields_names_fr = cache.get('display_fields_names_fr')
 
         # Load Code configuration
-        codes_queryset = Code.objects.all()
-        for code in codes_queryset:
-            if code.field_id.field_id in self.codes_en:
-                self.codes_en[code.field_id.field_id][code.code_id] = code.label_en
-                self.codes_fr[code.field_id.field_id][code.code_id] = code.label_fr
-            else:
-                self.codes_en[code.field_id.field_id] = {code.code_id: code.label_en}
-                self.codes_fr[code.field_id.field_id] = {code.code_id: code.label_fr}
+        if cache.get('codes_en') is None:
+            self.codes_en = {}
+            self.codes_fr = {}
+            for sid in self.searches.keys():
+                self.codes_en[sid] = {}
+                self.codes_fr[sid] = {}
+                codes_queryset = Code.objects.filter(field_id__search_id__search_id=sid)
+                for code in codes_queryset:
+                    # Codes are stored in a dictionary with the code_id as the key
+                    if code.field_id.field_id in self.codes_en[sid]:
+                        self.codes_en[sid][code.field_id.field_id][code.code_id] = code.label_en
+                        self.codes_fr[sid][code.field_id.field_id][code.code_id] = code.label_fr
+                    else:
+                        self.codes_en[sid][code.field_id.field_id] = {code.code_id: code.label_en}
+                        self.codes_fr[sid][code.field_id.field_id] = {code.code_id: code.label_fr}
+            cache.set('codes_en', self.codes_en, 3600)
+            cache.set('codes_fr', self.codes_fr, 3600)
+        else:
+            self.codes_en = cache.get('codes_en')
+            self.codes_fr = cache.get('codes_fr')
 
     def get_default_display_fields(self, lang: str, search_type: str):
         display_field_name = {}
@@ -259,7 +302,7 @@ class SearchView(View):
                 default_sort_order = self.searches[search_type].results_sort_default_en if self.searches[search_type].results_sort_default_en else 'score desc'
 
             solr_query = create_solr_query(request, self.searches[search_type], self.fields[search_type],
-                                           self.codes_fr if lang == 'fr' else self.codes_en,
+                                           self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
                                            facets, start_row, self.searches[search_type].results_page_size,
                                            record_id='', export=False, highlighting=True,
                                            default_sort=default_sort_order, override_sort=new_text_search)
@@ -272,7 +315,7 @@ class SearchView(View):
                     solr_query,
                     request,
                     self.searches[search_type], self.fields[search_type],
-                    self.codes_fr if lang == 'fr' else self.codes_en,
+                    self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
                     facets,
                     '')
 
@@ -289,7 +332,7 @@ class SearchView(View):
                         solr_query,
                         request,
                         self.searches[search_type], self.fields[search_type],
-                        self.codes_fr if lang == 'fr' else self.codes_en,
+                        self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
                         facets,
                         '')
                 context['system_facet_fields'] = ['__label__', '__sortorder__']
@@ -315,9 +358,9 @@ class SearchView(View):
                             for facet_value in context['facets'][f].keys():
                                 if facet_value not in context['system_facet_fields']:
                                     if request.LANGUAGE_CODE == 'fr':
-                                        facet_values[self.codes_fr[f][facet_value]] = facet_value
+                                        facet_values[self.codes_fr[search_type][f][facet_value]] = facet_value
                                     else:
-                                        facet_values[self.codes_en[f][facet_value]] = facet_value
+                                        facet_values[self.codes_en[search_type][f][facet_value]] = facet_value
                             # Sort the facet values - use French locale for sorting
                             if lang == "fr":
                                 sorted_facet_values = sorted(facet_values.keys(), key=unidecode)
@@ -353,7 +396,7 @@ class SearchView(View):
                 context['sort'] = solr_query['sort']
 
                 # Add code information
-                context['codes'] = self.codes_fr if lang == 'fr' else self.codes_en
+                context['codes'] = self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type]
 
                 # Save display fields
                 context['default_display_fields'] = self.display_fields_fr[search_type] if lang == 'fr' else self.display_fields_en[search_type]
@@ -380,7 +423,7 @@ class SearchView(View):
                                                                                                       lang,
                                                                                                       self.searches[search_type],
                                                                                                       self.fields[search_type],
-                                                                                                      self.codes_fr if lang == 'fr' else self.codes_en)
+                                                                                                      self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type])
                 return render(request, self.searches[search_type].page_template, context)
             except (ConnectionError, SolrError) as ce:
                 return render(request, 'error.html', get_error_context(search_type, lang, ce.args[0]))
@@ -418,7 +461,7 @@ class RecordView(SearchView):
             facets = {}
 
             solr_query = create_solr_query(request, self.searches[search_type], self.fields[search_type],
-                                           self.codes_fr if lang == 'fr' else self.codes_en,
+                                           self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
                                            facets, start_row, 5, record_id)
 
             # Call  plugin pre-solr-query if defined
@@ -429,7 +472,7 @@ class RecordView(SearchView):
                     solr_query,
                     request,
                     self.searches[search_type], self.fields[search_type],
-                    self.codes_fr if lang == 'fr' else self.codes_en,
+                    self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
                     facets,
                     record_id)
 
@@ -454,7 +497,7 @@ class RecordView(SearchView):
             context['docs'] = solr_response.get_highlighting()
 
             # Add code information
-            context['codes'] = self.codes_fr if lang == 'fr' else self.codes_en
+            context['codes'] = self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type]
 
             display_fields = []
             display_field_name = {}
@@ -495,7 +538,7 @@ class RecordView(SearchView):
                                                                                                   lang,
                                                                                                   self.searches[search_type],
                                                                                                   self.fields[search_type],
-                                                                                                  self.codes_fr if lang == 'fr' else self.codes_en)
+                                                                                                  self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type])
             return render(request, self.searches[search_type].record_template, context)
 
         else:
@@ -551,7 +594,7 @@ class ExportView(SearchView):
             core_name = self.searches[search_type].solr_core_name
             facets = self.facets_fr[search_type] if lang == 'fr' else self.facets_en[search_type]
             solr_query = create_solr_query(request, self.searches[search_type], self.fields[search_type],
-                                           self.codes_fr if lang == 'fr' else self.codes_en,
+                                           self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
                                            facets, 1, 0, record_id='', export=True)
 
             # Call  plugin pre-solr-query if defined
@@ -561,7 +604,7 @@ class ExportView(SearchView):
                     solr_query,
                     request,
                     self.searches[search_type], self.fields[search_type],
-                    self.codes_fr if lang == 'fr' else self.codes_en,
+                    self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
                     facets)
 
             solr_response = solr.query(core_name, solr_query, request_handler='export')
@@ -573,7 +616,7 @@ class ExportView(SearchView):
                     solr_query,
                     request,
                     self.searches[search_type], self.fields[search_type],
-                    self.codes_fr if lang == 'fr' else self.codes_en,
+                    self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
                     facets)
 
             if self.cache_search_results_file(cached_filename=cached_filename, sr=solr_response):
@@ -619,7 +662,7 @@ class MoreLikeThisView(SearchView):
                     solr_query,
                     request,
                     self.searches[search_type], self.fields[search_type],
-                    self.codes_fr if lang == 'fr' else self.codes_en,
+                    self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
                     record_id)
 
             # Query Solr
@@ -632,7 +675,7 @@ class MoreLikeThisView(SearchView):
                     solr_query,
                     request,
                     self.searches[search_type], self.fields[search_type],
-                    self.codes_fr if lang == 'fr' else self.codes_en,
+                    self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
                     record_id)
 
             context['docs'] = solr_response.data['moreLikeThis'][record_id]['docs']
