@@ -34,7 +34,7 @@ class Command(BaseCommand):
     field_codes = {}
 
     # Number of rows to commit to Solr at a time
-    cycle_on = 1000
+    cycle_on = 500
 
     discovered_plugins = {
             name: importlib.import_module(name)
@@ -50,6 +50,8 @@ class Command(BaseCommand):
         parser.add_argument('--nothing_to_report', required=False,  action='store_true', default=False,
                             help='Use this switch to indicate if the CSV files that is being loaded contains '
                                  '"Nothing To Report" data')
+        parser.add_argument('--report_duplicates', required=False,  action='store_true', default=False,
+                            help='Use this switch to indicate if the CSV files that is being loaded contains duplicate IDs')
 
     def set_empty_fields(self, solr_record: dict):
 
@@ -73,6 +75,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         total = 0
+        commit_count = 0
         cycle = 0
 
         try:
@@ -105,10 +108,14 @@ class Command(BaseCommand):
             except Field.DoesNotExist as x1:
                 self.logger.error('Fields not found for search: "{0}"'.format(x1))
 
+            if options['report_duplicates']:
+                ids = {}
+
+            solr_items = []
             # Process the records in the CSV file one at a time
             with open(options['csv'], 'r', encoding='utf-8-sig', errors="ignore") as csv_file:
                 csv_reader = csv.DictReader(csv_file, dialect='excel')
-                solr_items = []
+
                 for row_num, csv_record in enumerate(csv_reader):
                     try:
                         # Create a dictionary for each record loaded into  Solr
@@ -130,6 +137,11 @@ class Command(BaseCommand):
                                 solr_record['id'] = "{0}-{1}-{2}".format(solr_record['owner_org'], solr_record['year'],
                                                                          solr_record['quarter'])
 
+                        if options['report_duplicates']:
+                            if record_id in ids:
+                                self.logger.error('Duplicate record ID found: "{0}"'.format(record_id))
+                            ids[record_id] = True
+
                         # Clear out the Solr core. on the first line
 
                         if total == 0 and not options['nothing_to_report']:
@@ -139,7 +151,7 @@ class Command(BaseCommand):
                             solr.delete_doc_by_query(self.solr_core, "format:NTR")
                             solr.commit(self.solr_core, softCommit=True)
                             self.logger.info("Purging NTR records")
-                        total += 1
+
                         cycle += 1
 
                         # Call plugins if they exist for this search type. This is where a developer can introduce
@@ -225,7 +237,7 @@ class Command(BaseCommand):
                                     solr_record[csv_field + 'g'] = str(solr_record[csv_field]).strip()
                                 elif len(solr_record[csv_field]) > MAX_FIELD_LENGTH:
                                     solr_record[csv_field + 'g'] = str(solr_record[csv_field][:MAX_FIELD_LENGTH]).strip() + " ..."
-                                    print("Row {0}, Length of {1} is {2}, truncated to {3}".format(total, csv_field + 'g', len(solr_record[csv_field]), len(solr_record[csv_field + 'g'])))
+                                    self.logger.error("Row {0}, Length of {1} is {2}, truncated to {3}".format(total, csv_field + 'g', len(solr_record[csv_field]), len(solr_record[csv_field + 'g'])))
                                 else:
                                     solr_record[csv_field + 'g'] = solr_record[csv_field]
                             elif self.csv_fields[csv_field].solr_field_type == 'search_text_fr':
@@ -234,7 +246,7 @@ class Command(BaseCommand):
                                     solr_record[csv_field + 'a'] = str(solr_record[csv_field]).strip()
                                 elif len(solr_record[csv_field]) > MAX_FIELD_LENGTH:
                                     solr_record[csv_field + 'a'] = str(solr_record[csv_field][:MAX_FIELD_LENGTH]).strip() + " ..."
-                                    print("Row {0}, Length of {1} is {2}, truncated to {3}".format(total, csv_field + 'a', len(solr_record[csv_field]), len(solr_record[csv_field + 'a'])))
+                                    self.logger.error("Row {0}, Length of {1} is {2}, truncated to {3}".format(total, csv_field + 'a', len(solr_record[csv_field]), len(solr_record[csv_field + 'a'])))
                                 else:
                                     solr_record[csv_field + 'a'] = solr_record[csv_field]
 
@@ -292,6 +304,7 @@ class Command(BaseCommand):
                         # Add the prepared record to the list of records to be loaded into Solr
 
                         solr_items.append(solr_record)
+                        total += 1
 
                         # Write to Solr whenever the cycle threshold is reached
                         if cycle >= self.cycle_on:
@@ -299,8 +312,9 @@ class Command(BaseCommand):
                             for countdown in reversed(range(10)):
                                 try:
                                     solr.index(self.solr_core, solr_items)
-                                    self.logger.info("{0} rows processed".format(total))
                                     cycle = 0
+                                    commit_count += len(solr_items)
+                                    self.logger.info("{0} rows processed, and {1} uploaded".format(total, commit_count))
                                     solr_items.clear()
                                     break
                                 except ConnectionError as cex:
@@ -310,26 +324,27 @@ class Command(BaseCommand):
                                     time.sleep((10 - countdown) * 5)
                     except Exception as x:
                         self.logger.error('Unexpected Error "{0}" while processing row {1}'.format(x, row_num + 1))
-                    # Write and remaining records to Solr and commit
 
-                if cycle > 0:
-                    # try to connect to Solr up to 10 times
-                    for countdown in reversed(range(10)):
-                        try:
-                            solr.index(self.solr_core, solr_items)
-                            total += len(solr_items)
-                            self.logger.info("{0} rows processed".format(cycle))
-                            cycle = 0
-                            solr_items.clear()
-                            break
-                        except ConnectionError as cex:
-                            if not countdown:
-                                raise
-                            self.logger.info("Solr error: {0}. Waiting to try again ... {1}".format(cex, countdown))
-                            time.sleep((10 - countdown) * 5)
+            # Write and remaining records to Solr and commit
 
-                solr.commit(self.solr_core, softCommit=True, waitSearcher=True)
-                self.logger.info("Total rows processed: {0}".format(total))
+            if len(solr_items) > 0:
+                # try to connect to Solr up to 10 times
+                for countdown in reversed(range(10)):
+                    try:
+                        solr.index(self.solr_core, solr_items)
+                        commit_count += len(solr_items)
+                        self.logger.info("Final: {0} rows processed, and {1} uploaded".format(total, commit_count))
+                        solr_items.clear()
+                        break
+                    except ConnectionError as cex:
+                        if not countdown:
+                            raise
+                        self.logger.info("Solr error: {0}. Waiting to try again ... {1}".format(cex, countdown))
+                        time.sleep((10 - countdown) * 5)
+
+            solr.commit(self.solr_core, softCommit=True, waitSearcher=True)
+            self.logger.level = logging.INFO
+            self.logger.info("Total rows processed: {0}, committed to Solr: {1}".format(total, commit_count))
 
         except Exception as x:
             self.logger.error('Unexpected Error "{0}"'.format(x))
