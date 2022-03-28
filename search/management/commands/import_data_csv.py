@@ -146,8 +146,12 @@ class Command(BaseCommand):
                             if 'month' in csv_record:
                                 solr_record['id'] = "{0}-{1}-{2}".format(csv_record['owner_org'], csv_record['year'], csv_record['month'])
                             elif 'quarter' in csv_record:
-                                solr_record['id'] = "{0}-{1}-{2}".format(csv_record['owner_org'], csv_record['year'],
-                                                                         csv_record['quarter'])
+                                if 'fiscal_year' in csv_record:
+                                    solr_record['id'] = "{0}-{1}-{2}".format(csv_record['owner_org'], csv_record['fiscal_year'], csv_record['quarter'])
+                                elif 'year' in csv_record:
+                                    solr_record['id'] = "{0}-{1}-{2}".format(csv_record['owner_org'], csv_record['year'], csv_record['quarter'])
+                                else:
+                                    solr_record['id'] = "{0}-{1}-{2}".format(csv_record['owner_org'], csv_record['quarter'])
 
                         if options['report_duplicates'] and not options['nothing_to_report']:
                             if record_id in ids:
