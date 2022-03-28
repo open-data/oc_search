@@ -34,7 +34,7 @@ class Command(BaseCommand):
     field_codes = {}
 
     # Number of rows to commit to Solr at a time
-    cycle_on = 500
+    cycle_on = 1000
 
     discovered_plugins = {
             name: importlib.import_module(name)
@@ -112,6 +112,18 @@ class Command(BaseCommand):
                 ids = {}
 
             solr_items = []
+
+            # Clear out the Solr core when ioading default data
+
+            if options['nothing_to_report']:
+                solr.delete_doc_by_query(self.solr_core, "format:NTR")
+                solr.commit(self.solr_core, softCommit=True)
+                self.logger.info("Purging NTR records")
+            else:
+                solr.delete_doc_by_query(self.solr_core, "*:*")
+                self.logger.info("Purging all records")
+                # Not committing here, as we are going to be adding a lot of records
+
             # Process the records in the CSV file one at a time
             with open(options['csv'], 'r', encoding='utf-8-sig', errors="ignore") as csv_file:
                 csv_reader = csv.DictReader(csv_file, dialect='excel')
@@ -131,26 +143,16 @@ class Command(BaseCommand):
                                 record_id = ",".join(id_values)
                         else:
 
-                            if 'month' in solr_record:
-                                solr_record['id'] = "{0}-{1}-{2}".format(solr_record['owner_org'], solr_record['year'], solr_record['month'])
-                            elif 'quarter' in solr_record:
-                                solr_record['id'] = "{0}-{1}-{2}".format(solr_record['owner_org'], solr_record['year'],
-                                                                         solr_record['quarter'])
+                            if 'month' in csv_record:
+                                solr_record['id'] = "{0}-{1}-{2}".format(csv_record['owner_org'], csv_record['year'], csv_record['month'])
+                            elif 'quarter' in csv_record:
+                                solr_record['id'] = "{0}-{1}-{2}".format(csv_record['owner_org'], csv_record['year'],
+                                                                         csv_record['quarter'])
 
-                        if options['report_duplicates']:
+                        if options['report_duplicates'] and not options['nothing_to_report']:
                             if record_id in ids:
                                 self.logger.error('Duplicate record ID found: "{0}"'.format(record_id))
                             ids[record_id] = True
-
-                        # Clear out the Solr core. on the first line
-
-                        if total == 0 and not options['nothing_to_report']:
-                            solr.delete_doc_by_query(self.solr_core, "*:*")
-                            self.logger.info("Purging all records")
-                        elif total == 0 and options['nothing_to_report']:
-                            solr.delete_doc_by_query(self.solr_core, "format:NTR")
-                            solr.commit(self.solr_core, softCommit=True)
-                            self.logger.info("Purging NTR records")
 
                         cycle += 1
 
