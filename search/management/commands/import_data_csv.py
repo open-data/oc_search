@@ -144,16 +144,16 @@ class Command(BaseCommand):
                         else:
 
                             if 'month' in csv_record:
-                                solr_record['id'] = "{0}-{1}-{2}".format(csv_record['owner_org'], csv_record['year'], csv_record['month'])
+                                record_id = "{0}-{1}-{2}".format(csv_record['owner_org'], csv_record['year'], csv_record['month'])
                             elif 'quarter' in csv_record:
                                 if 'fiscal_year' in csv_record:
-                                    solr_record['id'] = "{0}-{1}-{2}".format(csv_record['owner_org'], csv_record['fiscal_year'], csv_record['quarter'])
+                                    record_id = "{0}-{1}-{2}".format(csv_record['owner_org'], csv_record['fiscal_year'], csv_record['quarter'])
                                 elif 'year' in csv_record:
-                                    solr_record['id'] = "{0}-{1}-{2}".format(csv_record['owner_org'], csv_record['year'], csv_record['quarter'])
+                                    record_id = "{0}-{1}-{2}".format(csv_record['owner_org'], csv_record['year'], csv_record['quarter'])
                                 else:
-                                    solr_record['id'] = "{0}-{1}-{2}".format(csv_record['owner_org'], csv_record['quarter'])
+                                    record_id = "{0}-{1}-{2}".format(csv_record['owner_org'], csv_record['quarter'])
 
-                        if options['report_duplicates'] and not options['nothing_to_report']:
+                        if options['report_duplicates']:
                             if record_id in ids:
                                 self.logger.error('Duplicate record ID found: "{0}"'.format(record_id))
                             ids[record_id] = True
@@ -292,14 +292,7 @@ class Command(BaseCommand):
 
                         # Set the Solr ID field (Nothing To Report records are excluded)
 
-                        if not options['nothing_to_report']:
-                            solr_record['id'] = record_id
-                        else:
-                            if 'month' in solr_record:
-                                solr_record['id'] = "{0}-{1}-{2}".format(solr_record['owner_org'], solr_record['year'], solr_record['month'])
-                            elif 'quarter' in solr_record:
-                                solr_record['id'] = "{0}-{1}-{2}".format(solr_record['owner_org'], solr_record['year'],
-                                                                         solr_record['quarter'])
+                        solr_record['id'] = record_id
 
                         # Call plugins if they exist for this search type. This is where a developer can introduce
                         # code to customize the data that is loaded into Solr for a particular search.
