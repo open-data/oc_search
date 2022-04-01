@@ -14,9 +14,12 @@
     <style type="text/css">{% include 'snippets/ramp.css' %}</style>
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
     <link rel="stylesheet" href="{% static 'ramp/GCWeb/css/theme.css' %}">
-    <link rel="stylesheet" href="{% static 'ramp/rv-styles.css' %}"/>
-    <link rel="stylesheet" href="{% static 'ramp/range-slider.css' %}"/>
-    <script src="{% static 'ramp/range-slider.js' %}"></script>
+    <link rel="stylesheet" href="{{ rv_css }}"/>
+    <link rel="stylesheet" href="{{ range_slider_css }}"/>
+    <script href="{{ range_slider_js }}"></script>
+    <link rel="stylesheet" href="{{ chart_css }}"/>
+    <script href="{{ chart_js }}"></script>
+
     <!-- Analytics -->
     {% if not DEBUG %}
         {% include 'search_snippets/site_analytics_head.html' %}
@@ -78,8 +81,8 @@
 
 <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=default,Object.entries,Object.values,Array.prototype.find,Array.prototype.findIndex,Array.prototype.values,Array.prototype.includes,HTMLCanvasElement.prototype.toBlob,String.prototype.repeat,String.prototype.codePointAt,String.fromCodePoint,NodeList.prototype.@@iterator,Promise,Promise.prototype.finally"></script>
 <!-- Using Ramp configuration service so still need to use legacy API for now -->
-<script src="{% static 'ramp/legacy-api.js' %}"></script>
-<script src="{% static 'ramp/rv-main.js' %}"></script>
+<script href="{{ legacy_api }}"></script>
+<script href="{{ rv_main_js }}"></script>
 
 <script>
 

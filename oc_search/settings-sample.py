@@ -229,3 +229,13 @@ GOOGLE_ANALYTICS_GTM_ID = ''
 GOOGLE_ANALYTICS_PROPERTY_ID = ''
 
 IMPORT_EXPORT_USE_TRANSACTIONS = False
+
+# RAMP Viewer Settings
+RAMP_SHOW_ALERT_INFO = False
+RAMP_RANGE_SLIDER_CSS_URL = 'https://viewer-visualiseur.services.geo.ca/apps/RAMP/contributed-plugins/range-slider/range-slider.css'
+RAMP_RANGE_SLIDER_JS_URL = 'https://viewer-visualiseur.services.geo.ca/apps/RAMP/contributed-plugins/range-slider/range-slider.js'
+RAMP_CHART_CSS_URL = 'https://viewer-visualiseur.services.geo.ca/apps/RAMP/contributed-plugins/chart/chart.css'
+RAMP_CHART_JS_URL = 'https://viewer-visualiseur.services.geo.ca/apps/RAMP/contributed-plugins/chart/chart.js'
+RAMP_STYLE_CSS_URL = 'https://viewer-visualiseur.services.geo.ca/apps/RAMP/fgpv/fgpv-3.3.5/rv-styles.css'
+RAMP_MAIN_JS_URL = 'https://viewer-visualiseur.services.geo.ca/apps/RAMP/fgpv/fgpv-3.3.5/rv-main.js'
+RAMP_LEGACY_API_JS_URL = 'https://viewer-visualiseur.services.geo.ca/apps/RAMP/fgpv/fgpv-3.3.5/legacy-api.js'

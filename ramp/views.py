@@ -59,6 +59,20 @@ class RampView(View):
             "GOOGLE_ANALYTICS_GTM_ID": settings.GOOGLE_ANALYTICS_GTM_ID,
             "GOOGLE_ANALYTICS_PROPERTY_ID": settings.GOOGLE_ANALYTICS_PROPERTY_ID,
         }
+
+        # Get the configured RAMP URLs
+
+        ramp_urls = {
+            "range_slider_css": settings.RAMP_RANGE_SLIDER_CSS_URL,
+            "range_slider_js": settings.RAMP_RANGE_SLIDER_JS_URL,
+            "chart_css": settings.RAMP_CHART_CSS_URL,
+            "chart_js": settings.RAMP_CHART_JS_URL,
+            "rv_css": settings.RAMP_STYLE_CSS_URL,
+            "rv_main_js": settings.RAMP_MAIN_JS_URL,
+            "legacy_api": settings.RAMP_LEGACY_API_JS_URL,
+        }
+        context.update(ramp_urls)
+
         return render(request, 'ramp.html', context)
 
     def _get_toggle(self, lang, keys):
