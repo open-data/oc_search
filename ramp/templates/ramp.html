@@ -16,9 +16,9 @@
     <link rel="stylesheet" href="{% static 'ramp/GCWeb/css/theme.css' %}">
     <link rel="stylesheet" href="{{ rv_css }}"/>
     <link rel="stylesheet" href="{{ range_slider_css }}"/>
-    <script href="{{ range_slider_js }}"></script>
+    <script src="{{ range_slider_js }}"></script>
     <link rel="stylesheet" href="{{ chart_css }}"/>
-    <script href="{{ chart_js }}"></script>
+    <script src="{{ chart_js }}"></script>
 
     <!-- Analytics -->
     {% if not DEBUG %}
@@ -60,7 +60,7 @@
                     <div id="fgpmap" is="rv-map" class="fgpMap" data-rv-config="{% static rcs_config %}"
                          data-rv-langs='["{{ language }}-CA"]'
                          data-rv-service-endpoint="https://maps.canada.ca/geonetwork/srv/api/" data-rv-keys=''
-                         data-rv-wait="true" rv-plugins="rangeSlider">
+                         data-rv-wait="true" rv-plugins="rangeSlider,chart">
                         <noscript>
                             <p>{% translate 'This interactive map requires JavaScript. To view this content please enable JavaScript in your browser or download a browser that supports it.' %}</p>
                         </noscript>
@@ -81,8 +81,8 @@
 
 <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=default,Object.entries,Object.values,Array.prototype.find,Array.prototype.findIndex,Array.prototype.values,Array.prototype.includes,HTMLCanvasElement.prototype.toBlob,String.prototype.repeat,String.prototype.codePointAt,String.fromCodePoint,NodeList.prototype.@@iterator,Promise,Promise.prototype.finally"></script>
 <!-- Using Ramp configuration service so still need to use legacy API for now -->
-<script href="{{ legacy_api }}"></script>
-<script href="{{ rv_main_js }}"></script>
+<script src="{{ legacy_api }}"></script>
+<script src="{{ rv_main_js }}"></script>
 
 <script>
 

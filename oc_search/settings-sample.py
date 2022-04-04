@@ -231,6 +231,11 @@ GOOGLE_ANALYTICS_PROPERTY_ID = ''
 IMPORT_EXPORT_USE_TRANSACTIONS = False
 
 # RAMP Viewer Settings
+OPEN_DATA_SOLR_SERVER_URL = "http://localhost:8983/solr"
+OPEN_DATA_CORE = "search_opendata"
+OPEN_DATA_BASE_URL_EN = "https://open.canada.ca/data/en/dataset/"
+OPEN_DATA_BASE_URL_FR = "https://ouvert.canada.ca/data/fr/dataset/"
+
 RAMP_SHOW_ALERT_INFO = False
 RAMP_RANGE_SLIDER_CSS_URL = 'https://viewer-visualiseur.services.geo.ca/apps/RAMP/contributed-plugins/range-slider/range-slider.css'
 RAMP_RANGE_SLIDER_JS_URL = 'https://viewer-visualiseur.services.geo.ca/apps/RAMP/contributed-plugins/range-slider/range-slider.js'
