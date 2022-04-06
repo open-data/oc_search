@@ -42,7 +42,7 @@
 <!-- WET Menu -->
 {% if language == 'fr' %}{% include 'snippets/wet_menu-fr.html' %}{% else %}{% include 'snippets/wet_menu-en.html' %}{% endif %}
 
-<main role="main" property="mainContentOfPage" class="container">
+<main role="main" property="mainContentOfPage" class="container" style="width: auto!important;">
 {% if show_alert_info %}
     <section class="alert alert-danger" role="alert">
       <p>{% translate 'Open Maps is undergoing maintenance. Certain features will be unavailable during this time. For questions or concerns, please <a href="https://open.canada.ca/en/forms/contact-us">contact us</a>.' %}</p>
