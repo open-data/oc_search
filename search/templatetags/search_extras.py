@@ -4,6 +4,7 @@
 from babel.dates import format_date
 from babel.numbers import format_currency, format_decimal, parse_decimal
 import bleach
+from datetime import datetime
 from django import template
 from django.conf import settings
 from django.utils.translation import gettext
@@ -189,6 +190,17 @@ def get_dict_value(dict_data, key):
 @register.filter('unspecified')
 def unspecified(value: str, lang: str):
     if value == '-':
+        if lang == 'fr':
+            return 'Type non spécifié'
+        else:
+            return 'Unspecified'
+    else:
+        return value
+
+
+@register.filter('unspecified_date')
+def unspecified_date(value: datetime, lang: str):
+    if value == datetime(1, 1, 1, 0, 0):
         if lang == 'fr':
             return 'Type non spécifié'
         else:

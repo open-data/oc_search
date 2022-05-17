@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from django.core.management.base import BaseCommand
 from pathlib import Path
 from search.models import Search, Field, Code
@@ -40,7 +41,7 @@ class Command(BaseCommand):
         :return: None
         '''
 
-        # Do not bother processing CKAN internal fields, othewise retrieve or create the Field model
+        # Do not bother processing CKAN internal fields, otherwise retrieve or create the Field model
         if not yaml_field['datastore_id'] in ('record_created', 'record_modified', 'user_modified'):
             field, created = Field.objects.get_or_create(field_id=yaml_field['datastore_id'],
                                                          search_id=search)
@@ -106,8 +107,29 @@ class Command(BaseCommand):
                     choice, created = Code.objects.get_or_create(code_id=ccode, field_id=field)
                     choice.label_en = yaml_field['choices'][ccode]["en"]
                     choice.label_fr = yaml_field['choices'][ccode]["fr"]
+
+                    if 'lookup' in yaml_field['choices'][ccode]:
+                        choice.lookup_codes_default = ",".join(yaml_field['choices'][ccode]['lookup'])
+                    if 'conditional_lookup' in yaml_field['choices'][ccode]:
+
+                        for cl in yaml_field['choices'][ccode]['conditional_lookup']:
+                            if 'column' in cl:
+                                choice.lookup_date_field = cl['column']
+                                choice.lookup_codes_conditional = ",".join(cl['lookup'])
+                                if 'less_than' in cl:
+                                    choice.lookup_date = datetime.strptime(cl['less_than'], '%Y-%m-%d')
+                                    choice.lookup_date = choice.lookup_date.replace(tzinfo=timezone.utc)
+                                    choice.lookup_test = Code.LookupTests.LESSTHAN
+                            elif 'lookup' in cl:
+                                choice.lookup_codes_default = ",".join(cl['lookup'])  # list of codes
                     choice.save()
 
+            if "choices_lookup" in yaml_field:
+                for lucode in yaml_field['choices_lookup']:
+                    choice, created = Code.objects.get_or_create(code_id=lucode, field_id=field, is_lookup=True)
+                    choice.label_en = yaml_field['choices_lookup'][lucode]["en"]
+                    choice.label_fr = yaml_field['choices_lookup'][lucode]["fr"]
+                    choice.save()
             field.save()
 
     def add_org_fields(self, search):

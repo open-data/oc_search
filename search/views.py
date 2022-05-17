@@ -356,7 +356,7 @@ class SearchView(View):
                             # Create an inverted index of the facet values
                             facet_values = {}
                             for facet_value in context['facets'][f].keys():
-                                if facet_value not in context['system_facet_fields']:
+                                if facet_value not in context['system_facet_fields'] and facet_value != '-':
                                     if request.LANGUAGE_CODE == 'fr':
                                         facet_values[self.codes_fr[search_type][f][facet_value]] = facet_value
                                     else:

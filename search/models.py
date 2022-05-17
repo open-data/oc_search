@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.utils.translation import gettext_lazy as _
 from datetime import datetime, timezone, MINYEAR, MAXYEAR
 
 
@@ -162,12 +163,27 @@ class Code(models.Model):
     Stores metadata about individual Codes associated with a particular field in a search application, related to :model: 'search.Search' and :model: 'search.Field'.
     Note that codes are _not_ shared between fields or searches
     """
+    class LookupTests(models.TextChoices):
+
+        EQUAL = 'EQ', _('Equal')
+        NOTEQUAL = 'NE', _('Not Equal')
+        LESSTHAN = 'LT', _('Less Than')
+        GREATERTHAN = 'GT', _('Greater Than')
+        LESSTHANEQUAL = 'LE', _('Less Than or Equal')
+        GREATERTHANEQUAL = 'GE', _('Greater Than or Equal')
 
     id = models.AutoField(primary_key=True)
     code_id = models.CharField(blank=False, max_length=32, verbose_name="Unique code Identifier")
     field_id = models.ForeignKey(Field, on_delete=models.CASCADE)
     label_en = models.CharField(blank=False, max_length=512, verbose_name="English Code Value")
     label_fr = models.CharField(blank=False, max_length=2512, verbose_name="French Code Value")
+    lookup_codes_default = models.CharField(blank=True, default="", max_length=512, verbose_name="Default Lookup Codes")
+    lookup_codes_conditional = models.CharField(blank=True, default="", max_length=512, verbose_name="Conditional Lookup Codes")
+    lookup_date_field = models.CharField(blank=True, default="", max_length=64, verbose_name="Date field to be evaluated")
+    lookup_date = models.DateTimeField(blank=True, verbose_name="Lookup Date",
+                                       default=datetime(MINYEAR, 1, 1, 0, 0, 0, 0, timezone.utc))
+    lookup_test = models.CharField(blank=True, default="", max_length=2, choices=LookupTests.choices, verbose_name="Lookup Test")
+    is_lookup = models.BooleanField(blank=False, default=False, verbose_name="Is a Choice Lookup Code")
 
     def __str__(self):
         return '%s - (%s) %s' % (self.label_en, self.code_id, self.field_id)
@@ -190,3 +206,6 @@ class ChronologicCode(models.Model):
 
     class Meta:
         unique_together = (('code_id', 'start_date'),)
+
+
+
