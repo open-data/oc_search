@@ -107,7 +107,9 @@ class CodeResource(resources.ModelResource):
     class Meta:
         model = Code
         import_id_fields = ('field_id', 'code_id')
-        fields = ('field_id__search_id', 'field_id__field_id', 'id', 'field_id', 'code_id', 'label_en', 'label_fr')
+        fields = ('field_id__search_id', 'field_id__field_id', 'id', 'field_id', 'code_id', 'label_en', 'label_fr',
+                  'lookup_codes_default', 'lookup_codes_conditional', 'lookup_date_field', 'lookup_date',
+                  'lookup_test', 'is_lookup')
         skip_unchanged = True
         report_skipped = True
 
