@@ -223,13 +223,17 @@ class Command(BaseCommand):
                                         solr_record[csv_field] = "0"
                                     if self.csv_fields[csv_field].solr_field_is_currency:
                                         csv_normalized = re.sub("[^-0-9.,]", '', solr_record[csv_field])
-                                        csv_decimal = parse_decimal(csv_normalized, locale='en_US')
+                                        csv_decimal = parse_decimal(csv_normalized, locale='en_US').normalize()
                                         if self.csv_fields[csv_field].solr_field_type == 'pfloat':
                                             solr_record[csv_field] = float(csv_decimal)
                                         elif self.csv_fields[csv_field].solr_field_type == 'pint':
                                             solr_record[csv_field] = int(csv_decimal)
                                         solr_record[csv_field + '_en'] = format_currency(csv_decimal, 'CAD', locale='en_CA')
-                                        solr_record[csv_field + '_fr'] = format_currency(csv_decimal, 'CAD', locale='fr_CA')
+                                        try:
+                                            solr_record[csv_field + '_fr'] = format_currency(csv_decimal, 'CAD', locale='fr_CA')
+                                        except KeyError as kex:
+                                            # Sometimes the Babel locale cannot properly format the currency for French
+                                            solr_record[csv_field + '_fr'] = format_decimal(csv_decimal, locale='fr_CA')
                                     else:
                                         csv_decimal = parse_decimal(solr_record[csv_field], locale='en_US')
                                         solr_record[csv_field + '_en'] = format_decimal(csv_decimal, locale='en_CA')
@@ -243,7 +247,7 @@ class Command(BaseCommand):
                                     solr_record[csv_field + 'g'] = str(solr_record[csv_field]).strip()
                                 elif len(solr_record[csv_field]) > MAX_FIELD_LENGTH:
                                     solr_record[csv_field + 'g'] = str(solr_record[csv_field][:MAX_FIELD_LENGTH]).strip() + " ..."
-                                    self.logger.error("Row {0}, Length of {1} is {2}, truncated to {3}".format(total, csv_field + 'g', len(solr_record[csv_field]), len(solr_record[csv_field + 'g'])))
+                                    self.logger.warning("Row {0}, Length of {1} is {2}, truncated to {3}".format(total, csv_field + 'g', len(solr_record[csv_field]), len(solr_record[csv_field + 'g'])))
                                 else:
                                     solr_record[csv_field + 'g'] = solr_record[csv_field]
                             elif self.csv_fields[csv_field].solr_field_type == 'search_text_fr':
@@ -252,7 +256,7 @@ class Command(BaseCommand):
                                     solr_record[csv_field + 'a'] = str(solr_record[csv_field]).strip()
                                 elif len(solr_record[csv_field]) > MAX_FIELD_LENGTH:
                                     solr_record[csv_field + 'a'] = str(solr_record[csv_field][:MAX_FIELD_LENGTH]).strip() + " ..."
-                                    self.logger.error("Row {0}, Length of {1} is {2}, truncated to {3}".format(total, csv_field + 'a', len(solr_record[csv_field]), len(solr_record[csv_field + 'a'])))
+                                    self.logger.warning("Row {0}, Length of {1} is {2}, truncated to {3}".format(total, csv_field + 'a', len(solr_record[csv_field]), len(solr_record[csv_field + 'a'])))
                                 else:
                                     solr_record[csv_field + 'a'] = solr_record[csv_field]
 
@@ -271,7 +275,7 @@ class Command(BaseCommand):
                                                 codes_en.append(self.field_codes[csv_field][code_value.lower()].label_en)
                                                 codes_fr.append(self.field_codes[csv_field][code_value.lower()].label_fr)
                                             else:
-                                                self.logger.error("Row {0}, Record {1}. Unknown code value: {2} for field: {3}".format(
+                                                self.logger.warning("Row {0}, Record {1}. Unknown code value: {2} for field: {3}".format(
                                                     row_num + 2, record_id, code_value, csv_field))
                                         solr_record[csv_field + '_en'] = codes_en
                                         solr_record[csv_field + '_fr'] = codes_fr
@@ -283,7 +287,7 @@ class Command(BaseCommand):
                                             solr_record[csv_field + '_en'] = self.field_codes[csv_field][csv_record[csv_field].lower()].label_en
                                             solr_record[csv_field + '_fr'] = self.field_codes[csv_field][csv_record[csv_field].lower()].label_fr
                                         else:
-                                            self.logger.error("Row {0}, Record {1}. Unknown code value: {2} for field: {3}".format(
+                                            self.logger.warning("Row {0}, Record {1}. Unknown code value: {2} for field: {3}".format(
                                                 row_num + 2, record_id, csv_record[csv_field], csv_field))
 
                         # Ensure all empty CSV fields are set to appropriate or default values
