@@ -143,7 +143,7 @@ class Command(BaseCommand):
                                 record_id = ",".join(id_values)
                         else:
 
-                            if 'month' in csv_record:
+                            if 'month' in csv_record and 'month' in self.csv_fields:
                                 record_id = "{0}-{1}-{2}".format(csv_record['owner_org'], csv_record['year'], csv_record['month'])
                             elif 'quarter' in csv_record:
                                 if 'fiscal_year' in csv_record:
