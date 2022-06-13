@@ -207,8 +207,11 @@ def create_solr_query(request: HttpRequest, search: Search, fields: dict, Codes:
         solr_query['rows'] = rows
     if not export and highlighting:
         hl_fields = []
+        hl_field_types = ["search_text_en", "string", 'text_general']
+        if request.LANGUAGE_CODE == 'fr':
+            hl_field_types = ["search_text_fr", "string", 'text_general']
         for field in fields:
-            if fields[field].solr_field_type in ["search_text_en", "search_text_fr", "string", 'text_general']:
+            if fields[field].solr_field_type in hl_field_types:
                 hl_fields.append(field)
                 if fields[field].solr_extra_fields:
                     for extra_field in fields[field].solr_extra_fields.split(","):
