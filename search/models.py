@@ -35,6 +35,9 @@ class Search(models.Model):
                                                                         "search, this is the last date it was run.",
                                        verbose_name="Last imported on")
     solr_core_name = models.CharField(blank=False, default="solr_core", max_length=64, verbose_name="Solr Core name")
+    solr_default_op = models.CharField(blank=False, default="AND", max_length=3,
+                                       help_text="Default Solr operator - choices are 'AND' and 'OR'")
+    solr_debugging = models.BooleanField(blank=False, default=False, help_text="Log Solr debugging information, Should be off in production")
     results_page_size = models.IntegerField(blank=False, default=10, verbose_name="No. of Search Results Per Page")
     results_sort_order_en = models.CharField(blank=False, max_length=132, default="score desc", verbose_name="Sort-by Categories (English)")
     results_sort_order_fr = models.CharField(blank=False, max_length=132, default="score desc", verbose_name="Sort-by Categories (Français)")

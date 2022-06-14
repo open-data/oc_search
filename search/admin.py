@@ -22,7 +22,7 @@ class SearchAdmin(ImportExportModelAdmin):
     resource_class = SearchResource
     list_display = ['search_id', 'label_en', 'solr_core_name']
     fieldsets = (
-        (None, {'fields': ('search_id', 'solr_core_name', 'id_fields', 'alt_formats', 'label_en', 'label_fr',
+        (None, {'fields': ('search_id', 'solr_core_name', 'solr_default_op', 'solr_debugging', 'id_fields', 'alt_formats', 'label_en', 'label_fr',
                            'dataset_download_text_en', 'dataset_download_url_en',
                            'dataset_download_text_fr', 'dataset_download_url_fr', 'desc_en', 'desc_fr',
                            'about_message_en', 'about_message_fr', 'search_alias_en', 'search_alias_fr',

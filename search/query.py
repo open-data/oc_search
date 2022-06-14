@@ -182,7 +182,7 @@ def create_solr_query(request: HttpRequest, search: Search, fields: dict, Codes:
     if record_id:
         solr_query['q'] = 'id:"{0}"'.format(record_id)
 
-    solr_query['q.op'] = "AND"
+    solr_query['q.op'] = search.solr_default_op
 
     # Create a Solr query field list based on the Fields Model. Expand the field list where needed
     solr_query['qf'] = get_query_fields(request, fields)
@@ -252,6 +252,8 @@ def create_solr_query(request: HttpRequest, search: Search, fields: dict, Codes:
         solr_query['facet.field'] = ff
     if export and solr_query['sort'] == "score desc":
         solr_query['sort'] = "id asc"
+    if search.solr_debugging:
+        solr_query['debugQuery'] = True
     return solr_query
 
 
