@@ -5,7 +5,7 @@ django-jazzmin==2.5.0
 django-redis-cache==3.0.1
 django-redis-sessions==0.6.2
 django-smuggler==1.0.4
-django==3.2.12
+django==3.2.13
 docutils==0.18.1
 markdown2==2.4.3
 nltk==3.7
