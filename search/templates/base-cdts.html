@@ -104,8 +104,8 @@
 
     <section>
 
-    {% include info_message_snippet %}
-    {% include about_message_snippet %}
+    {% block info-message-block %}{% include info_message_snippet %}{% endblock info-message-block %}
+    {% block about-message-block %}{% include about_message_snippet %}{% endblock about-message-block %}
 
     </section>
 

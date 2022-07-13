@@ -559,7 +559,7 @@ class ExportView(SearchView):
             return False
         if not os.path.exists(cached_filename):
             with open(cached_filename, 'w', newline='', encoding='utf8') as csv_file:
-                cache_writer = csv.writer(csv_file, dialect='excel')
+                cache_writer = csv.writer(csv_file, dialect='excel', quoting=csv.QUOTE_ALL)
                 headers = list(sr.docs[0])
                 headers[0] = u'\N{BOM}' + headers[0]
                 cache_writer.writerow(headers)
@@ -680,9 +680,20 @@ class MoreLikeThisView(SearchView):
 
             context['docs'] = solr_response.data['moreLikeThis'][record_id]['docs']
             context['original_doc'] = solr_response.docs[0]
-            if 'prev_record' in request.session:
-                context['back_to_url'] =  request.session['prev_record']
 
+            if search_type_plugin in self.discovered_plugins and self.discovered_plugins[search_type_plugin].plugin_api_version() >= 1.1:
+                context, template = self.discovered_plugins[search_type_plugin].pre_render_search(context,
+                                                                                                  self.searches[search_type].page_template,
+                                                                                                  request,
+                                                                                                  lang,
+                                                                                                  self.searches[search_type],
+                                                                                                  self.fields[search_type],
+                                                                                                  self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type])
+
+            if 'prev_record' in request.session:
+                context['back_to_url'] = request.session['prev_record']
+            if 'prev_search' in request.session:
+                context['back_to_url'] = request.session['prev_search']
             return render(request, "more_like_this.html", context)
 
         else:

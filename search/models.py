@@ -176,10 +176,10 @@ class Code(models.Model):
         GREATERTHANEQUAL = 'GE', _('Greater Than or Equal')
 
     id = models.AutoField(primary_key=True)
-    code_id = models.CharField(blank=False, max_length=32, verbose_name="Unique code Identifier")
+    code_id = models.CharField(blank=False, max_length=64, verbose_name="Unique code Identifier")
     field_id = models.ForeignKey(Field, on_delete=models.CASCADE)
     label_en = models.CharField(blank=False, max_length=512, verbose_name="English Code Value")
-    label_fr = models.CharField(blank=False, max_length=2512, verbose_name="French Code Value")
+    label_fr = models.CharField(blank=False, max_length=512, verbose_name="French Code Value")
     lookup_codes_default = models.CharField(blank=True, default="", max_length=512, verbose_name="Default Lookup Codes")
     lookup_codes_conditional = models.CharField(blank=True, default="", max_length=512, verbose_name="Conditional Lookup Codes")
     lookup_date_field = models.CharField(blank=True, default="", max_length=64, verbose_name="Date field to be evaluated")

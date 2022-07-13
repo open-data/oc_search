@@ -135,6 +135,29 @@
     text-decoration: none;
     background-color: #185100; }
 
+.badge-federal {
+  color: #fff;
+  background-color: #0D467D; }
+  .badge-success[href]:hover, .badge-success[href]:focus {
+    color: #fff;
+    text-decoration: none;
+    background-color: #137991; }
+
+ .badge-provincial {
+  color: #fff;
+  background-color: #137991; }
+  .badge-success[href]:hover, .badge-success[href]:focus {
+    color: #000;
+    text-decoration: none;
+    background-color: #6dd2da; }
+
+.badge-municipal{
+  color: #000;
+  background-color: #6dd2da; }
+  .badge-success[href]:hover, .badge-success[href]:focus {
+    color: #000;
+    text-decoration: none;
+    background-color: #ff9f40; }
 
 .badge-info {
   color: #fff;

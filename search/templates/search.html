@@ -7,7 +7,7 @@
 {% block main-content-body %}
 <div class="row" xmlns="http://www.w3.org/1999/html">
 
-
+    {% block main-centre-search-box %}
     <div class="col-md-12 mrgn-bttm-md mrgn-tp-md form-inline">
         <label for="search_text" class="wb-inv">{% translate 'Search' %}</label>
         <input type="text" name="search_text" class="form-control"  id="search_text" style="float:left;"
@@ -25,17 +25,18 @@
                 <option value="{{ option }}" {% if sort == option %}selected="selected"{% endif %}>{{ label }}</option>
             {% endfor %}
         </select>
-
     </div>
+    {% endblock main-centre-search-box %}
 
 
-    <div class="col-md-8 col-md-push-4">
+    <div class="col-md-8 col-md-push-4 mrgn-tp-md">
     {% block main-content-centre %}
         <div class="row mrgn-rght-lg">
             <div class="col-md-12">
             <p><b>{% blocktrans with result_num=total_hits|apnumber result_s=total_hits|pluralize %}Found {{result_num}} record{{result_s}}{% endblocktrans %}</b></p>
             </div>
         </div><div class="row">
+            {% block main-content-centre-top %}
             <div class="col-md-12 mrgn-bttm-xl">
                 <a href="{{ download_ds_url }}" class="btn btn-secondary btn-sm mrgn-rght-sm" target="_blank" rel="noopener noreferrer">
                     <span class="glyphicon glyphicon-new-window text-info"></span> {{ download_ds_text }}</a>
@@ -48,6 +49,7 @@
                 <a onclick="resetSearch();" href="#" class="btn btn-secondary btn-default btn-sm"><span
             class="glyphicon glyphicon-refresh text-danger"></span> {% translate "Reset Search" %}</a>
             </div>
+            {% endblock main-content-centre-top %}
         </div>
 
 
@@ -96,8 +98,8 @@
     <div class="col-md-4 col-md-pull-8">
     {% block main-content-sidebar %}{% spaceless %}
 
-     <aside class="mrgn-tp-lg mrgn-lft-md">
-         <div class="mrgn-tp-md"><h2><span class="glyphicon glyphicon-filter" aria-hidden="true"></span> {% translate 'Filters' %}</h2></div>
+     <aside class="mrgn-lft-md">
+         <div><strong><span class="glyphicon glyphicon-filter" aria-hidden="true"></span> {% translate 'Filters' %}</strong></div>
 
         {# When facets are selected, display a button to clear each individual facet filter #}
         {% if selected_facets|length > 0 %}

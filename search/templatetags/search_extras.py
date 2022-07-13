@@ -167,7 +167,9 @@ def normalize_headings(value: str):
 @register.filter('markdown_filter')
 def markdown_filter(text):
     text = markdown2.markdown(text, extras=settings.MARKDOWN_FILTER_EXTRAS)
-    html = bleach.clean(text, tags=settings.MARKDOWN_FILTER_WHITELIST_TAGS)
+    attrs = {**bleach.sanitizer.ALLOWED_ATTRIBUTES, **settings.MARKDOWN_FILTER_ALLOWED_ATTRIBUTES}
+    html = bleach.clean(text, tags=settings.MARKDOWN_FILTER_WHITELIST_TAGS,
+                        attributes=attrs)
     return bleach.linkify(html)
 
 

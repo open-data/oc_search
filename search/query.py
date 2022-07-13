@@ -192,7 +192,8 @@ def create_solr_query(request: HttpRequest, search: Search, fields: dict, Codes:
         for f in fields:
             if fields[f].solr_field_lang in [request.LANGUAGE_CODE, 'bi']:
                 if fields[f].solr_field_type in ['string', 'pint', 'pfloat', 'pdate']:
-                    ef.append(f)
+                    if not fields[f].solr_field_is_coded and f != "unique_identifier":
+                        ef.append(f)
                     if fields[f].solr_field_is_coded and f[-2:] not in ['_en', '_fr'] and f not in ['month', 'year']:
                         ef.append("{0}_{1}".format(f, request.LANGUAGE_CODE))
                 elif fields[f].solr_field_type in ["search_text_en", "search_text_fr", 'text_general']:
@@ -234,6 +235,7 @@ def create_solr_query(request: HttpRequest, search: Search, fields: dict, Codes:
     if using_facets:
         solr_query['facet'] = True
         solr_query['facet.sort'] = 'index'
+        solr_query['facet.method'] = 'enum'
         fq = []
         ff = []
         for facet in facets:

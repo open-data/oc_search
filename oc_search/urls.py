@@ -37,7 +37,9 @@ if settings.SEARCH_LANG_USE_PATH:
         path('search/<str:lang>/<str:search_type>/record/<str:record_id>', RecordView.as_view(), name='RecordForm'),
         path('search/<str:lang>/<str:search_type>/export/', ExportView.as_view(), name='ExportForm'),
         path('search/<str:lang>/<str:search_type>/similar/<str:record_id>', MoreLikeThisView.as_view(), name='MLTForm'),
-        path('search/<str:lang>/<str:search_type>/similaire/<str:record_id>', MoreLikeThisView.as_view(), name='MLTForm'),
+        path('search/<str:lang>/<str:search_type>/similaire/<str:record_id>', MoreLikeThisView.as_view(),
+             name='MLTForm'),
+        path('rechercher/<str:lang>/<str:search_type>/similaire/<str:record_id>', MoreLikeThisView.as_view(), name='MLTForm'),
     ]
     if 'ramp' in settings.INSTALLED_APPS:
         urlpatterns += [

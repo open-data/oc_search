@@ -88,7 +88,7 @@ class FieldAdmin(ImportExportModelAdmin):
 
     change_list_template = 'smuggler/change_list.html'
     resource_class = FieldResource
-    list_display = ('field_id', 'is_search_facet', 'is_default_display', 'search_id', 'format_name', 'solr_field_type')
+    list_display = ('field_id', 'is_search_facet', 'is_default_display', 'search_id', 'format_name', 'solr_field_is_coded', 'solr_field_type', 'solr_field_lang')
     actions = [make_facet_field, make_default_display_field, clear_facet_field, clear_default_display_field, make_currency_field]
     search_fields = ['field_id', 'is_search_facet']
     list_filter = ['search_id']

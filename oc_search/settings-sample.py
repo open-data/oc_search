@@ -205,10 +205,13 @@ MARKDOWN_FILTER_WHITELIST_TAGS = [
     'br',
     'mark',
     'pre',
+    'span',
     'strong',
     'table', 'thead', 'th', 'tr', 'tbody', 'td'
 ]
 MARKDOWN_FILTER_EXTRAS = ["tables", "break-on-newline"]
+# These are IN ADDITION to the attributes defined in leach.sanitizer.ALLOWED_ATTRIBUTES
+MARKDOWN_FILTER_ALLOWED_ATTRIBUTES = {'span': ['title', 'class']}
 
 CACHES = {
     'default': {
@@ -235,6 +238,8 @@ OPEN_DATA_SOLR_SERVER_URL = "http://localhost:8983/solr"
 OPEN_DATA_CORE = "search_opendata"
 OPEN_DATA_BASE_URL_EN = "https://open.canada.ca/data/en/dataset/"
 OPEN_DATA_BASE_URL_FR = "https://ouvert.canada.ca/data/fr/dataset/"
+OPEN_DATA_EN_FGP_BASE = "https://search.open.canada.ca/openmap/"
+OPEN_DATA_FR_FGP_BASE = "https://rechercher.ouvert.canada.ca/carteouverte/"
 
 RAMP_SHOW_ALERT_INFO = False
 RAMP_RANGE_SLIDER_CSS_URL = 'https://viewer-visualiseur.services.geo.ca/apps/RAMP/contributed-plugins/range-slider/range-slider.css'
