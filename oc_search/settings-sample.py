@@ -211,7 +211,7 @@ MARKDOWN_FILTER_WHITELIST_TAGS = [
 ]
 MARKDOWN_FILTER_EXTRAS = ["tables", "break-on-newline"]
 # These are IN ADDITION to the attributes defined in leach.sanitizer.ALLOWED_ATTRIBUTES
-MARKDOWN_FILTER_ALLOWED_ATTRIBUTES = {'span': ['title', 'class']}
+MARKDOWN_FILTER_ALLOWED_ATTRIBUTES = {'span': ['title', 'class'], "a": ["href", "title", "rel"]}
 
 CACHES = {
     'default': {

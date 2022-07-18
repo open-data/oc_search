@@ -10,6 +10,7 @@ from search.models import Search, Field, Code
 import search.plugins
 from SolrClient import SolrClient
 from SolrClient.exceptions import ConnectionError
+import traceback
 import csv
 import logging
 import time
@@ -327,6 +328,7 @@ class Command(BaseCommand):
                                     time.sleep((10 - countdown) * 5)
                     except Exception as x:
                         self.logger.error('Unexpected Error "{0}" while processing row {1}'.format(x, row_num + 1))
+                        traceback.print_exception(type(x), x, x.__traceback__)
 
             # Write and remaining records to Solr and commit
 

@@ -30,8 +30,18 @@ class Command(BaseCommand):
         parser.add_argument('--reset', action='store_true', required=False, default=False,
                             help='Flag to overwrite previous Search settings that were loaded. '
                                  'By default the search is  updated, not overwritten')
+        parser.add_argument('--c1', type=str, help='Extra choice field to add to code extra field 01. Specify c1 or b1, but not both.', required=False)
+        parser.add_argument('--c2', type=str, help='Extra choice field to add to code extra field 02. Specify c2 or b2, but not both.', required=False)
+        parser.add_argument('--c3', type=str, help='Extra choice field to add to code extra field 03. Specify c3 or b3, but not both.', required=False)
+        parser.add_argument('--c4', type=str, help='Extra choice field to add to code extra field 04. Specify c4 or b4, but not both.', required=False)
+        parser.add_argument('--c5', type=str, help='Extra choice field to add to code extra field 05. Specify c5 or b5, but not both.', required=False)
+        parser.add_argument('--b1', type=str, help='Extra bilingual choice field to add to code extra field 01', required=False)
+        parser.add_argument('--b2', type=str, help='Extra bilingual choice field to add to code extra field 02', required=False)
+        parser.add_argument('--b3', type=str, help='Extra bilingual choice field to add to code extra field 03', required=False)
+        parser.add_argument('--b4', type=str, help='Extra bilingual choice field to add to code extra field 04', required=False)
+        parser.add_argument('--b5', type=str, help='Extra bilingual choice field to add to code extra field 05', required=False)
 
-    def process_yaml_field(self, search, yaml_field, resource_name, reset=False, is_ntr=False):
+    def process_yaml_field(self, search, yaml_field, resource_name, options, is_ntr=False):
         '''
         Process a field record from the YAML file
         :param search: Unique search identifier
@@ -40,6 +50,8 @@ class Command(BaseCommand):
         :param is_ntr: Inidcator if this is a field for Nothing To Report record
         :return: None
         '''
+
+        reset = options['reset'] if 'reset' in options else False
 
         # Do not bother processing CKAN internal fields, otherwise retrieve or create the Field model
         if not yaml_field['datastore_id'] in ('record_created', 'record_modified', 'user_modified'):
@@ -105,9 +117,14 @@ class Command(BaseCommand):
                 field.solr_field_is_coded = True
                 for ccode in yaml_field['choices']:
                     choice, created = Code.objects.get_or_create(code_id=ccode, field_id=field)
-                    choice.label_en = yaml_field['choices'][ccode]["en"]
-                    choice.label_fr = yaml_field['choices'][ccode]["fr"]
-
+                    if 'en' in yaml_field['choices'][ccode]:
+                        choice.label_en = yaml_field['choices'][ccode]["en"]
+                    else:
+                        choice.label_en = yaml_field['choices'][ccode]
+                    if 'fr' in yaml_field['choices'][ccode]:
+                        choice.label_fr = yaml_field['choices'][ccode]["fr"]
+                    else:
+                        choice.label_fr = yaml_field['choices'][ccode]
                     if 'lookup' in yaml_field['choices'][ccode]:
                         choice.lookup_codes_default = ",".join(yaml_field['choices'][ccode]['lookup'])
                     if 'conditional_lookup' in yaml_field['choices'][ccode]:
@@ -122,6 +139,42 @@ class Command(BaseCommand):
                                     choice.lookup_test = Code.LookupTests.LESSTHAN
                             elif 'lookup' in cl:
                                 choice.lookup_codes_default = ",".join(cl['lookup'])  # list of codes
+                    if 'c1' in options and options['c1']:
+                        if options['c1'] in yaml_field['choices'][ccode]:
+                            choice.extra_01 = yaml_field['choices'][ccode][options['c1']]
+                    if 'c2' in options and options['c2']:
+                        if options['c2'] in yaml_field['choices'][ccode]:
+                            choice.extra_02 = yaml_field['choices'][ccode][options['c2']]
+                    if 'c3' in options and options['c3']:
+                        if options['c3'] in yaml_field['choices'][ccode]:
+                            choice.extra_03 = yaml_field['choices'][ccode][options['c3']]
+                    if 'c4' in options and options['c4']:
+                        if options['c4'] in yaml_field['choices'][ccode]:
+                            choice.extra_04 = yaml_field['choices'][ccode][options['c4']]
+                    if 'c5' in options and options['c5']:
+                        if options['c5'] in yaml_field['choices'][ccode]:
+                            choice.extra_05 = yaml_field['choices'][ccode][options['c5']]
+                    if 'b1' in options and options['b1']:
+                        if options['b1'] in yaml_field['choices'][ccode]:
+                            choice.extra_01_en = yaml_field['choices'][ccode][options['b1']]['en'] if 'en' in yaml_field['choices'][ccode][options['b1']] else ''
+                            choice.extra_01_fr = yaml_field['choices'][ccode][options['b1']]['fr'] if 'fr' in yaml_field['choices'][ccode][options['b1']] else choice.extra_01_en
+                    if 'b2' in options and options['b2']:
+                        if options['b2'] in yaml_field['choices'][ccode]:
+                            choice.extra_02_en = yaml_field['choices'][ccode][options['b2']]['en'] if 'en' in yaml_field['choices'][ccode][options['b2']] else ''
+                            choice.extra_02_fr = yaml_field['choices'][ccode][options['b2']]['fr'] if 'fr' in yaml_field['choices'][ccode][options['b2']] else choice.extra_02_en
+                    if 'b3' in options and options['b3']:
+                        if options['b3'] in yaml_field['choices'][ccode]:
+                            choice.extra_03_en = yaml_field['choices'][ccode][options['b3']]['en'] if 'en' in yaml_field['choices'][ccode][options['b3']] else ''
+                            choice.extra_03_fr = yaml_field['choices'][ccode][options['b3']]['fr'] if 'fr' in yaml_field['choices'][ccode][options['b3']] else choice.extra_03_en
+                    if 'b4' in options and options['b4']:
+                        if options['b4'] in yaml_field['choices'][ccode]:
+                            choice.extra_04_en = yaml_field['choices'][ccode][options['b4']]['en'] if 'en' in yaml_field['choices'][ccode][options['b4']] else ''
+                            choice.extra_04_fr = yaml_field['choices'][ccode][options['b4']]['fr'] if 'fr' in yaml_field['choices'][ccode][options['b4']] else choice.extra_04_en
+                    if 'b1' in options and options['b5']:
+                        if options['b5'] in yaml_field['choices'][ccode]:
+                            choice.extra_05_en = yaml_field['choices'][ccode][options['b5']]['en'] if 'en' in yaml_field['choices'][ccode][options['b5']] else ''
+                            choice.extra_05_fr = yaml_field['choices'][ccode][options['b5']]['fr'] if 'fr' in yaml_field['choices'][ccode][options['b5']] else choice.extra_05_en
+
                     choice.save()
 
             if "choices_lookup" in yaml_field:
@@ -180,12 +233,12 @@ class Command(BaseCommand):
 
                     # Process regular PD data file fields
                     for yaml_field in schema['resources'][0]['fields']:
-                        self.process_yaml_field(search, yaml_field, schema['resources'][0]['resource_name'], options['reset'], is_ntr=False)
+                        self.process_yaml_field(search, yaml_field, schema['resources'][0]['resource_name'], options, is_ntr=False)
 
                     # Process Nothing To report fields if present
                     if len(schema['resources']) > 1:
                         for yaml_field in schema['resources'][1]['fields']:
-                            self.process_yaml_field(search, yaml_field, schema['resources'][1]['resource_name'], options['reset'], is_ntr=True)
+                            self.process_yaml_field(search, yaml_field, schema['resources'][1]['resource_name'], options, is_ntr=True)
 
                     # always add default organization fields
                     self.add_org_fields(search)

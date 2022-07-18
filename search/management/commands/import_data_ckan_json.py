@@ -31,9 +31,11 @@ class Command(BaseCommand):
     # class variables that hold the search models
     search_target = None
     solr_core = None
-    search_fields: dict[str, Field] = {}
+    # search_fields: dict[str, Field] = {}
+    search_fields = {}
     all_fields = {}
-    field_codes: dict[str, Code] = {}
+    # field_codes: dict[str, Code] = {}
+    field_codes = {}
     # Number of rows to commit to Solr at a time
     cycle_on = 1000
 
@@ -94,7 +96,14 @@ class Command(BaseCommand):
                 solr_record['machine_translated_fields'].append(field_name + "_fr")
 
         elif field_name in DATE_FIELDS:
-            raw_date = datetime.fromisoformat(raw_value)
+            # Requires Python 3.9+ This line cna replace the clunky IF statement
+            # raw_date = datetime.fromisoformat(raw_value)
+            if 'T' in raw_value:
+                raw_date = datetime.strptime(raw_value, "%Y-%m-%dT%H:%M:%S.%f")
+            elif len(raw_value) == 10:
+                raw_date = datetime.strptime(raw_value, "%Y-%m-%d")
+            else:
+                raw_date = datetime.strptime(raw_value, "%Y-%m-%d %H:%M:%S")
             solr_record[field_name] = raw_value
             solr_record[field_name + '_en'] = format_date(raw_date, locale='en')
             solr_record[field_name + '_fr'] = format_date(raw_date, locale='fr')
