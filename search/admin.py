@@ -109,7 +109,13 @@ class CodeResource(resources.ModelResource):
         import_id_fields = ('field_id', 'code_id')
         fields = ('field_id__search_id', 'field_id__field_id', 'id', 'field_id', 'code_id', 'label_en', 'label_fr',
                   'lookup_codes_default', 'lookup_codes_conditional', 'lookup_date_field', 'lookup_date',
-                  'lookup_test', 'is_lookup')
+                  'lookup_test', 'is_lookup',
+                  'extra_01', 'extra_01_en', "extra_01_fr",
+                  'extra_02', 'extra_02_en', "extra_02_fr",
+                  'extra_03', 'extra_03_en', "extra_03_fr",
+                  'extra_04', 'extra_04_en', "extra_04_fr",
+                  'extra_05', 'extra_05_en', "extra_05_fr",
+                  )
         skip_unchanged = True
         report_skipped = True
 
