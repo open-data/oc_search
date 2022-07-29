@@ -31,11 +31,14 @@
 
     <div class="col-md-8 col-md-push-4 mrgn-tp-md">
     {% block main-content-centre %}
+        {% block search_results_message %}
         <div class="row mrgn-rght-lg">
             <div class="col-md-12">
             <p><b>{% blocktrans with result_num=total_hits|apnumber result_s=total_hits|pluralize %}Found {{result_num}} record{{result_s}}{% endblocktrans %}</b></p>
             </div>
-        </div><div class="row">
+        </div>
+        {% endblock search_results_message %}
+        <div class="row">
             {% block main-content-centre-top %}
             <div class="col-md-12 mrgn-bttm-xl">
                 <a href="{{ download_ds_url }}" class="btn btn-secondary btn-sm mrgn-rght-sm" target="_blank" rel="noopener noreferrer">

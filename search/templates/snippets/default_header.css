@@ -110,6 +110,9 @@
   .badge:empty {
     display: none; }
 
+  .badge-medium {
+  padding: 0.4em 0.8em;
+  }
 
 .badge-primary {
   color: #fff;
@@ -198,6 +201,30 @@
     color: #fff;
     text-decoration: none;
     background-color: #1d2124; }
+
+  .badge-success-status {
+      color: #000;
+      background-color: #D8EECA;
+      border: 2px solid #278400;
+  }
+
+  .badge-error-status {
+      color: #923534;
+      background-color: #F3E9E8;
+      border: 2px solid #D3080C;
+  }
+
+  .badge-warning-status {
+      color: #66512C;
+      background-color: #F9F4D4;
+      border: 2px solid #FF9900;
+  }
+
+  .badge-info-status {
+      color: #245269;
+      background-color: #D7FAFF;
+      border: 2px solid #269ABC;
+  }
 
 .aurora-list-group-item-success {
   color: #144500;
