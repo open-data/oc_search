@@ -2,6 +2,7 @@ Babel==2.10.1
 bleach==5.0.0
 django-import-export==2.8.0
 django-jazzmin==2.5.0
+django-qurl-templatetag==0.0.14
 django-redis-cache==3.0.1
 django-redis-sessions==0.6.2
 django-smuggler==1.0.4
