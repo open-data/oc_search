@@ -20,7 +20,6 @@ MAX_FIELD_LENGTH = 31000
 
 
 class Command(BaseCommand):
-
     help = 'Django manage command that will import CSV data into a Solr search that created with the ' \
            'import_schema_ckan_yaml command'
 
@@ -38,20 +37,20 @@ class Command(BaseCommand):
     cycle_on = 1000
 
     discovered_plugins = {
-            name: importlib.import_module(name)
-            for finder, name, ispkg
-            in pkgutil.iter_modules(search.plugins.__path__, search.plugins.__name__ + ".")
-        }
+        name: importlib.import_module(name)
+        for finder, name, ispkg
+        in pkgutil.iter_modules(search.plugins.__path__, search.plugins.__name__ + ".")
+    }
 
     def add_arguments(self, parser):
         parser.add_argument('--search', type=str, help='The Search ID that is being loaded', required=True)
         parser.add_argument('--csv', type=str, help='CSV filename to import', required=True)
         parser.add_argument('--quiet', required=False, action='store_true', default=False,
                             help='Only display error messages')
-        parser.add_argument('--nothing_to_report', required=False,  action='store_true', default=False,
+        parser.add_argument('--nothing_to_report', required=False, action='store_true', default=False,
                             help='Use this switch to indicate if the CSV files that is being loaded contains '
                                  '"Nothing To Report" data')
-        parser.add_argument('--report_duplicates', required=False,  action='store_true', default=False,
+        parser.add_argument('--report_duplicates', required=False, action='store_true', default=False,
                             help='Use this switch to indicate if the CSV files that is being loaded contains duplicate IDs')
 
     def set_empty_fields(self, solr_record: dict):
@@ -61,7 +60,10 @@ class Command(BaseCommand):
         return solr_record
 
     def set_empty_field(self, solr_record: dict, sf: Field):
-        if (sf.field_id not in solr_record and sf != 'default_fmt') or solr_record[sf.field_id] == '':
+        # @TODO Nice Try, but this does not pick up empty multi-valued codes
+        if (sf.field_id not in solr_record and sf != 'default_fmt') or (solr_record[sf.field_id] == '') or \
+            (isinstance(solr_record[sf.field_id], list) and len(solr_record[sf.field_id]) < 1) or \
+            (isinstance(solr_record[sf.field_id], list) and solr_record[sf.field_id][0] == ''):
             if sf.default_export_value:
                 default_fmt = sf.default_export_value.split('|')
                 if default_fmt[0] in ['str', 'date']:
@@ -72,6 +74,9 @@ class Command(BaseCommand):
                     solr_record[sf.field_id] = float(default_fmt[1])
                 else:
                     solr_record[sf.field_id] = ''
+            if sf.solr_field_is_coded:
+                solr_record[f"{sf.field_id}_en"] = "-"
+                solr_record[f"{sf.field_id}_fr"] = "-"
 
     def handle(self, *args, **options):
 
@@ -89,9 +94,13 @@ class Command(BaseCommand):
                 if options['quiet']:
                     self.logger.level = logging.ERROR
                 if options['nothing_to_report']:
-                    self.search_fields = Field.objects.filter(search_id=self.search_target, alt_format='ALL') | Field.objects.filter(search_id=self.search_target, alt_format='NTR')
+                    self.search_fields = Field.objects.filter(search_id=self.search_target,
+                                                              alt_format='ALL') | Field.objects.filter(
+                        search_id=self.search_target, alt_format='NTR')
                 else:
-                    self.search_fields = Field.objects.filter(search_id=self.search_target, alt_format='ALL') | Field.objects.filter(search_id=self.search_target, alt_format='')
+                    self.search_fields = Field.objects.filter(search_id=self.search_target,
+                                                              alt_format='ALL') | Field.objects.filter(
+                        search_id=self.search_target, alt_format='')
                 for search_field in self.search_fields:
                     self.csv_fields[search_field.field_id] = search_field
 
@@ -145,12 +154,15 @@ class Command(BaseCommand):
                         else:
 
                             if 'month' in csv_record and 'month' in self.csv_fields:
-                                record_id = "{0}-{1}-{2}".format(csv_record['owner_org'], csv_record['year'], csv_record['month'])
+                                record_id = "{0}-{1}-{2}".format(csv_record['owner_org'], csv_record['year'],
+                                                                 csv_record['month'])
                             elif 'quarter' in csv_record:
                                 if 'fiscal_year' in csv_record:
-                                    record_id = "{0}-{1}-{2}".format(csv_record['owner_org'], csv_record['fiscal_year'], csv_record['quarter'])
+                                    record_id = "{0}-{1}-{2}".format(csv_record['owner_org'],
+                                                                     csv_record['fiscal_year'], csv_record['quarter'])
                                 elif 'year' in csv_record:
-                                    record_id = "{0}-{1}-{2}".format(csv_record['owner_org'], csv_record['year'], csv_record['quarter'])
+                                    record_id = "{0}-{1}-{2}".format(csv_record['owner_org'], csv_record['year'],
+                                                                     csv_record['quarter'])
                                 else:
                                     record_id = "{0}-{1}-{2}".format(csv_record['owner_org'], csv_record['quarter'])
 
@@ -166,7 +178,9 @@ class Command(BaseCommand):
 
                         search_type_plugin = 'search.plugins.{0}'.format(options['search'])
                         if search_type_plugin in self.discovered_plugins:
-                            include, filtered_record = self.discovered_plugins[search_type_plugin].filter_csv_record(csv_record, self.search_target, self.csv_fields, self.field_codes, 'NTR' if options['nothing_to_report'] else '')
+                            include, filtered_record = self.discovered_plugins[search_type_plugin].filter_csv_record(
+                                csv_record, self.search_target, self.csv_fields, self.field_codes,
+                                'NTR' if options['nothing_to_report'] else '')
                             if not include:
                                 continue
                             else:
@@ -178,8 +192,10 @@ class Command(BaseCommand):
 
                             # Verify that it is a known field
 
-                            fields_to_ignore = ('owner_org_title', 'owner_org', 'record_created', 'record_modified', 'user_modified')
-                            fields_not_loaded = ('owner_org_title', 'record_created', 'user_modified', 'record_modified',)
+                            fields_to_ignore = (
+                            'owner_org_title', 'owner_org', 'record_created', 'record_modified', 'user_modified')
+                            fields_not_loaded = (
+                            'owner_org_title', 'record_created', 'user_modified', 'record_modified',)
                             if csv_field not in self.csv_fields and csv_field not in fields_to_ignore:
                                 self.logger.error("CSV files contains unknown field: {0}".format(csv_field))
                                 exit(-1)
@@ -190,7 +206,8 @@ class Command(BaseCommand):
 
                             if self.csv_fields[csv_field].solr_field_multivalued:
                                 delimiter = self.csv_fields[csv_field].solr_field_multivalue_delimeter
-                                solr_record[csv_field] = list(map(lambda c: c.strip(), csv_record[csv_field].split(delimiter)))
+                                solr_record[csv_field] = list(
+                                    map(lambda c: c.strip(), csv_record[csv_field].split(delimiter)))
                                 # Copy fields fo report cannot use multi-values - so directly populate with original string
                                 # Copy fields fo report cannot use multi-values - so directly populate with original string
                                 if self.csv_fields[csv_field].solr_field_export:
@@ -215,7 +232,8 @@ class Command(BaseCommand):
                                         solr_record[csv_field + '_en'] = ''
                                         solr_record[csv_field + '_fr'] = ''
                                 except ValueError as x2:
-                                    self.logger.error('Row {0}, Record {1}, Invalid date: "{1}"'.format(row_num + 2, record_id, x2))
+                                    self.logger.error(
+                                        'Row {0}, Record {1}, Invalid date: "{1}"'.format(row_num + 2, record_id, x2))
                                     solr_record[csv_field] = ''
                                     continue
                             elif self.csv_fields[csv_field].solr_field_type in ['pint', 'pfloat']:
@@ -229,12 +247,15 @@ class Command(BaseCommand):
                                             solr_record[csv_field] = float(csv_decimal)
                                         elif self.csv_fields[csv_field].solr_field_type == 'pint':
                                             solr_record[csv_field] = int(csv_decimal)
-                                        solr_record[csv_field + '_en'] = format_currency(csv_decimal, 'CAD', locale='en_CA')
+                                        solr_record[csv_field + '_en'] = format_currency(csv_decimal, 'CAD',
+                                                                                         locale='en_CA')
                                         try:
-                                            solr_record[csv_field + '_fr'] = format_currency(csv_decimal, 'CAD', locale='fr_CA')
+                                            solr_record[csv_field + '_fr'] = format_currency(csv_decimal, 'CAD',
+                                                                                             locale='fr_CA')
                                         except KeyError as kex:
                                             # Sometimes the Babel locale cannot properly format the currency for French
-                                            solr_record[csv_field + '_fr'] = format_decimal(csv_decimal, locale='fr_CA')
+                                            solr_record[csv_field + '_fr'] = format_decimal(csv_decimal,
+                                                                                            locale='fr_CA')
                                     else:
                                         csv_decimal = parse_decimal(solr_record[csv_field], locale='en_US')
                                         solr_record[csv_field + '_en'] = format_decimal(csv_decimal, locale='en_CA')
@@ -247,8 +268,16 @@ class Command(BaseCommand):
                                     self.set_empty_field(solr_record, self.csv_fields[csv_field])
                                     solr_record[csv_field + 'g'] = str(solr_record[csv_field]).strip()
                                 elif len(solr_record[csv_field]) > MAX_FIELD_LENGTH:
-                                    solr_record[csv_field + 'g'] = str(solr_record[csv_field][:MAX_FIELD_LENGTH]).strip() + " ..."
-                                    self.logger.warning("Row {0}, Length of {1} is {2}, truncated to {3}".format(total, csv_field + 'g', len(solr_record[csv_field]), len(solr_record[csv_field + 'g'])))
+                                    solr_record[csv_field + 'g'] = str(
+                                        solr_record[csv_field][:MAX_FIELD_LENGTH]).strip() + " ..."
+                                    self.logger.warning("Row {0}, Length of {1} is {2}, truncated to {3}".format(total,
+                                                                                                                 csv_field + 'g',
+                                                                                                                 len(
+                                                                                                                     solr_record[
+                                                                                                                         csv_field]),
+                                                                                                                 len(
+                                                                                                                     solr_record[
+                                                                                                                         csv_field + 'g'])))
                                 else:
                                     solr_record[csv_field + 'g'] = solr_record[csv_field]
                             elif self.csv_fields[csv_field].solr_field_type == 'search_text_fr':
@@ -256,8 +285,16 @@ class Command(BaseCommand):
                                     self.set_empty_field(solr_record, self.csv_fields[csv_field])
                                     solr_record[csv_field + 'a'] = str(solr_record[csv_field]).strip()
                                 elif len(solr_record[csv_field]) > MAX_FIELD_LENGTH:
-                                    solr_record[csv_field + 'a'] = str(solr_record[csv_field][:MAX_FIELD_LENGTH]).strip() + " ..."
-                                    self.logger.warning("Row {0}, Length of {1} is {2}, truncated to {3}".format(total, csv_field + 'a', len(solr_record[csv_field]), len(solr_record[csv_field + 'a'])))
+                                    solr_record[csv_field + 'a'] = str(
+                                        solr_record[csv_field][:MAX_FIELD_LENGTH]).strip() + " ..."
+                                    self.logger.warning("Row {0}, Length of {1} is {2}, truncated to {3}".format(total,
+                                                                                                                 csv_field + 'a',
+                                                                                                                 len(
+                                                                                                                     solr_record[
+                                                                                                                         csv_field]),
+                                                                                                                 len(
+                                                                                                                     solr_record[
+                                                                                                                         csv_field + 'a'])))
                                 else:
                                     solr_record[csv_field + 'a'] = solr_record[csv_field]
 
@@ -273,11 +310,14 @@ class Command(BaseCommand):
                                         codes_fr = []
                                         for code_value in csv_record[csv_field].split(","):
                                             if code_value.lower() in self.field_codes[csv_field]:
-                                                codes_en.append(self.field_codes[csv_field][code_value.lower()].label_en)
-                                                codes_fr.append(self.field_codes[csv_field][code_value.lower()].label_fr)
+                                                codes_en.append(
+                                                    self.field_codes[csv_field][code_value.lower()].label_en)
+                                                codes_fr.append(
+                                                    self.field_codes[csv_field][code_value.lower()].label_fr)
                                             else:
-                                                self.logger.warning("Row {0}, Record {1}. Unknown code value: {2} for field: {3}".format(
-                                                    row_num + 2, record_id, code_value, csv_field))
+                                                self.logger.warning(
+                                                    "Row {0}, Record {1}. Unknown code value: {2} for field: {3}".format(
+                                                        row_num + 2, record_id, code_value, csv_field))
                                         solr_record[csv_field + '_en'] = codes_en
                                         solr_record[csv_field + '_fr'] = codes_fr
 
@@ -285,11 +325,14 @@ class Command(BaseCommand):
 
                                     else:
                                         if csv_record[csv_field].lower() in self.field_codes[csv_field]:
-                                            solr_record[csv_field + '_en'] = self.field_codes[csv_field][csv_record[csv_field].lower()].label_en
-                                            solr_record[csv_field + '_fr'] = self.field_codes[csv_field][csv_record[csv_field].lower()].label_fr
+                                            solr_record[csv_field + '_en'] = self.field_codes[csv_field][
+                                                csv_record[csv_field].lower()].label_en
+                                            solr_record[csv_field + '_fr'] = self.field_codes[csv_field][
+                                                csv_record[csv_field].lower()].label_fr
                                         else:
-                                            self.logger.warning("Row {0}, Record {1}. Unknown code value: {2} for field: {3}".format(
-                                                row_num + 2, record_id, csv_record[csv_field], csv_field))
+                                            self.logger.warning(
+                                                "Row {0}, Record {1}. Unknown code value: {2} for field: {3}".format(
+                                                    row_num + 2, record_id, csv_record[csv_field], csv_field))
 
                         # Ensure all empty CSV fields are set to appropriate or default values
 
@@ -303,7 +346,13 @@ class Command(BaseCommand):
                         # code to customize the data that is loaded into Solr for a particular search.
 
                         if search_type_plugin in self.discovered_plugins:
-                            solr_record = self.discovered_plugins[search_type_plugin].load_csv_record(csv_record, solr_record, self.search_target, self.csv_fields, self.field_codes, 'NTR' if options['nothing_to_report'] else '')
+                            solr_record = self.discovered_plugins[search_type_plugin].load_csv_record(csv_record,
+                                                                                                      solr_record,
+                                                                                                      self.search_target,
+                                                                                                      self.csv_fields,
+                                                                                                      self.field_codes,
+                                                                                                      'NTR' if options[
+                                                                                                          'nothing_to_report'] else '')
 
                         # Add the prepared record to the list of records to be loaded into Solr
 
@@ -318,13 +367,15 @@ class Command(BaseCommand):
                                     solr.index(self.solr_core, solr_items)
                                     cycle = 0
                                     commit_count += len(solr_items)
-                                    self.logger.info("{0} rows processed, and {1} uploaded".format(total, commit_count))
+                                    self.logger.info(
+                                        "{0} rows processed, and {1} uploaded".format(total, commit_count))
                                     solr_items.clear()
                                     break
                                 except ConnectionError as cex:
                                     if not countdown:
                                         raise
-                                    self.logger.info("Solr error: {0}. Waiting to try again ... {1}".format(cex, countdown))
+                                    self.logger.info(
+                                        "Solr error: {0}. Waiting to try again ... {1}".format(cex, countdown))
                                     time.sleep((10 - countdown) * 5)
                     except Exception as x:
                         self.logger.error('Unexpected Error "{0}" while processing row {1}'.format(x, row_num + 1))
