@@ -60,7 +60,7 @@ class Command(BaseCommand):
         return solr_record
 
     def set_empty_field(self, solr_record: dict, sf: Field):
-        # @TODO Nice Try, but this does not pick up empty multi-valued codes
+        # look for empty fields, empty multi-value fields, and empty multi-value codes and set them
         if (sf.field_id not in solr_record and sf != 'default_fmt') or (solr_record[sf.field_id] == '') or \
             (isinstance(solr_record[sf.field_id], list) and len(solr_record[sf.field_id]) < 1) or \
             (isinstance(solr_record[sf.field_id], list) and solr_record[sf.field_id][0] == ''):
@@ -188,7 +188,7 @@ class Command(BaseCommand):
 
                         # Process every field in the record
 
-                        for csv_field in csv_reader.fieldnames:
+                        for csv_field in csv_record:
 
                             # Verify that it is a known field
 
