@@ -177,15 +177,15 @@ class SearchView(View):
             for sid in self.searches.keys():
                 self.codes_en[sid] = {}
                 self.codes_fr[sid] = {}
-                codes_queryset = Code.objects.filter(field_id__search_id__search_id=sid)
+                codes_queryset = Code.objects.filter(field_fid__search_id__search_id=sid)
                 for code in codes_queryset:
                     # Codes are stored in a dictionary with the code_id as the key
-                    if code.field_id.field_id in self.codes_en[sid]:
-                        self.codes_en[sid][code.field_id.field_id][code.code_id] = code.label_en
-                        self.codes_fr[sid][code.field_id.field_id][code.code_id] = code.label_fr
+                    if code.field_fid.field_id in self.codes_en[sid]:
+                        self.codes_en[sid][code.field_fid.field_id][code.code_id] = code.label_en
+                        self.codes_fr[sid][code.field_fid.field_id][code.code_id] = code.label_fr
                     else:
-                        self.codes_en[sid][code.field_id.field_id] = {code.code_id: code.label_en}
-                        self.codes_fr[sid][code.field_id.field_id] = {code.code_id: code.label_fr}
+                        self.codes_en[sid][code.field_fid.field_id] = {code.code_id: code.label_en}
+                        self.codes_fr[sid][code.field_fid.field_id] = {code.code_id: code.label_fr}
             cache.set('codes_en', self.codes_en, 3600)
             cache.set('codes_fr', self.codes_fr, 3600)
         else:

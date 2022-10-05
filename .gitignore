@@ -155,3 +155,4 @@ cython_debug/
 # Don<t include file-based sessions
 /session/
 !/session/NOTE.md
+*.deprecated

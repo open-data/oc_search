@@ -1,7 +1,11 @@
+import json
+
 from django.db import models
+from django.forms.models import model_to_dict
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.translation import gettext_lazy as _
 from datetime import datetime, timezone, MINYEAR, MAXYEAR
+from inflection import parameterize
 
 
 class Search(models.Model):
@@ -84,6 +88,64 @@ class Search(models.Model):
     def __str__(self):
         return '%s (%s)' % (self.label_en, self.search_id)
 
+    def to_json(self):
+        """
+        Function used by the search export utility. Note that auto-generated fields are ignored
+        """
+        interim_dict = model_to_dict(self)
+        if self.imported_on:
+            interim_dict['imported_on'] = self.imported_on.strftime("%Y-%m-%dT%H:%M:%S+00:00")
+        return json.dumps(interim_dict)
+
+    def from_dict(self, data_dict: dict):
+        """
+        Function used by the search import utility. Note that auto-generated fields are ignored
+        """
+        self.search_id = data_dict['search_id']
+        self.label_en = data_dict['label_en']
+        self.label_fr = data_dict['label_fr']
+        self.desc_en = data_dict["desc_en"]
+        self.desc_fr = data_dict["desc_fr"]
+        self.about_message_en = data_dict["about_message_en"]
+        self.about_message_fr = data_dict["about_message_fr"]
+        self.search_alias_en = data_dict["search_alias_en"]
+        self.search_alias_fr = data_dict["search_alias_fr"]
+        self.is_disabled = data_dict["is_disabled"]
+        self.disabled_message_en = data_dict["disabled_message_en"]
+        self.disabled_message_fr = data_dict["disabled_message_fr"]
+        if data_dict["imported_on"]:
+            self.imported_on = datetime.fromisoformat(data_dict["imported_on"])
+        self.solr_core_name = data_dict["solr_core_name"]
+        self.solr_default_op = data_dict["solr_default_op"]
+        self.solr_debugging = data_dict["solr_debugging"]
+        self.results_page_size = data_dict["results_page_size"]
+        self.results_sort_order_en = data_dict["results_sort_order_en"]
+        self.results_sort_order_fr = data_dict["results_sort_order_fr"]
+        self.results_sort_order_display_en = data_dict["results_sort_order_display_en"]
+        self.results_sort_order_display_fr = data_dict["results_sort_order_display_fr"]
+        self.results_sort_default_en = data_dict["results_sort_default_en"]
+        self.results_sort_default_fr = data_dict["results_sort_default_fr"]
+        self.page_template = data_dict["page_template"]
+        self.record_template = data_dict["record_template"]
+        self.breadcrumb_snippet = data_dict["breadcrumb_snippet"]
+        self.footer_snippet = data_dict["footer_snippet"]
+        self.info_message_snippet = data_dict["info_message_snippet"]
+        self.about_message_snippet = data_dict["about_message_snippet"]
+        self.header_js_snippet = data_dict["header_js_snippet"]
+        self.header_css_snippet = data_dict["header_css_snippet"]
+        self.body_js_snippet = data_dict["body_js_snippet"]
+        self.search_item_snippet = data_dict["search_item_snippet"]
+        self.record_detail_snippet = data_dict["record_detail_snippet"]
+        self.record_breadcrumb_snippet = data_dict["record_breadcrumb_snippet"]
+        self.dataset_download_url_en = data_dict["dataset_download_url_en"]
+        self.dataset_download_url_fr = data_dict["dataset_download_url_fr"]
+        self.dataset_download_text_en = data_dict["dataset_download_text_en"]
+        self.dataset_download_text_fr = data_dict["dataset_download_text_fr"]
+        self.id_fields = data_dict["id_fields"]
+        self.alt_formats = data_dict["alt_formats"]
+        self.mlt_enabled = data_dict["mlt_enabled"]
+        self.mlt_items = data_dict["mlt_items"]
+
 
 class Field(models.Model):
     """
@@ -106,6 +168,7 @@ class Field(models.Model):
     ]
 
     id = models.AutoField(primary_key=True)
+    fid = models.CharField(max_length=1024, editable=False, unique=True)
     field_id = models.CharField(blank=False, max_length=64, verbose_name="Unique Field Identifier")
     search_id = models.ForeignKey(Search, on_delete=models.CASCADE)
     format_name = models.CharField(default='', max_length=132, verbose_name="Format Name")
@@ -157,6 +220,50 @@ class Field(models.Model):
     def __str__(self):
         return '%s - (%s) %s' % (self.label_en, self.field_id, self.search_id)
 
+    def save(self, *args, **kwargs):
+        self.fid = f'{self.search_id_id}_{self.field_id}'
+        super().save(*args, **kwargs)
+
+    def to_json(self):
+        """
+        Function used by the search export utility. Note that auto-generated fields are ignored
+        """
+        d = model_to_dict(self, None, ["id"])
+        d['fid'] = self.fid
+        return json.dumps(d)
+
+    def from_dict(self, data_dict: dict, my_search: Search):
+        """
+        Function used by the search import utility. Note that auto-generated fields are ignored
+        """
+        self.fid = data_dict["fid"]
+        self.field_id = data_dict["field_id"]
+        self.search_id = my_search
+        self.format_name = data_dict["format_name"]
+        self.label_en = data_dict["label_en"]
+        self.label_fr = data_dict["label_fr"]
+        self.solr_field_type = data_dict["solr_field_type"]
+        self.solr_field_lang = data_dict["solr_field_lang"]
+        self.solr_field_export = data_dict["solr_field_export"]
+        self.solr_field_is_coded = data_dict["solr_field_is_coded"]
+        self.solr_extra_fields = data_dict["solr_extra_fields"]
+        self.solr_field_stored = data_dict["solr_field_stored"]
+        self.solr_field_indexed = data_dict["solr_field_indexed"]
+        self.solr_field_multivalued = data_dict["solr_field_multivalued"]
+        self.solr_field_multivalue_delimeter = data_dict["solr_field_multivalue_delimeter"]
+        self.solr_field_is_currency = data_dict["solr_field_is_currency"]
+        self.is_search_facet = data_dict["is_search_facet"]
+        self.solr_facet_sort = data_dict["solr_facet_sort"]
+        self.solr_facet_limit = data_dict["solr_facet_limit"]
+        self.solr_facet_snippet = data_dict["solr_facet_snippet"]
+        self.solr_facet_display_reversed = data_dict["solr_facet_display_reversed"]
+        self.solr_facet_display_order = data_dict["solr_facet_display_order"]
+        self.alt_format = data_dict["alt_format"]
+        self.is_default_display = data_dict["is_default_display"]
+        self.default_export_value = data_dict["default_export_value"]
+        self.is_default_year = data_dict["is_default_year"]
+        self.is_default_month = data_dict["is_default_month"]
+
     class Meta:
         unique_together = (('field_id', 'search_id'),)
 
@@ -176,12 +283,13 @@ class Code(models.Model):
         GREATERTHANEQUAL = 'GE', _('Greater Than or Equal')
 
     id = models.AutoField(primary_key=True)
+    cid = models.CharField(max_length=1024, editable=False, unique=True,)
     code_id = models.CharField(blank=False, max_length=64, verbose_name="Unique code Identifier")
-    field_id = models.ForeignKey(Field, on_delete=models.CASCADE)
+    field_fid = models.ForeignKey(Field, on_delete=models.CASCADE, to_field="fid", )
     label_en = models.CharField(blank=False, max_length=1024, verbose_name="English Code Value")
     label_fr = models.CharField(blank=False, max_length=1024, verbose_name="French Code Value")
-    lookup_codes_default = models.CharField(blank=True, default="", max_length=512, verbose_name="Default Lookup Codes")
-    lookup_codes_conditional = models.CharField(blank=True, default="", max_length=512, verbose_name="Conditional Lookup Codes")
+    lookup_codes_default = models.CharField(blank=True, default="", max_length=1024, verbose_name="Default Lookup Codes")
+    lookup_codes_conditional = models.CharField(blank=True, default="", max_length=1024, verbose_name="Conditional Lookup Codes")
     lookup_date_field = models.CharField(blank=True, default="", max_length=64, verbose_name="Date field to be evaluated")
     lookup_date = models.DateTimeField(blank=True, verbose_name="Lookup Date",
                                        default=datetime(MINYEAR, 1, 1, 0, 0, 0, 0, timezone.utc))
@@ -204,10 +312,55 @@ class Code(models.Model):
     extra_05_fr = models.CharField(blank=True, max_length=1024, verbose_name="Optional value for any use - 05 - French")
 
     def __str__(self):
-        return '%s - (%s) %s' % (self.label_en, self.code_id, self.field_id)
+        return '%s - (%s) %s' % (self.label_en, self.code_id, self.field_fid)
 
-    class Meta:
-        unique_together = (('field_id', 'code_id'),)
+    def to_json(self):
+        """
+        Function used by the search export utility. Note that auto-generated fields are ignored
+        """
+        interim_dict = model_to_dict(self, None, ["id"])
+        interim_dict['lookup_date'] = self.lookup_date.strftime("%Y-%m-%dT%H:%M:%S+00:00")
+        interim_dict['cid'] = self.cid
+        return json.dumps(interim_dict)
+
+    def save(self, *args, **kwargs):
+        if not self.cid:
+            self.cid = f'{self.field_fid.search_id.search_id}_{self.field_fid.field_id}_{self.code_id}'
+        if not self.field_fid_id:
+            self.field_fid = Field.objects.get(fid=self.field_fid.fid)
+        super().save(*args, **kwargs)
+
+    def from_dict(self, data_dict: dict, my_field: Field):
+        """
+        Function used by the search import utility. Note that auto-generated fields are ignored
+        """
+        self.cid = data_dict["cid"]
+        self.code_id = data_dict["code_id"]
+        self.field_fid = my_field
+        self.label_en = data_dict["label_en"]
+        self.label_fr = data_dict["label_fr"]
+        self.lookup_codes_default = data_dict["lookup_codes_default"]
+        self.lookup_codes_conditional = data_dict["lookup_codes_conditional"]
+        self.lookup_date_field = data_dict["lookup_date_field"]
+        self.lookup_date = datetime.fromisoformat(data_dict["lookup_date"])
+        self.lookup_test = data_dict["lookup_test"]
+        self.is_lookup = data_dict["is_lookup"]
+        self.extra_01 = data_dict["extra_01"]
+        self.extra_01_en = data_dict["extra_01_en"]
+        self.extra_01_fr = data_dict["extra_01_fr"]
+        self.extra_02 = data_dict["extra_02"]
+        self.extra_02_en = data_dict["extra_02_en"]
+        self.extra_02_fr = data_dict["extra_02_fr"]
+        self.extra_03 = data_dict["extra_03"]
+        self.extra_03_en = data_dict["extra_03_en"]
+        self.extra_03_fr = data_dict["extra_03_fr"]
+        self.extra_04 = data_dict["extra_04"]
+        self.extra_04_en = data_dict["extra_04_en"]
+        self.extra_04_fr = data_dict["extra_04_fr"]
+        self.extra_05 = data_dict["extra_05"]
+        self.extra_05_en = data_dict["extra_05_en"]
+        self.extra_05_fr = data_dict["extra_05_fr"]
+
 
 
 class ChronologicCode(models.Model):
@@ -215,15 +368,40 @@ class ChronologicCode(models.Model):
     Codes with a date range.
     """
     id = models.AutoField(primary_key=True)
-    code_id = models.ForeignKey(Code, on_delete=models.CASCADE)
-    label = models.CharField(blank=False, max_length=512, verbose_name="Unique code Identifier")
-    label_en = models.CharField(blank=False, max_length=512, verbose_name="English Code Value")
-    label_fr = models.CharField(blank=False, max_length=512, verbose_name="French Code Value")
+    ccid = models.CharField(max_length=1024, editable=False, unique=True,)
+    code_cid = models.ForeignKey(Code, on_delete=models.CASCADE, to_field="cid",)
+    label = models.CharField(blank=False, max_length=1024, verbose_name="Unique code Identifier")
+    label_en = models.CharField(blank=False, max_length=1024, verbose_name="English Code Value")
+    label_fr = models.CharField(blank=False, max_length=1024, verbose_name="French Code Value")
     start_date = models.DateTimeField(blank=False, verbose_name="Start Date", default=datetime(MINYEAR, 1, 1, 0, 0, 0, 0, timezone.utc))
     end_date = models.DateTimeField(blank=False, verbose_name="End Date", default=datetime(2999, 12, 31, 23, 59, 59, 999999, timezone.utc))
 
-    class Meta:
-        unique_together = (('code_id', 'start_date'),)
+    def to_json(self):
+        """
+        Function used by the search export utility. Note that auto-generated fields are ignored
+        """
+        interim_dict = model_to_dict(self, None, ["id", 'code_cid__field_fid'])
+        interim_dict['start_date'] = self.start_date.strftime("%Y-%m-%dT%H:%M:%S+00:00")
+        interim_dict['end_date'] = self.end_date.strftime("%Y-%m-%dT%H:%M:%S+00:00")
+        interim_dict['ccid'] = self.ccid
+        return json.dumps(interim_dict)
+
+    def save(self, *args, **kwargs):
+        self.ccid = f'{self.code_cid.field_fid.search_id.search_id}_{self.code_cid.field_fid.field_id}_{self.code_cid.code_id}_{parameterize(self.label)}_{self.start_date.strftime("%Y%m%d")}_{self.end_date.strftime("%Y%m%d")}'
+        self.code_cid = Code.objects.get(cid=self.code_cid.cid)
+        super().save(*args, **kwargs)
+
+    def from_dict(self, data_dict: dict, my_code: Code):
+        """
+        Function used by the search import utility. Note that auto-generated fields are ignored
+        """
+        self.ccid = data_dict["ccid"]
+        self.code_cid = my_code
+        self.label = data_dict["label"]
+        self.label_en = data_dict["label_en"]
+        self.label_fr = data_dict["label_fr"]
+        self.start_date = datetime.fromisoformat(data_dict["start_date"])
+        self.end_date = datetime.fromisoformat(data_dict["end_date"])
 
 
 

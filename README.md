@@ -2,23 +2,23 @@
 
 [![Visits Badge](https://badges.pufler.dev/visits/open-data/oc_search)](https://badges.pufler.dev)
 
-Open Canada Solr Search (OCS) is a Django 3.0 application that uses Solr 8.x to provide a customizable search interface
-for the Open Canada data catalog and the proactive disclosure data. OCS provides a standard web interface into Solr cores
-.
+Open Canada Solr Search (OCSS) is a Django 3.x application that uses Solr 8.x to provide a customizable search interface
+for the Open Canada data catalog and the proactive disclosure data. OCS provides a standard customizable web interface
+with a focus on searching Solr cores.
 
 ## Installing OCS from Source
 
 ### System Requirements
 
 OCS is built with the [Django 3.x framework](https://www.djangoproject.com/), and can run in any environment capable of supporting Django 3.x
-which is built with Python 3. Version 3.6 or higher is recommended. For more details, see the [Django project
-pages](https://docs.djangoproject.com/en/3.1/intro/install/). OCS has been tested on both Windows 10 and CentOS/RHEL 7.
-It is highly recommended that users have some basic familiarity with Django before using OCS.
+which is built with Python 3. Version 3.9 or higher is recommended. For more details, see the [Django project
+pages](https://docs.djangoproject.com/en/3.1/intro/install/). OCS has been tested on both Windows 10 and 11 and CentOS/RHEL 7 and 8.
+It is highly recommended that users have some basic familiarity with Django before installing OCSS.
 
 OCSS requires a database backend that is supported by Django such as PostgreSQL or MySQL. Initial development can be done with the SQLite engine
 that is included with Python.
 
-OCSS also requires access to a Solr server. For information on installing Solr, please visit the
+OCSS also requires access to a Solr v8.x server. For information on installing Solr, please visit the
 [Apache Solr Reference Guide](https://lucene.apache.org/solr/guide/).
 
 ### Installation Steps
@@ -30,21 +30,29 @@ OCSS also requires access to a Solr server. For information on installing Solr, 
    For example `python -m venv venv`.
 4. Activate the new virtual environment.
 
-   For example `source venv/bin/activate` on Linux, or `venv\Scripts\activate` for Windows
-5. Install the prerequisites from the requirements.txt file for the SolrClient project. and install the
-   project itself.
+   For example `source venv/bin/activate` on Linux, or `venv\Scripts\activate` on Windows
+5. Install **SolrClient** client. Change into the SolrClient project directory and install the prerequisites from
+   the `requirements.txt` file and then install the client project itself.
 
    `pip install -r requirements.txt`
 
    `python setup.py develop`
-6. Install the prerequisites from the requirements.txt file for the OCS project
+6. Install the prerequisites from the requirements.txt file for the OCSS project
 
    `pip install -r requirements.txt`
-7. Edit the settings.py file with the appropriate database settings and create the database tables
+7. Create a `settings.py` file in the oc_search folder. Use the provided settings-samp Edit the settings.py file with the appropriate database settings and create the database tables
 
    `python manage.py makemigrations search`<br>
    `python manage.py sqlmigrate search 0001`<br>
-   `python manage,py migrate`
+   `python manage.py migrate`
+
+8.  Create an admin user for Django.
+
+    `python manage.py createsuperuser`
+
+9.  Test your installation by running Django.
+
+    `python manage.py runserver`
 
 ### Django Plugins
 
@@ -54,6 +62,8 @@ Four Django plugins are used:
 2. [Django Jazzmin Admin Theme](https://django-jazzmin.readthedocs.io/) *(Optional)* Provides a more modern Ui for the Django admin interface
 3. [Django Redis Cache](https://django-redis-cache.readthedocs.io/en/latest/) *(Optional)* Let's Django use Redis to cache pages
 4. [Django Redis Sessions](https://github.com/martinrusev/django-redis-sessions) *(Optional)* Enables the use of Redis to maintain user sessions.
+5. [Django QUrl Template Tag](https://github.com/sophilabs/django-qurl-templatetag) A Django template tag to modify url's query string
+6. [Django Smuggler](https://github.com/semente/django-smuggler) Django Smuggler is a pluggable application for Django Web Framework to easily dump/load fixtures via the automatically-generated administration interface
 
 These Django plugins are enabled in the Django application's settings.py file. Example configuration can be found in
 [settings-sample.py](https://github.com/open-data/oc_search/blob/master/oc_search/settings-sample.py)
@@ -62,7 +72,7 @@ These Django plugins are enabled in the Django application's settings.py file. E
 
 # Overview
 
-OCS is made of 3 components:
+OCSS is made of 3 components:
 
 1. A relational database like SQLite or PostgreSQL that stores the search definitions
 2. The Django-based web application that provides the search and administration web interface

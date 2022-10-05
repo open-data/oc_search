@@ -1,6 +1,5 @@
-Babel==2.10.1
-bleach==5.0.0
-django-import-export==2.8.0
+Babel==2.10.3
+bleach==5.0.1
 django-jazzmin==2.5.0
 django-qurl-templatetag==0.0.14
 django-redis-cache==3.0.1
@@ -8,7 +7,8 @@ django-redis-sessions==0.6.2
 django-smuggler==1.0.4
 django==3.2.15
 docutils==0.19
-markdown2==2.4.3
+inflection==0.5.1
+markdown2==2.4.5
 nltk==3.7
 pandas==1.4.3
 psycopg2==2.9.3

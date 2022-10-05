@@ -104,7 +104,7 @@ class Command(BaseCommand):
                 for search_field in self.search_fields:
                     self.csv_fields[search_field.field_id] = search_field
 
-                    codes = Code.objects.filter(field_id=search_field)
+                    codes = Code.objects.filter(field_fid=search_field)
                     # Most csv_fields will not  have codes, so the queryset will be zero length
                     if len(codes) > 0:
                         code_dict = {}

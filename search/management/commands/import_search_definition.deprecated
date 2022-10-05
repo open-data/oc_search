@@ -41,7 +41,7 @@ class ExportCodeResource(CodeResource):
 
     def get_queryset(self):
         sid = Search.objects.get(search_id=self.search_id)
-        return Code.objects.filter(field_id__search_id=sid)
+        return Code.objects.filter(field_fid__search_id=sid)
 
 
 class ExportChronologicCodeResource(ChronologicCodesResource):
@@ -53,9 +53,9 @@ class ExportChronologicCodeResource(ChronologicCodesResource):
     def get_queryset(self):
         sid = Search.objects.get(search_id=self.search_id)
         cids = []
-        for cid in Code.objects.filter(field_id__search_id=sid):
+        for cid in Code.objects.filter(field_fid__search_id=sid):
             cids.append(cid.id)
-        return ChronologicCode.objects.filter(code_id__id__in=cids)
+        return ChronologicCode.objects.filter(code_cid__id__in=cids)
 
 
 class Command(BaseCommand):

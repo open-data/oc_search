@@ -1,25 +1,14 @@
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
-from import_export import resources
-from import_export.admin import ImportExportModelAdmin
 from .models import Search, Field, Code, ChronologicCode
 
 # -- Searches ---
 
-class SearchResource(resources.ModelResource):
 
-    class Meta:
-        model = Search
-        import_id_fields = ('search_id')
-        skip_unchanged = True
-        report_skipped = True
-
-
-class SearchAdmin(ImportExportModelAdmin):
+class SearchAdmin(admin.ModelAdmin):
 
     change_list_template = 'smuggler/change_list.html'
-    resource_class = SearchResource
     list_display = ['search_id', 'label_en', 'solr_core_name']
     fieldsets = (
         (None, {'fields': ('search_id', 'solr_core_name', 'solr_default_op', 'solr_debugging', 'id_fields', 'alt_formats', 'label_en', 'label_fr',
@@ -39,14 +28,6 @@ class SearchAdmin(ImportExportModelAdmin):
     )
 
     # -- Fields ---
-
-class FieldResource(resources.ModelResource):
-
-    class Meta:
-        model = Field
-        import_id_fields = ('field_id', 'search_id',)
-        skip_unchanged = True
-        report_skipped = True
 
 
 def make_facet_field(modeladmn, request, queryset):
@@ -84,10 +65,9 @@ def make_currency_field(modeladmn, request, queryset):
 make_currency_field.short_description = 'Mark selected fields as currency, float'
 
 
-class FieldAdmin(ImportExportModelAdmin):
+class FieldAdmin(admin.ModelAdmin):
 
     change_list_template = 'smuggler/change_list.html'
-    resource_class = FieldResource
     list_display = ('field_id', 'is_search_facet', 'is_default_display', 'search_id', 'format_name', 'solr_field_is_coded', 'solr_field_type', 'solr_field_lang')
     actions = [make_facet_field, make_default_display_field, clear_facet_field, clear_default_display_field, make_currency_field]
     search_fields = ['field_id', 'is_search_facet']
@@ -102,66 +82,28 @@ class FieldAdmin(ImportExportModelAdmin):
 
 # -- Codes ---
 
-class CodeResource(resources.ModelResource):
 
-    class Meta:
-        model = Code
-        import_id_fields = ('field_id', 'code_id')
-        fields = ('field_id__search_id', 'field_id__field_id', 'id', 'field_id', 'code_id', 'label_en', 'label_fr',
-                  'lookup_codes_default', 'lookup_codes_conditional', 'lookup_date_field', 'lookup_date',
-                  'lookup_test', 'is_lookup',
-                  'extra_01', 'extra_01_en', "extra_01_fr",
-                  'extra_02', 'extra_02_en', "extra_02_fr",
-                  'extra_03', 'extra_03_en', "extra_03_fr",
-                  'extra_04', 'extra_04_en', "extra_04_fr",
-                  'extra_05', 'extra_05_en', "extra_05_fr",
-                  )
-        skip_unchanged = True
-        report_skipped = True
-
-    def before_import_row(self, row, row_number=None, **kwargs):
-        fq = Field.objects.filter(search_id_id=row['field_id__search_id']).filter(field_id=row['field_id__field_id'])
-        for f in fq:
-            row['field_id'] = f.id
-
-
-class CodeAdmin(ImportExportModelAdmin):
+class CodeAdmin(admin.ModelAdmin):
 
     change_list_template = 'smuggler/change_list.html'
-    resource_class = CodeResource
-    list_display = ['code_id', 'field_id', 'label_en', 'label_fr']
+    list_display = ['code_id', 'field_fid', 'label_en', 'label_fr']
     search_fields = ['code_id', 'label_en', 'label_fr']
-    list_filter = [('field_id', admin.RelatedOnlyFieldListFilter)]
+    list_filter = [('field_fid', admin.RelatedOnlyFieldListFilter)]
     save_as = True
 
 # -- ChronologicCode ---
 
-class ChronologicCodesResource(resources.ModelResource):
 
-    class Meta:
-        model = ChronologicCode
-        import_id_fields = ('id', 'code_id', 'start_date')
-        fields = ('code_id__field_id', 'code_id__code_id', 'id', 'code_id', 'label','label_en', 'label_fr', 'start_date', 'end_date')
-        skip_unchanged = True
-        report_skipped = True
-
-    def before_import_row(self, row, row_number=None, **kwargs):
-        fq = Code.objects.filter(field_id_id=row['code_id__field_id']).filter(code_id=row['code_id__code_id'])
-        for f in fq:
-            row['id'] = f.id
-
-
-class ChronologicCodesAdmin(ImportExportModelAdmin):
+class ChronologicCodesAdmin(admin.ModelAdmin):
 
     change_list_template = 'smuggler/change_list.html'
-    resource_class = ChronologicCodesResource
     list_display = ['label', 'codes', 'label_en', 'start_date', 'end_date']
-    search_fields = ['code_id__code_id', 'label', 'label_en', 'label_fr']
-    list_filter = [('code_id', admin.RelatedOnlyFieldListFilter)]
+    search_fields = ['code_cid__code_id', 'label', 'label_en', 'label_fr']
+    list_filter = [('code_cid', admin.RelatedOnlyFieldListFilter)]
     save_as = True
 
     def codes(self, obj):
-        return format_html('<a href="{0}?q={1}">{2}</a>', reverse('admin:search_chronologiccode_changelist'), obj.code_id.code_id, obj.code_id.code_id)
+        return format_html('<a href="{0}?q={1}">{2}</a>', reverse('admin:search_chronologiccode_changelist'), obj.code_cid.code_id, obj.code_cid.code_id)
 
 
 admin.site.register(Search, SearchAdmin)

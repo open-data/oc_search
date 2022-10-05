@@ -195,8 +195,17 @@ class Command(BaseCommand):
         parser.add_argument('--quiet', required=False, action='store_true', default=False,
                             help='Only display error messages')
 
+    def set_empty_fields(self, solr_record: dict):
+
+        for sf in self.all_fields:
+            self.set_empty_field(solr_record, sf)
+        return solr_record
+
     def set_empty_field(self, solr_record: dict, sf: Field):
-        if (sf.field_id not in solr_record and sf not in ['default_fmt', 'unique_identifier']) or solr_record[sf.field_id] != '':
+        if (sf.field_id not in solr_record and sf not in ['default_fmt', 'unique_identifier']) \
+            or solr_record[sf.field_id] == '' \
+            or (isinstance(solr_record[sf.field_id], list) and len(solr_record[sf.field_id]) < 1) \
+            or (isinstance(solr_record[sf.field_id], list) and solr_record[sf.field_id][0] == ''):
             if sf.default_export_value:
                 default_fmt = sf.default_export_value.split('|')
                 if default_fmt[0] in ['str', 'date']:
@@ -320,12 +329,12 @@ class Command(BaseCommand):
                             else:
                                 solr_record = self.set_value(f, ds[f], solr_record, ds['id'])
 
-                        # Check for missing fields and set default value
-                        for fld in self.all_fields:
-                            if fld.field_id not in solr_record:
-                                self.set_empty_field(solr_record,fld)
+                        # Ensure all empty CSV fields are set to appropriate or default values
+
+                        solr_record = self.set_empty_fields(solr_record)
 
                         solr_record['machine_translated_fields'] = ",".join(solr_record['machine_translated_fields'])
+
                         solr_records.append(solr_record)
                         #self.logger.info(json.dumps(solr_record, indent=4))
 
