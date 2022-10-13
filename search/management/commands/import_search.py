@@ -46,6 +46,9 @@ class Command(BaseCommand):
         locale_path = path.join(root_path, 'locale')
         if not path.exists(locale_path):
             locale_path = ''
+        cmd_path = path.join(root_path, "commands")
+        if not path.exists(cmd_path):
+            cmd_path = ''
 
         # Import Search - skip this if the option '--exclude-db'  was selected on the command line
 
@@ -160,3 +163,11 @@ class Command(BaseCommand):
                 if not path.exists(data_export_dir):
                     mkdir(data_export_dir)
                 copy_tree(data_path, data_export_dir)
+                logging.info("Copying custom data files to {0}".format(data_export_dir))
+
+            # Copy custom locale PO files to the django French PO file directory
+            if path.exists(cmd_path):
+                cmd_export = custom_template_dir = path.join(BASE_DIR, 'management', 'commands')
+                copy_tree(cmd_path, cmd_export)
+                logging.info("Copying custom Django commands to {0}".format(cmd_export))
+

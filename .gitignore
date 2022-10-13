@@ -156,3 +156,7 @@ cython_debug/
 /session/
 !/session/NOTE.md
 *.deprecated
+!/search/management/commands/data_*.py
+!/search/management/commands/contracts_*.py
+!/search/management/commands/nap5_*.py
+!/search/management/commands/qpnotes_*.py
