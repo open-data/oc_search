@@ -1,10 +1,12 @@
 from babel.dates import format_date
 from datetime import datetime
+import ckanapi
 from django.core.management.base import BaseCommand
 from django.conf import settings
 import json
 import logging
-from search.models import Search, Field, Code
+import pytz
+from search.models import Search, Field, Code, Setting, SearchLog
 from SolrClient import SolrClient
 from SolrClient.exceptions import ConnectionError
 from time import time
@@ -14,7 +16,8 @@ IGNORED_FIELDS = ['creator_user_id', 'groups', 'isopen', 'license_title', 'licen
                   'num_tags', 'private', 'relationships_as_object', 'relationships_as_subject', 'revision_id',
                   'schema', 'state', 'tags', 'title', 'validation_options', 'validation_status',
                   'validation_timestamp', 'version']
-BILINGUAL_FIELDS = ['additional_note', 'contributor', 'data_series_issue_identification', 'data_series_name', 'maintainer_contact_form',
+BILINGUAL_FIELDS = ['additional_note', 'contributor', 'data_series_issue_identification', 'data_series_name',
+                    'maintainer_contact_form',
                     'metadata_contact', 'notes_translated', 'org_section', 'org_title_at_publication',
                     'position_name', 'program_page_url', 'series_publication_dates', 'title_translated']
 DATE_FIELDS = {'metadata_created', 'metadata_modified', 'federated_date_modified', 'date_modified'}
@@ -24,7 +27,6 @@ RESOURCE_FIELDS = ['character_set', 'data_quality', 'datastore_active', 'date_pu
 
 
 class Command(BaseCommand):
-
     help = 'Import CKAN JSON lines of Open Canada packages'
 
     logger = logging.getLogger(__name__)
@@ -69,7 +71,8 @@ class Command(BaseCommand):
                         solr_record[field_name + "_en"] = raw_value[lang_code]
                     else:
                         solr_record[field_name + "_en"] = str(raw_value[lang_code])
-                        self.logger.warning(f"Unusual data encountered in record {id} for field {field_name}: {solr_record[field_name + '_en']}")
+                        self.logger.warning(
+                            f"Unusual data encountered in record {id} for field {field_name}: {solr_record[field_name + '_en']}")
                     if lang_code == 'en-t-fr':
                         automation = True
                 lang_found = True
@@ -86,7 +89,8 @@ class Command(BaseCommand):
                         solr_record[field_name + "_fr"] = raw_value[lang_code]
                     else:
                         solr_record[field_name + "_fr"] = str(raw_value[lang_code])
-                        self.logger.warning(f"Unusual data encountered in record {id} for field {field_name}: {solr_record[field_name + '_fr']}")
+                        self.logger.warning(
+                            f"Unusual data encountered in record {id} for field {field_name}: {solr_record[field_name + '_fr']}")
                     if lang_code == 'fr-t-en':
                         automation = True
                 lang_found = True
@@ -113,7 +117,7 @@ class Command(BaseCommand):
             if raw_value is None or not raw_value:
                 raw_value = "-"
             elif self.search_fields[field_name].solr_field_is_coded:
-                #self.logger.info(f'Field: {field_name}, Value: {raw_value}')
+                # self.logger.info(f'Field: {field_name}, Value: {raw_value}')
                 if type(raw_value) == list:
                     values = []
                     values_en = []
@@ -157,7 +161,7 @@ class Command(BaseCommand):
                     if res_value == "name_translated":
                         if 'en' in res[res_value]:
                             solr_resources[self.resource_map[res_value + "_en"]].append(res[res_value]['en'])
-                        elif 'en-t-fr'in res[res_value]:
+                        elif 'en-t-fr' in res[res_value]:
                             solr_resources[self.resource_map[res_value + "_en"]].append(res[res_value]['en-t-fr'])
                         if 'fr' in res[res_value]:
                             solr_resources[self.resource_map[res_value + "_fr"]].append(res[res_value]['fr'])
@@ -175,7 +179,7 @@ class Command(BaseCommand):
                         solr_resources[self.resource_map[res_value]].append(res[res_value])
                     if res_value == "format":
                         if not res["format"] in formats:
-                            formats.append(res["format"] )
+                            formats.append(res["format"])
                 else:
                     solr_resources[self.resource_map[res_value]].append('-')
 
@@ -191,7 +195,12 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('--search', type=str, help='The Search ID that is being loaded', required=True)
-        parser.add_argument('--jsonl', type=str, help='JSON lines filename to import', required=True)
+        parser.add_argument('--type', choices=['jsonl', 'remote_ckan'], required=True,
+                            help="Select method to load CKAN data. Valid choices are 'jsonl', 'local_ckan', 'remote_ckan'")
+        parser.add_argument('--jsonl', type=str,
+                            help='JSON lines filename to import when importing a CKAN dataset dump', required=False)
+        parser.add_argument('--remote_ckan', type=str, help="The remote CKAN URL when using Remote CKAN")
+        parser.add_argument('--reset', action="store_true", help="Delete all existing Solr records before loading")
         parser.add_argument('--quiet', required=False, action='store_true', default=False,
                             help='Only display error messages')
 
@@ -226,6 +235,87 @@ class Command(BaseCommand):
                 else:
                     solr_record[sf.field_id] = ''
 
+    def jsons_to_dataset(self, ds):
+        """ Convert a CKAN JSON object to the OCSS Data search JSON object """
+
+        solr_record = {'machine_translated_fields': ['-'],
+                       'subject': [],
+                       'subject_en': [],
+                       'subject_fr': []}
+
+        for f in ds:
+            # Organization, resources, and type requires special handling
+            if f == 'organization':
+                org = ds[f]['name']
+                solr_record = self.set_value('owner_org', org, solr_record, ds['id'])
+            elif f == 'owner_org':
+                # Ignore the root owner_org - it is a CKAN UUID
+                pass
+            elif f == 'resources':
+                solr_record = self.handle_resources(ds[f], solr_record)
+                formats_en = []
+                formats_fr = []
+                for f in solr_record['formats']:
+                    if f.lower() in self.field_codes['resource_format']:
+                        formats_en.append(self.field_codes['resource_format'][f.lower()].label_en)
+                        formats_fr.append(self.field_codes['resource_format'][f.lower()].label_fr)
+                solr_record['formats_en'] = formats_en
+                solr_record['formats_fr'] = formats_fr
+            elif f == 'type':
+                solr_record = self.set_value('dataset_type', ds[f], solr_record, ds['id'])
+            elif f == "subject":
+                for s in ds[f]:
+                    solr_record['subject_en'].append(self.field_codes['subject'][s].label_en)
+                    solr_record['subject_fr'].append(self.field_codes['subject'][s].label_fr)
+                    solr_record['subject'].append(s)
+            elif f == 'keywords':
+                if 'en' in ds[f]:
+                    solr_record['keywords_en'] = ds[f]['en']
+                    solr_record['keywords_en_text'] = ds[f]['en']
+                if 'en-t-fr' in ds[f]:
+                    solr_record['keywords_en'] = ds[f]['en-t-fr']
+                    solr_record['keywords_en_text'] = ds[f]['en-t-fr']
+                    solr_record['machine_translated_fields'].append('keywords_en')
+                if 'fr' in ds[f]:
+                    solr_record['keywords_fr'] = ds[f]['fr']
+                    solr_record['keywords_fr_text'] = ds[f]['fr']
+                if 'fr-t-en' in ds[f]:
+                    solr_record['keywords_fr'] = ds[f]['fr-t-en']
+                    solr_record['keywords_fr_text'] = ds[f]['fr-t-en']
+                    solr_record['machine_translated_fields'].append('keywords_fr')
+            elif f == "credit":
+                if isinstance(ds[f], list):
+                    c_en = []
+                    c_fr = []
+                    for c in ds[f]:
+                        if 'credit_name' in c:
+                            if 'en' in c['credit_name']:
+                                c_en.append(c['credit_name']['en'])
+                            if 'fr' in c['credit_name']:
+                                c_fr.append(c['credit_name']['fr'])
+                    if len(c_en) > 0:
+                        solr_record['credit_en'] = c_en
+                    else:
+                        solr_record['credit_en'] = ['-']
+                    if len(c_fr) > 0:
+                        solr_record['credit_fr'] = c_fr
+                    else:
+                        solr_record['credit_fr'] = ['-']
+                else:
+                    pass
+            else:
+                solr_record = self.set_value(f, ds[f], solr_record, ds['id'])
+
+        # Ensure all empty CSV fields are set to appropriate or default values
+
+        solr_record = self.set_empty_fields(solr_record)
+
+        solr_record['machine_translated_fields'] = ",".join(solr_record['machine_translated_fields'])
+
+        return solr_record
+
+
+
     def handle(self, *args, **options):
 
         solr_records = []
@@ -243,14 +333,15 @@ class Command(BaseCommand):
                 if options['quiet']:
                     self.logger.level = logging.WARNING
                 sf = Field.objects.filter(search_id=self.search_target,
-                                                          alt_format='ALL') | Field.objects.filter(
+                                          alt_format='ALL') | Field.objects.filter(
                     search_id=self.search_target, alt_format='')
-                solr.delete_doc_by_query(self.solr_core, "*:*")
-                self.logger.info("Purging all records")
+                if options['reset']:
+                    solr.delete_doc_by_query(self.solr_core, "*:*")
+                    self.logger.info("Purging all records")
 
                 for search_field in sf:
                     self.search_fields[search_field.field_id] = search_field
-                    codes = Code.objects.filter(field_id=search_field)
+                    codes = Code.objects.filter(field_fid=search_field)
                     # Most csv_fields will not  have codes, so the queryset will be zero length
                     if len(codes) > 0:
                         code_dict = {}
@@ -258,118 +349,115 @@ class Command(BaseCommand):
                             code_dict[code.code_id.lower()] = code
                         self.field_codes[search_field.field_id] = code_dict
 
-                with open(options['jsonl'], 'r', encoding='utf-8-sig', errors="ignore") as json_file:
-                    for dataset in json_file:
-                        solr_record = {'machine_translated_fields': ['-'],
-                                       'subject': [],
-                                       'subject_en': [],
-                                       'subject_fr': []}
-                        ds = json.loads(dataset)
-                        #self.logger.info(f'Importing {ds["id"]}')
-                        for f in ds:
-                            # Organization, resources, and type requires special handling
-                            if f == 'organization':
-                                org = ds[f]['name']
-                                solr_record = self.set_value('owner_org', org, solr_record, ds['id'])
-                            elif f == 'owner_org':
-                                # Ignore the root owner_org - it is a CKAN UUID
-                                pass
-                            elif f == 'resources':
-                                solr_record = self.handle_resources(ds[f], solr_record)
-                                formats_en = []
-                                formats_fr = []
-                                for f in solr_record['formats']:
-                                    if f.lower() in self.field_codes['resource_format']:
-                                        formats_en.append(self.field_codes['resource_format'][f.lower()].label_en)
-                                        formats_fr.append(self.field_codes['resource_format'][f.lower()].label_fr)
-                                solr_record['formats_en'] = formats_en
-                                solr_record['formats_fr'] = formats_fr
-                            elif f == 'type':
-                                solr_record = self.set_value('dataset_type', ds[f], solr_record, ds['id'])
-                            elif f == "subject":
-                                for s in ds[f]:
-                                    solr_record['subject_en'].append(self.field_codes['subject'][s].label_en)
-                                    solr_record['subject_fr'].append(self.field_codes['subject'][s].label_fr)
-                                    solr_record['subject'].append(s)
-                            elif f == 'keywords':
-                                if 'en' in ds[f]:
-                                    solr_record['keywords_en'] = ds[f]['en']
-                                    solr_record['keywords_en_text'] = ds[f]['en']
-                                if 'en-t-fr' in ds[f]:
-                                    solr_record['keywords_en'] = ds[f]['en-t-fr']
-                                    solr_record['keywords_en_text'] = ds[f]['en-t-fr']
-                                    solr_record['machine_translated_fields'].append('keywords_en')
-                                if 'fr' in ds[f]:
-                                    solr_record['keywords_fr'] = ds[f]['fr']
-                                    solr_record['keywords_fr_text'] = ds[f]['fr']
-                                if 'fr-t-en' in ds[f]:
-                                    solr_record['keywords_fr'] = ds[f]['fr-t-en']
-                                    solr_record['keywords_fr_text'] = ds[f]['fr-t-en']
-                                    solr_record['machine_translated_fields'].append('keywords_fr')
-                            elif f == "credit":
-                                if isinstance(ds[f], list):
-                                    c_en = []
-                                    c_fr = []
-                                    for c in ds[f]:
-                                        if 'credit_name' in c:
-                                            if 'en' in c['credit_name']:
-                                                c_en.append(c['credit_name']['en'])
-                                            if 'fr' in c['credit_name']:
-                                                c_fr.append(c['credit_name']['fr'])
-                                    if len(c_en) > 0:
-                                        solr_record['credit_en'] = c_en
-                                    else:
-                                        solr_record['credit_en'] = ['-']
-                                    if len(c_fr) > 0:
-                                        solr_record['credit_fr'] = c_fr
-                                    else:
-                                        solr_record['credit_fr'] = ['-']
-                                else:
-                                    pass
-                            else:
-                                solr_record = self.set_value(f, ds[f], solr_record, ds['id'])
+                if options['type'] == 'jsonl':
+                    with open(options['jsonl'], 'r', encoding='utf-8-sig', errors="ignore") as json_file:
+                        for dataset in json_file:
+                            ds = json.loads(dataset)
+                            solr_record = self.jsons_to_dataset(ds)
+                            solr_records.append(solr_record)
+                            # self.logger.info(json.dumps(solr_record, indent=4))
 
-                        # Ensure all empty CSV fields are set to appropriate or default values
+                            # Write to Solr whenever the cycle threshold is reached
+                            if len(solr_records) >= self.cycle_on:
+                                # try to connect to Solr up to 10 times
+                                for countdown in reversed(range(10)):
+                                    try:
+                                        solr.index(self.solr_core, solr_records)
+                                        cycle = 0
+                                        self.logger.info(f'Sent {len(solr_records)} to Solr')
+                                        solr_records.clear()
+                                        break
+                                    except ConnectionError as cex:
+                                        if not countdown:
+                                            raise
+                                        self.logger.error(
+                                            "Solr error: {0}. Waiting to try again ... {1}".format(cex, countdown))
+                                        time.sleep((10 - countdown) * 5)
 
-                        solr_record = self.set_empty_fields(solr_record)
+                elif options['type'] == 'remote_ckan':
+                    object_ids = {}
+                    with ckanapi.RemoteCKAN(options['remote_ckan'], 'oc_search/2.0 (+http://open.camada.ca/search)') as remote_ckan:
 
-                        solr_record['machine_translated_fields'] = ",".join(solr_record['machine_translated_fields'])
+                        # Determine the last activity that was indexed by retrieving these settings from the database
+                        ckan_checkpoint_id, created_id = Setting.objects.get_or_create(key="data.checkpoint.dataset_id")
+                        ckan_checkpoint_ts, created_ts = Setting.objects.get_or_create(key="data.checkpoint.dataset_timestamp")
+                        offset = 0
 
-                        solr_records.append(solr_record)
-                        #self.logger.info(json.dumps(solr_record, indent=4))
+                        # Assume Open Canada activities are using UTC time
+                        activity_ts = pytz.utc.localize(datetime.utcnow())
+                        if not created_ts:
+                            last_ts = pytz.utc.localize(datetime.fromisoformat(ckan_checkpoint_ts.value))
+                        else:
+                            last_ts = pytz.utc.localize(activity_ts)
+                        checkpoint_ts = last_ts
 
-                        # Write to Solr whenever the cycle threshold is reached
-                        if len(solr_records) >= self.cycle_on:
-                            # try to connect to Solr up to 10 times
-                            for countdown in reversed(range(10)):
-                                try:
-                                    solr.index(self.solr_core, solr_records)
-                                    cycle = 0
-                                    self.logger.info(f'Sent {len(solr_records)} to Solr')
-                                    solr_records.clear()
+                        # Keep calling the CKAN Recently_changed_packages_activity_list API until we see an activity
+                        # with the same or older timestamp that was saved to the database.
+                        while activity_ts > last_ts:
+                            response_json = remote_ckan.action.recently_changed_packages_activity_list(offset=offset, limit=50)
+                            for activity in response_json:
+                                self.logger.info(f"{activity['object_id']}: {activity['timestamp']}")
+                                activity_ts = pytz.utc.localize(datetime.fromisoformat(activity["timestamp"]))
+
+                                # stop processing if we have reached the previously save checkpoint
+                                # NOTE - assumption was made here that the activity timestamp alone was sufficient to
+                                #        use as a checkpoint, and the dataset ID is not compared either.
+                                if activity_ts <= last_ts:
                                     break
-                                except ConnectionError as cex:
-                                    if not countdown:
-                                        raise
-                                    self.logger.error(
-                                        "Solr error: {0}. Waiting to try again ... {1}".format(cex, countdown))
-                                    time.sleep((10 - countdown) * 5)
 
-                    for countdown in reversed(range(10)):
-                        try:
-                            if len(solr_records) > 0:
-                                solr.index(self.solr_core, solr_records)
-                            cycle = 0
+                                # Because CKAN returns activities from newest to oldest, we do not want to process
+                                # older activities for the same dataset that have already been overriden by a newer
+                                # activity
+                                if activity['object_id'] in object_ids:
+                                    if activity_ts < object_ids[activity['object_id']]:
+                                        continue
+                                object_ids[activity['object_id']] = activity_ts
+
+                                # Update the Solr record for additions and updates, remove from solr for deleted packages
+                                if activity['activity_type'] in ["changed package", "new package"]:
+                                    solr_record = self.jsons_to_dataset(activity['data']['package'])
+                                    solr_records.append(solr_record)
+                                elif activity['activity_type'] == "deleted package":
+                                    solr.delete_doc_by_query(self.solr_core, f"id:{activity['object_id']}")
+
+                                # For now, we are choosing to log changes to the Solr database
+                                sl, created = SearchLog.objects.get_or_create(search_id='data',
+                                                                              log_id=activity['object_id'],
+                                                                              log_timestamp=activity_ts,
+                                                                              category=activity['activity_type'],
+                                                                              message="")
+                                sl.save()
+
+                                # Update the checkpoint value, but do not save to the database until the end of the
+                                # processing run
+                                if activity_ts > checkpoint_ts:
+                                    ckan_checkpoint_id.value = activity['object_id']
+                                    ckan_checkpoint_ts.value = activity_ts.strftime("%Y-%m-%dT%H:%M:%S.%f")
+                                    checkpoint_ts = activity_ts
+                            offset += 50
+
+                        # Save the activity checkpoint to the database
+                        ckan_checkpoint_id.save()
+                        ckan_checkpoint_ts.save()
+                else:
+                    raise Exception("Unknown type")
+
+                # Do a final index and commit the changes
+                for countdown in reversed(range(10)):
+                    try:
+                        if len(solr_records) > 0:
+                            solr.index(self.solr_core, solr_records)
                             self.logger.info(f'Sent {len(solr_records)} to Solr')
-                            solr_records.clear()
-                            solr.commit(self.solr_core, softCommit=True, waitSearcher=True)
-                            break
-                        except ConnectionError as cex:
-                            if not countdown:
-                                raise
-                            self.logger.error(
-                                "Solr error: {0}. Waiting to try again ... {1}".format(cex, countdown))
-                            time.sleep((10 - countdown) * 5)
+                        solr_records.clear()
+                        solr.commit(self.solr_core, softCommit=True, waitSearcher=True)
+                        break
+                    except ConnectionError as cex:
+                        if not countdown:
+                            raise
+                        self.logger.error(
+                            "Solr error: {0}. Waiting to try again ... {1}".format(cex, countdown))
+                        time.sleep((10 - countdown) * 5)
+
             except Search.DoesNotExist as x:
                 self.logger.error('Search not found: "{0}"'.format(x))
                 exit(-1)
