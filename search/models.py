@@ -2,8 +2,9 @@ import json
 
 from django.db import models
 from django.forms.models import model_to_dict
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MinLengthValidator, MinValueValidator, MaxValueValidator
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone as utimezone
 from datetime import datetime, timezone, MINYEAR, MAXYEAR
 from inflection import parameterize
 
@@ -404,4 +405,23 @@ class ChronologicCode(models.Model):
         self.end_date = datetime.fromisoformat(data_dict["end_date"])
 
 
+class Setting(models.Model):
 
+    key = models.CharField(max_length=512, primary_key=True, verbose_name="Setting Keyword (must be unique)",
+                           validators=[MinLengthValidator(2)])
+    value = models.CharField(max_length=1024, verbose_name="Setting Value")
+
+
+class SearchLog(models.Model):
+
+    id = models.AutoField(primary_key=True)
+    search_id = models.CharField(max_length=32, verbose_name="Search ID")
+    log_id = models.CharField(max_length=128, verbose_name="Log entry identifier")
+    log_timestamp = models.DateTimeField()
+    category = models.CharField(max_length=128, verbose_name="Log entry category", default="", blank=True)
+    message = models.TextField()
+
+    def save(self, *args, **kwargs):
+        if not self.id and not self.log_timestamp:
+            self.log_timestamp = utimezone.now()
+        super().save(*args, **kwargs)

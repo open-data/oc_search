@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
-from .models import Search, Field, Code, ChronologicCode
+from .models import Search, Field, Code, ChronologicCode, Setting, SearchLog
 
 # -- Searches ---
 
@@ -106,7 +106,22 @@ class ChronologicCodesAdmin(admin.ModelAdmin):
         return format_html('<a href="{0}?q={1}">{2}</a>', reverse('admin:search_chronologiccode_changelist'), obj.code_cid.code_id, obj.code_cid.code_id)
 
 
+class SettingsAdmin(admin.ModelAdmin):
+
+    list_display = ['key', 'value']
+    save_as = True
+
+
+class SearchLogsAdmin(admin.ModelAdmin):
+
+    list_display = ['search_id', 'log_id', 'log_timestamp', 'category']
+    list_filter = ['search_id', 'category']
+    search_fields = ['search_id', 'log_id', 'category']
+
+
 admin.site.register(Search, SearchAdmin)
 admin.site.register(Field, FieldAdmin)
 admin.site.register(Code, CodeAdmin)
 admin.site.register(ChronologicCode, ChronologicCodesAdmin)
+admin.site.register(Setting, SettingsAdmin)
+admin.site.register(SearchLog, SearchLogsAdmin)
