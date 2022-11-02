@@ -63,7 +63,6 @@ else:
         path(settings.SEARCH_HOST_PATH + '<str:search_type>/export/', ExportView.as_view(), name='RecordForm'),
         path(settings.SEARCH_HOST_PATH + '<str:search_type>/download/<str:task_id>', DownloadSearchResultsView.as_view(), name='DownloadForm'),
         path(settings.SEARCH_HOST_PATH + '<str:search_type>/telecharger/<str:task_id>', DownloadSearchResultsView.as_view(), name='DownloadForm'),
-        path(settings.SEARCH_HOST_PATH + '<str:search_type>/telecharger/<str:task_id>', DownloadSearchResultsView.as_view(), name='DownloadForm'),
         path(settings.SEARCH_HOST_PATH + '<str:search_type>/similar/<str:record_id>', MoreLikeThisView.as_view(),
              name='MLTForm'),
         path(settings.SEARCH_HOST_PATH + '<str:search_type>/similaire/<str:record_id>', MoreLikeThisView.as_view(),

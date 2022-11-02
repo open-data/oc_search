@@ -640,7 +640,17 @@ class ExportView(SearchView):
             #         return FileResponse(open(cached_filename, 'rb'), as_attachment=True)
             #     else:
             #         return HttpResponseRedirect(settings.EXPORT_FILE_CACHE_URL + "{0}_{1}.csv".format(hashed_query, lang))
-            return redirect(f'/search/{request.LANGUAGE_CODE}/{search_type}/download/{task}')
+            if settings.SEARCH_LANG_USE_PATH:
+                if lang == 'fr':
+                    return redirect(f'/rechercher/fr/{search_type}/telecharger/{task}')
+                else:
+                    return redirect(f'/search/en/{search_type}/download/{task}')
+            else:
+                if lang == 'fr':
+                    return redirect(f'{settings.SEARCH_HOST_PATH}/{search_type}/telecharger/{task}')
+                else:
+                    return redirect(f'{settings.SEARCH_HOST_PATH}/{search_type}/download/{task}')
+
         else:
             return render(request, '404.html', get_error_context(search_type, lang))
 
@@ -747,9 +757,9 @@ class DownloadSearchResultsView(View):
                     context['download_status_url'] = f"/search/search-results/en/{search_type}/{task_id}"
             else:
                 if lang == 'fr':
-                    context['download_status_url'] = f"{settings.SEARCH_HOST_PATH}/rapport-de-recherche/{lang}/{search_type}/{task_id}"
+                    context['download_status_url'] = f"{settings.SEARCH_HOST_PATH}/rapport-de-recherche/fr/{search_type}/{task_id}"
                 else:
-                    context['download_status_url'] = f"{settings.SEARCH_HOST_PATH}/search-results/{lang}/{search_type}/{task_id}"
+                    context['download_status_url'] = f"{settings.SEARCH_HOST_PATH}/search-results/en/{search_type}/{task_id}"
             if 'prev_search' in request.session:
                 context['back_to_url'] = request.session['prev_search']
             return render(request, 'download.html',  context)
