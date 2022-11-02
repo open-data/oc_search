@@ -152,6 +152,9 @@ msgstr "Suivant"
 msgid "Found %(result_num)s record%(result_s)s"
 msgstr "%(result_num)s dossier%(result_s)s trouvé%(result_s)s"
 
+msgid "%(result_num)s record%(result_s)s"
+msgstr "%(result_num)s dossier%(result_s)s"
+
 #: .\search\templates\search.html:24 .\search\templates\search.html:26
 #: .\search\templates\search.html:27 .\search\templates\search.html:29
 #: .\search\templates\search.html:31
@@ -251,3 +254,15 @@ msgstr "Perturbation de service :"
 
 msgid "Open Maps is undergoing maintenance. Certain features will be unavailable during this time. For questions or concerns, please <a href=\"https://open.canada.ca/en/forms/contact-us\">contact us</a>."
 msgstr "Cartes ouvertes est en cours de maintenance. Certaines fonctionnalités ne seront pas disponible pendant cette période. Si vous avez des questions ou préoccupations, n’hésitez pas à nous <a href=\"https://ouvert.canada.ca/fr/formulaire/faites-nous-part-de-vos-commentaires\">contacter</a>."
+
+msgid "The exported data is ready"
+msgstr "Les données exportées sont prêtes"
+
+msgid "Your request has been queued for processing ..."
+msgstr "Votre demande a été mise en file d'attente pour traitement ..."
+
+msgid "Your request is being processed ..."
+msgstr "Votre requête est en cours de traitement ..."
+
+msgid "An unexpected error has occurred. Please return to the search page and try again."
+msgstr "Une erreur inattendue s'est produite. Veuillez retourner à la page de recherche et réessayer."

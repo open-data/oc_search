@@ -26,7 +26,7 @@ class Command(BaseCommand):
         if rc[2] != 0:
             print(rc[1])
         else:
-            print("Created djangp.po")
+            print("Created django.po")
 
 
 

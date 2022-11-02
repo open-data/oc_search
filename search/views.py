@@ -1,22 +1,27 @@
 import collections
 import csv
+from datetime import datetime
+from django.views.decorators.cache import never_cache
 from django.conf import settings
 from django.core.cache import caches
-from django.http import HttpRequest, HttpResponseRedirect, FileResponse
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import HttpRequest, HttpResponseRedirect, FileResponse, JsonResponse
+from django.utils import translation
+from django.utils.translation import gettext as _
 from django.views.generic import View
 from django.shortcuts import render, redirect
 from .forms import FieldForm
-import hashlib
 import importlib
 import os
 import pkgutil
 import re
 from .query import calc_pagination_range, calc_starting_row, create_solr_query, create_solr_mlt_query
 from search.models import Search, Field, Code
+from django_celery_results.models import TaskResult
 import search.plugins
 from SolrClient import SolrClient, SolrResponse
 from SolrClient.exceptions import ConnectionError, SolrError
-from time import time
+from search.tasks import export_search_results_csv
 from unidecode import unidecode
 
 
@@ -335,6 +340,13 @@ class SearchView(View):
                         self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
                         facets,
                         '')
+
+                context['show_all_results'] = True
+                for p in request.GET:
+                    if p not in ['encoding', 'page', 'sort']:
+                        context['show_all_results'] = False
+                        break
+
                 context['system_facet_fields'] = ['__label__', '__sortorder__']
                 if len(facets) > 0:
                     # Facet search results
@@ -356,7 +368,7 @@ class SearchView(View):
                             # Create an inverted index of the facet values
                             facet_values = {}
                             for facet_value in context['facets'][f].keys():
-                                if facet_value not in context['system_facet_fields'] and facet_value != '-':
+                                if facet_value not in context['system_facet_fields'] and facet_value != '-' and facet_value in self.codes_en[search_type][f]:
                                     if request.LANGUAGE_CODE == 'fr':
                                         facet_values[self.codes_fr[search_type][f][facet_value]] = facet_value
                                     else:
@@ -575,20 +587,21 @@ class ExportView(SearchView):
         return True
 
     def get(self, request: HttpRequest, lang='en', search_type=''):
+
         lang = request.LANGUAGE_CODE
         if search_type in self.searches:
             # Check to see if a recent cached results exists and return that instead if it exists
-            hashed_query = hashlib.sha1(request.GET.urlencode().encode('utf8')).hexdigest()
-            cached_filename = os.path.join(self.cache_dir, "{0}_{1}.csv".format(hashed_query, lang))
-            if os.path.exists(cached_filename):
-                # If the cached file is over 5 minutes old, just delete and continue. In future, will want this to be a asynchronous opertaion
-                if time() - os.path.getmtime(cached_filename) > 600:
-                    os.remove(cached_filename)
-                else:
-                    if settings.EXPORT_FILE_CACHE_URL == "":
-                        return FileResponse(open(cached_filename, 'rb'), as_attachment=True)
-                    else:
-                        return HttpResponseRedirect(settings.EXPORT_FILE_CACHE_URL + "{0}_{1}.csv".format(hashed_query, lang))
+            # hashed_query = hashlib.sha1(request.GET.urlencode().encode('utf8')).hexdigest()
+            # cached_filename = os.path.join(self.cache_dir, "{0}_{1}.csv".format(hashed_query, lang))
+            # if os.path.exists(cached_filename):
+            #     # If the cached file is over 5 minutes old, just delete and continue. In future, will want this to be a asynchronous opertaion
+            #     if time() - os.path.getmtime(cached_filename) > 600:
+            #         os.remove(cached_filename)
+            #     else:
+            #         if settings.EXPORT_FILE_CACHE_URL == "":
+            #             return FileResponse(open(cached_filename, 'rb'), as_attachment=True)
+            #         else:
+            #             return HttpResponseRedirect(settings.EXPORT_FILE_CACHE_URL + "{0}_{1}.csv".format(hashed_query, lang))
 
             solr = SolrClient(settings.SOLR_SERVER_URL)
             core_name = self.searches[search_type].solr_core_name
@@ -607,26 +620,148 @@ class ExportView(SearchView):
                     self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
                     facets)
 
-            solr_response = solr.query(core_name, solr_query, request_handler='export')
+            request_url = request.GET.urlencode()
+            task = export_search_results_csv.delay(request_url, solr_query, lang, core_name)
 
-            # Call  plugin pre-solr-query if defined
-            if search_type_plugin in self.discovered_plugins:
-                solr_query = self.discovered_plugins[search_type_plugin].post_export_solr_query(
-                    solr_response,
-                    solr_query,
-                    request,
-                    self.searches[search_type], self.fields[search_type],
-                    self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
-                    facets)
+            # solr_response = solr.query(core_name, solr_query, request_handler='export')
 
-            if self.cache_search_results_file(cached_filename=cached_filename, sr=solr_response):
-                if settings.EXPORT_FILE_CACHE_URL == "":
-                    return FileResponse(open(cached_filename, 'rb'), as_attachment=True)
-                else:
-                    return HttpResponseRedirect(settings.EXPORT_FILE_CACHE_URL + "{0}_{1}.csv".format(hashed_query, lang))
+            # Call  plugin post-solr-query results export if defined
+            # if search_type_plugin in self.discovered_plugins:
+            #     solr_query = self.discovered_plugins[search_type_plugin].post_export_solr_query(
+            #         solr_response,
+            #         solr_query,
+            #         request,
+            #         self.searches[search_type], self.fields[search_type],
+            #         self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
+            #         facets)
+
+            # if self.cache_search_results_file(cached_filename=cached_filename, sr=solr_response):
+            #     if settings.EXPORT_FILE_CACHE_URL == "":
+            #         return FileResponse(open(cached_filename, 'rb'), as_attachment=True)
+            #     else:
+            #         return HttpResponseRedirect(settings.EXPORT_FILE_CACHE_URL + "{0}_{1}.csv".format(hashed_query, lang))
+            return redirect(f'/search/{request.LANGUAGE_CODE}/{search_type}/download/{task}')
         else:
             return render(request, '404.html', get_error_context(search_type, lang))
 
+
+class ExportStatusView(View):
+    def __init__(self):
+        super().__init__()
+
+    @never_cache
+    def get(self, request: HttpRequest, lang='en', search_type='', task_id=''):
+        translation.activate(lang)
+        response_dict = {"file_url": ""}
+        if task_id == "":
+            return render(request, '404.html', get_error_context(search_type, lang))
+        else:
+            try:
+                task = TaskResult.objects.get(task_id=task_id)
+                response_dict['task_status'] = task.status
+                response_dict['start'] = task.date_created.strftime("%Y-%m-%d %H:%m:%S.%f")
+                response_dict['done'] = task.date_done.strftime("%Y-%m-%d %H:%m:%S.%f")
+                http_status = 202
+                if task.status == "SUCCESS":
+                    response_dict['message'] = _("The exported data is ready")
+                    response_dict['button_label'] = _("Download Search Results")
+                    response_dict["file_url"] = task.result.strip('"')
+                    http_status = 200
+                elif task.status in ["PENDING", "RECEIVED"]:
+                    response_dict['message'] = _("Your request has been queued for processing ...")
+                elif task.status == "STARTED":
+                    response_dict['message'] = _("Your request is being processed ...")
+                elif task.status in ['REVOKED', 'REJECTED', 'RETRY', 'IGNORED']:
+                    response_dict['message'] = _("An unexpected error has occurred. Please return to the search page and try again.")
+                elif task.status == "FAILURE":
+                    return render(request, '404.html', get_error_context(search_type, lang))
+                return JsonResponse(response_dict, status=http_status)
+
+            except ObjectDoesNotExist as dne:
+                return render(request, '404.html', get_error_context(search_type, lang))
+
+
+class DownloadSearchResultsView(View):
+
+    searches = {}
+    search_alias_en = {}
+    search_alias_fr = {}
+
+    def __init__(self):
+        super().__init__()
+        # Use a local memory cache for the DB objects
+        cache = caches['local']
+        # Load Search and Field configuration
+
+        if cache.get('searches') is None:
+            search_queryset = Search.objects.all()
+            for s in search_queryset:
+                self.searches[s.search_id] = s
+                if s.search_alias_en:
+                    self.search_alias_en[s.search_alias_en] = s.search_id
+                if s.search_alias_fr:
+                    self.search_alias_fr[s.search_alias_fr] = s.search_id
+            cache.set('searches', self.searches, 3600)
+            cache.set('search_alias_en', self.search_alias_en, 3610)
+            cache.set('search_alias_fr', self.search_alias_fr, 3610)
+        else:
+            self.searches = cache.get('searches')
+            self.search_alias_en = cache.get('search_alias_en')
+            self.search_alias_fr = cache.get('search_alias_fr')
+    def get(self, request: HttpRequest, lang='en', search_type='', task_id=''):
+
+        # Replace search_type alias with actual search type
+        if lang == 'fr':
+            if search_type in self.search_alias_fr:
+                search_type = self.search_alias_fr[search_type]
+        else:
+            if search_type in self.search_alias_en:
+                search_type = self.search_alias_en[search_type]
+
+        if search_type in self.searches and not self.searches[search_type].is_disabled:
+            context = {
+                "language": lang,
+                "record_breadcrumb_snippet": 'search_snippets/default_breadcrumb.html',
+                "info_message_snippet": 'search_snippets/default_info_message.html',
+                "about_message_snippet": 'search_snippets/default_about_message.html',
+                "footer_snippet": 'search_snippets/default_footer.html',
+                "cdts_version": settings.CDTS_VERSION,
+                "dcterms_lang": 'fra' if lang == 'fr' else 'eng',
+                "ADOBE_ANALYTICS_URL": settings.ADOBE_ANALYTICS_URL,
+                "GOOGLE_ANALYTICS_GTM_ID": settings.GOOGLE_ANALYTICS_GTM_ID,
+                "GOOGLE_ANALYTICS_PROPERTY_ID": settings.GOOGLE_ANALYTICS_PROPERTY_ID,
+                "url_uses_path": settings.SEARCH_LANG_USE_PATH,
+                "url_host_en": settings.SEARCH_EN_HOSTNAME,
+                "url_host_fr": settings.SEARCH_FR_HOSTNAME,
+                'search_label': "Download Search Results" if lang == 'en' else 'Télécharger les résultats de la recherche',
+                'search_title': self.searches[search_type].label_fr if lang == 'fr' else self.searches[search_type].label_en,
+                'task_id': task_id,
+                'body_js_snippet': 'search_snippets/download.js',
+                'debug': settings.DEBUG,
+            }
+
+            if settings.SEARCH_LANG_USE_PATH:
+                if lang == 'fr':
+                    context['download_status_url'] = f"/rechercher/rapport-de-recherche/fr/{search_type}/{task_id}"
+                else:
+                    context['download_status_url'] = f"/search/search-results/en/{search_type}/{task_id}"
+            else:
+                if lang == 'fr':
+                    context['download_status_url'] = f"{settings.SEARCH_HOST_PATH}/rapport-de-recherche/{lang}/{search_type}/{task_id}"
+                else:
+                    context['download_status_url'] = f"{settings.SEARCH_HOST_PATH}/search-results/{lang}/{search_type}/{task_id}"
+            if 'prev_search' in request.session:
+                context['back_to_url'] = request.session['prev_search']
+            return render(request, 'download.html',  context)
+        elif search_type in self.searches and self.searches[search_type].is_disabled:
+            context = {"language": lang,}
+            context['label_en'] = self.searches[search_type].label_en
+            context['label_fr'] = self.searches[search_type].label_fr
+            context['message_en'] = self.searches[search_type].disabled_message_en
+            context['message_fr'] = self.searches[search_type].disabled_message_fr
+            return render(request, 'no_service.html', context)
+        else:
+            return render(request, '404.html', get_error_context(search_type, lang))
 
 class MoreLikeThisView(SearchView):
 

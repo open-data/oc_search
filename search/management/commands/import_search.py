@@ -139,6 +139,8 @@ class Command(BaseCommand):
             BASE_DIR = Path(__file__).resolve().parent.parent.parent
             custom_template_dir = path.join(BASE_DIR, 'templates', 'snippets', 'custom', options['search'])
             if path.exists(snippet_path):
+                if not path.exists(path.join(BASE_DIR, 'templates', 'snippets', 'custom')):
+                    mkdir(path.join(BASE_DIR, 'templates', 'snippets', 'custom'))
                 if not path.exists(custom_template_dir):
                     mkdir(custom_template_dir)
                 copy_tree(snippet_path, custom_template_dir)

@@ -28,31 +28,54 @@ OCSS also requires access to a Solr v8.x server. For information on installing S
 3. Create a python virtual environment using Python 3.6 or higher.
 
    For example `python -m venv venv`.
-4. Activate the new virtual environment.
+
+
+5. Activate the new virtual environment.
 
    For example `source venv/bin/activate` on Linux, or `venv\Scripts\activate` on Windows
-5. Install **SolrClient** client. Change into the SolrClient project directory and install the prerequisites from
+
+
+6. Install **SolrClient** client. Change into the SolrClient project directory and install the prerequisites from
    the `requirements.txt` file and then install the client project itself.
 
    `pip install -r requirements.txt`
 
    `python setup.py develop`
-6. Install the prerequisites from the requirements.txt file for the OCSS project
+
+
+7. Install the prerequisites from the requirements.txt file for the OCSS project
 
    `pip install -r requirements.txt`
-7. Create a `settings.py` file in the oc_search folder. Use the provided settings-samp Edit the settings.py file with the appropriate database settings and create the database tables
+
+
+8. Create a `settings.py` file in the oc_search folder. Use the provided settings-sample.py as a template.
+   Edit the settings.py file with the appropriate database settings and create the database tables
 
    `python manage.py makemigrations search`<br>
    `python manage.py sqlmigrate search 0001`<br>
-   `python manage.py migrate`
+   `python manage.py migrate`<br>
 
-8.  Create an admin user for Django.
+   If using Celery,
 
-    `python manage.py createsuperuser`
+   `python .\manage.py migrate django_celery_results` <br>
+   `python .\manage.py migrate django_celery_beat`
 
-9.  Test your installation by running Django.
 
-    `python manage.py runserver`
+9. Create an admin user for Django.
+
+   `python manage.py createsuperuser`
+
+
+10. Test your installation by running Django.
+
+   `python manage.py runserver`
+
+
+11. Start the Celery workers. **Note**, in production, the Celery workers should be [daemonized](https://docs.celeryq.dev/en/stable/userguide/daemonizing.html#daemonizing).
+
+    `celery -A oc_search worker -l INFO --pool=solo` [Windows] <br>
+    `celery -A oc_search worker -l INFO` [Linux] <br><br>
+    `celery -A proj beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler`
 
 ### Django Plugins
 
@@ -64,6 +87,8 @@ Four Django plugins are used:
 4. [Django Redis Sessions](https://github.com/martinrusev/django-redis-sessions) *(Optional)* Enables the use of Redis to maintain user sessions.
 5. [Django QUrl Template Tag](https://github.com/sophilabs/django-qurl-templatetag) A Django template tag to modify url's query string
 6. [Django Smuggler](https://github.com/semente/django-smuggler) Django Smuggler is a pluggable application for Django Web Framework to easily dump/load fixtures via the automatically-generated administration interface
+7. [Django Celery Results](https://https://pypi.python.org/pypi/django-celery-results/) The [django-celery-results](https://pypi.python.org/pypi/django-celery-results/) extension provides result backends using either the Django ORM, or the Django Cache framework.
+8. [Django Celery Beat](https://https://django-celery-beat.readthedocs.io/en/latest/) This extenstion uses Celery to provide database backed periodic tasks with an Admin Interface
 
 These Django plugins are enabled in the Django application's settings.py file. Example configuration can be found in
 [settings-sample.py](https://github.com/open-data/oc_search/blob/master/oc_search/settings-sample.py)
@@ -249,3 +274,20 @@ def pre_render_search(context: dict, template: str, request: HttpRequest, lang: 
 
 def pre_render_record(context: dict, template: str, request: HttpRequest, lang: str, search: Search, fields: dict, codes: dict):
 ```
+
+# Debugging Celery with PyCharm on Windows
+
+When running Celery on Windows, use the following command to start the Celery worker
+
+```powershell
+celery -A oc_search worker -l INFO --pool=solo
+```
+
+To run a separate Celery process to run scheduled tasks:
+
+```powershell
+celery -A oc_search beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler
+```
+
+To debug with PyCharm, add a new python Run Configuration. Change the script path to a
+module path and enter `celery`. For parameters use `-A oc_search worker -l INFO --pool=solo`

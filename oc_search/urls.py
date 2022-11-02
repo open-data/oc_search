@@ -17,7 +17,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import path
 from django.conf.urls import include
-from search.views import SearchView, RecordView, ExportView, MoreLikeThisView, HomeView, DefaultView
+from search.views import SearchView, RecordView, ExportView, MoreLikeThisView, HomeView, DefaultView, ExportStatusView, DownloadSearchResultsView
 from ramp.views import RampView
 
 
@@ -36,10 +36,14 @@ if settings.SEARCH_LANG_USE_PATH:
         path('rechercher/<str:lang>/<str:search_type>/', SearchView.as_view(), name="SearchForm"),
         path('search/<str:lang>/<str:search_type>/record/<str:record_id>', RecordView.as_view(), name='RecordForm'),
         path('search/<str:lang>/<str:search_type>/export/', ExportView.as_view(), name='ExportForm'),
+        path('search/<str:lang>/<str:search_type>/download/<str:task_id>', DownloadSearchResultsView.as_view(), name='DownloadForm'),
+        path('rechercher/<str:lang>/<str:search_type>/telecharger/<str:task_id>', DownloadSearchResultsView.as_view(), name='DownloadForm'),
         path('search/<str:lang>/<str:search_type>/similar/<str:record_id>', MoreLikeThisView.as_view(), name='MLTForm'),
         path('search/<str:lang>/<str:search_type>/similaire/<str:record_id>', MoreLikeThisView.as_view(),
              name='MLTForm'),
         path('rechercher/<str:lang>/<str:search_type>/similaire/<str:record_id>', MoreLikeThisView.as_view(), name='MLTForm'),
+        path('search/search-results/<str:lang>/<str:search_type>/<str:task_id>', ExportStatusView.as_view(), name='SearchResultsForm'),
+        path('rechercher/rapport-de-recherche/<str:lang>/<str:search_type>/<str:task_id>', ExportStatusView.as_view(), name='SearchResultsForm'),
     ]
     if 'ramp' in settings.INSTALLED_APPS:
         urlpatterns += [
@@ -57,10 +61,17 @@ else:
         path(settings.SEARCH_HOST_PATH + '<str:search_type>/record/<str:record_id>', RecordView.as_view(),
              name='RecordForm'),
         path(settings.SEARCH_HOST_PATH + '<str:search_type>/export/', ExportView.as_view(), name='RecordForm'),
+        path(settings.SEARCH_HOST_PATH + '<str:search_type>/download/<str:task_id>', DownloadSearchResultsView.as_view(), name='DownloadForm'),
+        path(settings.SEARCH_HOST_PATH + '<str:search_type>/telecharger/<str:task_id>', DownloadSearchResultsView.as_view(), name='DownloadForm'),
+        path(settings.SEARCH_HOST_PATH + '<str:search_type>/telecharger/<str:task_id>', DownloadSearchResultsView.as_view(), name='DownloadForm'),
         path(settings.SEARCH_HOST_PATH + '<str:search_type>/similar/<str:record_id>', MoreLikeThisView.as_view(),
              name='MLTForm'),
         path(settings.SEARCH_HOST_PATH + '<str:search_type>/similaire/<str:record_id>', MoreLikeThisView.as_view(),
              name='MLTForm'),
+        path(settings.SEARCH_HOST_PATH + 'search-results/<str:lang>/<str:search_type>/<str:task_id>', ExportStatusView.as_view(),
+             name='SearchResultsForm'),
+        path(settings.SEARCH_HOST_PATH + 'rapport-de-recherche/<str:lang>/<str:search_type>/<str:task_id>', ExportStatusView.as_view(),
+             name='SearchResultsForm'),
     ]
     if 'ramp' in settings.INSTALLED_APPS:
         urlpatterns += [

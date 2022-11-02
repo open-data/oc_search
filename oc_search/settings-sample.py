@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/3.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
+import bleach.sanitizer
 from django.utils.translation import gettext_lazy as _
 import os
 
@@ -25,13 +26,15 @@ SECRET_KEY = 'Replace_this_key_with_a_random_value!'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders',
     'jazzmin',
+    'django_celery_beat',
+    'django_celery_results',
     'django.contrib.admin',
     'django.contrib.admindocs',
     'django.contrib.auth',
@@ -44,10 +47,16 @@ INSTALLED_APPS = [
     'search'
 ]
 
+## Optional applications
+# 'ramp',
+# 'smuggler',
+
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    "corsheaders.middleware.CorsPostCsrfMiddleware",
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -57,6 +66,9 @@ MIDDLEWARE = [
     'django.middleware.cache.FetchFromCacheMiddleware',
     'oc_search.middleware.CanadaBilingualMiddleware'
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_REPLACE_HTTPS_REFERER = True
 
 ROOT_URLCONF = 'oc_search.urls'
 
@@ -70,7 +82,9 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     ('cdts', os.path.join(BASE_DIR, "cdts", "v4_0_32")),
     ('search_snippets', os.path.join(BASE_DIR, 'search', 'templates', 'snippets')),
+    ('cache', os.path.join(BASE_DIR, 'cache')),
 ]
+# ('ramp', os.path.join(BASE_DIR, 'ramp', 'viewer')),
 
 TEMPLATES = [
     {
@@ -112,7 +126,8 @@ DATABASES = {
 # Smuggler settings
 SMUGGLER_FIXTURE_DIR = os.path.join(BASE_DIR, 'smuggler')
 SMUGGLER_EXCLUDE_LIST = ['admin.logentry', 'auth.permission', 'auth.group', 'auth.user',
-                         'contenttypes.contenttype']
+                         'contenttypes.contenttype',
+                         'django_celery_results.chordcounter', 'django_celery_results.groupresult', 'django_celery_beat.taskresult']
 
 DATABASE_ROUTERS = ['search.db_router.SearchRouter']
 
@@ -156,7 +171,7 @@ LOCALE_PATHS = [
 # or Apache, set the FILE_CACHE_URL
 
 EXPORT_FILE_CACHE_DIR = os.path.join(BASE_DIR, 'cache')
-EXPORT_FILE_CACHE_URL = ""
+EXPORT_FILE_CACHE_URL = "http://127.0.0.1:8000/static/cache"
 
 # Solr Search Configuration
 
@@ -249,3 +264,15 @@ RAMP_CHART_JS_URL = 'https://viewer-visualiseur.services.geo.ca/apps/RAMP/contri
 RAMP_STYLE_CSS_URL = 'https://viewer-visualiseur.services.geo.ca/apps/RAMP/fgpv/fgpv-3.3.5/rv-styles.css'
 RAMP_MAIN_JS_URL = 'https://viewer-visualiseur.services.geo.ca/apps/RAMP/fgpv/fgpv-3.3.5/rv-main.js'
 RAMP_LEGACY_API_JS_URL = 'https://viewer-visualiseur.services.geo.ca/apps/RAMP/fgpv/fgpv-3.3.5/legacy-api.js'
+
+CELERY_BROKER_URL = 'redis://:<redis_password>@localhost:6379/0'
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_TIME_ZONE = TIME_ZONE
+CELERY_RESULT_EXTENDED = True
+CELERY_RESULT_EXPIRES = 60 * 60 * 24 * 7  # 1 week
+# Max task time allowed in seconds
+CELERYD_TIME_LIMIT = 20
+# No. of Celery workers
+CELERYD_CONCURRENCY = 2
+# the task will report its status as ‘started’ when the task is executed by a worker.
+CELERY_TASK_TRACK_STARTED = True

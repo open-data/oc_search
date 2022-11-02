@@ -1,0 +1,40 @@
+{% extends "base-cdts.html" %}
+{% load static %}
+{% load humanize %}
+{% load i18n %}
+{% load search_extras %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% block breadcrumb %}
+  {% include record_breadcrumb_snippet with language_code=language %}
+{% endblock breadcrumb %}
+
+{% block main-content-body %}
+  <div class="row" xmlns="http://www.w3.org/1999/html">
+    {% if back_to_url %}
+      <div class="col-md-12 mrgn-bttm-lg mrgn-tp-lg">
+        <div class="row">
+          <div class="col-md-12">
+            <a class="btn btn-default" href="{{ back_to_url }}"><span class="glyphicon glyphicon-menu-left"></span> {% translate 'Back to search' %}</a>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+    <div class="col-md-12"></div>
+    <div class="col-md-12">
+      <div id="waiting_msg"></div>
+    </div>
+    {% if debug %}
+      <div class="col-md-12">
+      <h2>Task Debug Info</h2>
+      </div>
+      <div class="col-md-3">Task ID: </div><div class="col-md-9">{{ task_id }}</div>
+      <div class="col-md-3">Started: </div><div class="col-md-9"><span id="task_started">-</span></div>
+      <div class="col-md-3">Done: </div><div class="col-md-9"><span id="task_done">-</span></div>
+    {% endif %}
+
+  <input type="hidden" id="task_id" name="task_id" value="{{ task_id }}">
+  <input type="hidden" id="download_status_url" name="download_status_url" value="{{ download_status_url }}">
+  </div>
+
+{% endblock main-content-body %}
