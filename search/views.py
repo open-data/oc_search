@@ -674,8 +674,8 @@ class ExportStatusView(View):
             try:
                 task = TaskResult.objects.get(task_id=task_id)
                 response_dict['task_status'] = task.status
-                response_dict['start'] = task.date_created.strftime("%Y-%m-%d %H:%m:%S.%f")
-                response_dict['done'] = task.date_done.strftime("%Y-%m-%d %H:%m:%S.%f")
+                response_dict['start'] = task.date_created.strftime("%Y-%m-%d %H:%M:%S.%f")
+                response_dict['done'] = task.date_done.strftime("%Y-%m-%d %H:%M:%S.%f")
                 http_status = 202
                 if task.status == "SUCCESS":
                     response_dict['message'] = _("The exported data is ready")
@@ -723,6 +723,7 @@ class DownloadSearchResultsView(View):
             self.searches = cache.get('searches')
             self.search_alias_en = cache.get('search_alias_en')
             self.search_alias_fr = cache.get('search_alias_fr')
+
     def get(self, request: HttpRequest, lang='en', search_type='', task_id=''):
 
         # Replace search_type alias with actual search type

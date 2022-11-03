@@ -149,7 +149,7 @@
             {% else %}
             <details class="panel panel-default mrgn-bttm-0 provisional gc-chckbxrdio"{% if  selected_facets|get_dict_value:key|length > 0 %}open{% endif %}>
                 <summary class="panel-heading">
-                   <h3 class="panel-title">{{ value|get_dict_value:'__label__' }}</h3>
+                   <h3 class="panel-title" style="font-size: large">{{ value|get_dict_value:'__label__' }}</h3>
                 </summary>
                 <ul class="list-group">
                 {% if key in reversed_facets %}
@@ -159,7 +159,7 @@
                              <div class="row">
                                 <div class="mrgn-tp-0 col-sm-10">
                                     {% if key in codes.keys %}
-                                    <label><div class="small">
+                                    <label class="small"><div>
                                         <input type="checkbox"
                                              onclick='selectFacet("{{ key }}", "{{ subkey }}" )'
                                              style="vertical-align:middle;position:relative;top:-1px;height: 20px;width: 20px;" value="{{ key }}"
@@ -185,7 +185,7 @@
                              <div class="row">
                                 <div class="mrgn-tp-0 mrgn-bttm-0 col-sm-10">
                                     {% if key in codes.keys %}
-                                    <label><div class="small"><input type="checkbox"
+                                    <label class="small" style="font-size: smaller"><div><input type="checkbox"
                                              onclick='selectFacet("{{ key }}", "{{ subkey }}" )'
                                              style="vertical-align:middle;position:relative;top:-1px;height: 20px;width: 20px" value="{{ key }}"
                                              {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}
