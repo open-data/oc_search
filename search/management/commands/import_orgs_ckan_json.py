@@ -24,7 +24,7 @@ class Command(BaseCommand):
                     for org in orgs:
                         search = Search.objects.get(search_id=options['search'])
                         field = Field.objects.get(field_id=options['field'], search_id=search)
-                        code, created = Code.objects.get_or_create(field_id_id=field.id, code_id=org['name'])
+                        code, created = Code.objects.get_or_create(field_fid_id=field.fid, code_id=org['name'])
                         owner_org_titles = org['title'].split('|')
                         code.label_en = owner_org_titles[0].strip()
                         if len(owner_org_titles) == 1:

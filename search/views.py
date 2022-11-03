@@ -12,6 +12,7 @@ from django.views.generic import View
 from django.shortcuts import render, redirect
 from .forms import FieldForm
 import importlib
+import logging
 import os
 import pkgutil
 import re
@@ -90,6 +91,8 @@ class SearchView(View):
     display_fields_names_fr = {}
 
     discovered_plugins = {}
+
+    logger = logging.getLogger(__name__)
 
     def __init__(self):
         super().__init__()
@@ -373,6 +376,8 @@ class SearchView(View):
                                         facet_values[self.codes_fr[search_type][f][facet_value]] = facet_value
                                     else:
                                         facet_values[self.codes_en[search_type][f][facet_value]] = facet_value
+                                elif facet_value not in context['system_facet_fields'] and facet_value != '-' and facet_value not in self.codes_en[search_type][f]:
+                                    self.logger.info(f"Unknown facet_value {f}:{facet_value}")
                             # Sort the facet values - use French locale for sorting
                             if lang == "fr":
                                 sorted_facet_values = sorted(facet_values.keys(), key=unidecode)

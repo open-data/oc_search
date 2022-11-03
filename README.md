@@ -28,27 +28,19 @@ OCSS also requires access to a Solr v8.x server. For information on installing S
 3. Create a python virtual environment using Python 3.6 or higher.
 
    For example `python -m venv venv`.
-
-
-5. Activate the new virtual environment.
+4. Activate the new virtual environment.
 
    For example `source venv/bin/activate` on Linux, or `venv\Scripts\activate` on Windows
-
-
-6. Install **SolrClient** client. Change into the SolrClient project directory and install the prerequisites from
+5. Install **SolrClient** client. Change into the SolrClient project directory and install the prerequisites from
    the `requirements.txt` file and then install the client project itself.
 
    `pip install -r requirements.txt`
 
    `python setup.py develop`
-
-
-7. Install the prerequisites from the requirements.txt file for the OCSS project
+6. Install the prerequisites from the requirements.txt file for the OCSS project
 
    `pip install -r requirements.txt`
-
-
-8. Create a `settings.py` file in the oc_search folder. Use the provided settings-sample.py as a template.
+7. Create a `settings.py` file in the oc_search folder. Use the provided settings-sample.py as a template.
    Edit the settings.py file with the appropriate database settings and create the database tables
 
    `python manage.py makemigrations search`<br>
@@ -59,17 +51,12 @@ OCSS also requires access to a Solr v8.x server. For information on installing S
 
    `python .\manage.py migrate django_celery_results` <br>
    `python .\manage.py migrate django_celery_beat`
-
-
-9. Create an admin user for Django.
+8. Create an admin user for Django.
 
    `python manage.py createsuperuser`
+9. Test your installation by running Django.
 
-
-10. Test your installation by running Django.
-
-   `python manage.py runserver`
-
+`python manage.py runserver`
 
 11. Start the Celery workers. **Note**, in production, the Celery workers should be [daemonized](https://docs.celeryq.dev/en/stable/userguide/daemonizing.html#daemonizing).
 

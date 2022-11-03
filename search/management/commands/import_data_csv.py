@@ -318,6 +318,8 @@ class Command(BaseCommand):
                                                 self.logger.warning(
                                                     "Row {0}, Record {1}. Unknown code value: {2} for field: {3}".format(
                                                         row_num + 2, record_id, code_value, csv_field))
+                                                codes_en.append("-")
+                                                codes_fr.append("-")
                                         solr_record[csv_field + '_en'] = codes_en
                                         solr_record[csv_field + '_fr'] = codes_fr
 
@@ -333,8 +335,10 @@ class Command(BaseCommand):
                                             self.logger.warning(
                                                 "Row {0}, Record {1}. Unknown code value: {2} for field: {3}".format(
                                                     row_num + 2, record_id, csv_record[csv_field], csv_field))
+                                            solr_record[csv_field + '_en'] = "-"
+                                            solr_record[csv_field + '_fr'] = "-"
 
-                        # Ensure all empty CSV fields are set to appropriate or default values
+                                            # Ensure all empty CSV fields are set to appropriate or default values
 
                         solr_record = self.set_empty_fields(solr_record)
 
