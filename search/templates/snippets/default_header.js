@@ -59,3 +59,15 @@ document.onkeydown=function(e){
         submitForm();
     }
 }
+
+function export_results(url){
+    let xhr = new XMLHttpRequest();
+    xhr.open("POST", url, true);
+
+    //Send the proper header information along with the request
+    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+    xhr.send(params);
+
+    // CUTE, but this doesn<t take you to the download page, try as a form
+}

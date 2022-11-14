@@ -278,7 +278,9 @@ class SearchView(View):
             context["search_text"] = request.GET.get("search_text", "")
             context["id_fields"] = self.searches[search_type].id_fields.split(',') if self.searches[
                 search_type].id_fields else []
-            context["export_path"] = "{0}export?{1}".format(request.META["PATH_INFO"], request.META["QUERY_STRING"])
+            context["export_path"] = "{0}export/".format(request.META["PATH_INFO"])
+            context['export_query'] = request.META["QUERY_STRING"]
+            context['export_search_path'] = request.get_full_path()
             context['about_msg'] = self.searches[search_type].about_message_fr if lang == 'fr' else self.searches[search_type].about_message_en
 
             solr = SolrClient(settings.SOLR_SERVER_URL)
@@ -591,6 +593,45 @@ class ExportView(SearchView):
                         pass
         return True
 
+    def post(self, request, *args, **kwargs):
+        # create a form instance and populate it with data from the request:
+        lang = request.LANGUAGE_CODE
+        search_type = request.POST.get('export_search')
+        if search_type in self.searches:
+
+            solr = SolrClient(settings.SOLR_SERVER_URL)
+            core_name = self.searches[search_type].solr_core_name
+            facets = self.facets_fr[search_type] if lang == 'fr' else self.facets_en[search_type]
+            solr_query = create_solr_query(request, self.searches[search_type], self.fields[search_type],
+                                           self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
+                                           facets, 1, 0, record_id='', export=True)
+
+            # Call  plugin pre-solr-query if defined
+            search_type_plugin = 'search.plugins.{0}'.format(search_type)
+            if search_type_plugin in self.discovered_plugins:
+                solr_query = self.discovered_plugins[search_type_plugin].pre_export_solr_query(
+                    solr_query,
+                    request,
+                    self.searches[search_type], self.fields[search_type],
+                    self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
+                    facets)
+
+            request_url = request.POST.get('export_search_path')
+            task = export_search_results_csv.delay(request_url, solr_query, lang, core_name)
+            if settings.SEARCH_LANG_USE_PATH:
+                if lang == 'fr':
+                    return redirect(f'/rechercher/fr/{search_type}/telecharger/{task}')
+                else:
+                    return redirect(f'/search/en/{search_type}/download/{task}')
+            else:
+                if lang == 'fr':
+                    return redirect(f'{settings.SEARCH_HOST_PATH}/{search_type}/telecharger/{task}')
+                else:
+                    return redirect(f'{settings.SEARCH_HOST_PATH}/{search_type}/download/{task}')
+
+        else:
+            return render(request, '404.html', get_error_context(search_type, lang))
+
     def get(self, request: HttpRequest, lang='en', search_type=''):
 
         lang = request.LANGUAGE_CODE
@@ -671,16 +712,20 @@ class ExportStatusView(View):
         if task_id == "":
             return render(request, '404.html', get_error_context(search_type, lang))
         else:
+            http_status = 202
             try:
+                # Note: as of Nov, 2022 the django-celery-results module only saves a task record
+                # to the database AFTER the task has started, therefore the other status values are not
+                # used at this time, but are present in anticipation of this functionality being added to the
+                # module in the future.
                 task = TaskResult.objects.get(task_id=task_id)
                 response_dict['task_status'] = task.status
-                response_dict['start'] = task.date_created.strftime("%Y-%m-%d %H:%M:%S.%f")
-                response_dict['done'] = task.date_done.strftime("%Y-%m-%d %H:%M:%S.%f")
-                http_status = 202
                 if task.status == "SUCCESS":
                     response_dict['message'] = _("The exported data is ready")
                     response_dict['button_label'] = _("Download Search Results")
                     response_dict["file_url"] = task.result.strip('"')
+                    response_dict['start'] = task.date_created.strftime("%Y-%m-%d %H:%M:%S.%f")
+                    response_dict['done'] = task.date_done.strftime("%Y-%m-%d %H:%M:%S.%f")
                     http_status = 200
                 elif task.status in ["PENDING", "RECEIVED"]:
                     response_dict['message'] = _("Your request has been queued for processing ...")
@@ -690,10 +735,15 @@ class ExportStatusView(View):
                     response_dict['message'] = _("An unexpected error has occurred. Please return to the search page and try again.")
                 elif task.status == "FAILURE":
                     return render(request, '404.html', get_error_context(search_type, lang))
-                return JsonResponse(response_dict, status=http_status)
 
-            except ObjectDoesNotExist as dne:
-                return render(request, '404.html', get_error_context(search_type, lang))
+            except TaskResult.DoesNotExist as dne:
+                # For now, assume the task is waiting to start in the Celery queue if it hasn't been added to the
+                # database
+                http_status = 202
+                response_dict['message'] = _("Your export has been submitted for processing ...")
+                response_dict['task_status'] = 'PENDING'
+
+            return JsonResponse(response_dict, status=http_status)
 
 
 class DownloadSearchResultsView(View):

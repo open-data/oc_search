@@ -25,13 +25,19 @@
           </button>
         </div>
       <div class="col-md-12"  style="display: flex; justify-content: center; font-size: small">
-          <a href="{{ download_ds_url }}" class="mrgn-rght-sm" target="_blank" rel="noopener noreferrer">
-          <span class="glyphicon glyphicon-new-window text-info"></span> {{ download_ds_text }}</a> |&nbsp;
+          <a href="{{ download_ds_url }}" class="btn btn-link" target="_blank" rel="noopener noreferrer">
+          <span class="glyphicon glyphicon-new-window text-info"></span> {{ download_ds_text }}</a>
           {% if total_hits > 1 and total_hits < 100000 %}
-              <a href="{{ export_path }}">
-                  <span class="glyphicon glyphicon-download-alt text-success"></span> {% translate 'Download Search Results' %}</a>
+            <form action="{{ export_path }}" method="post">
+              <button type="submit" class="btn btn-link" style="padding-top: 10px;">
+                <span class="glyphicon glyphicon-download-alt text-success"></span> {% translate 'Download Search Results' %}</button>
+              <input type="hidden" aria-hidden="true" id="export_query" name="export_query" value="{{ export_query }}">
+              <input type="hidden" aria-hidden="true" id="export_search" name="export_search" value="{{ search_type }}">
+              <input type="hidden" aria-hidden="true" id="export_search_path" name="export_search_path" value="{{ export_search_path }}">
+            {% csrf_token %}
+            </form>
           {% else %}
-              {% translate 'Download Search Results' %} {% translate '(100,000 row limit)' %}
+              <span class="btn btn-link" style="padding-top: 10px;" disabled="disabled">{% translate 'Download Search Results' %} {% translate '(100,000 row limit)' %}</span>
           {% endif %}
       </div>
     </div>

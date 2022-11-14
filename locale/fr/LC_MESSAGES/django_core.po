@@ -258,7 +258,7 @@ msgstr "Cartes ouvertes est en cours de maintenance. Certaines fonctionnalités 
 msgid "The exported data is ready"
 msgstr "Les données exportées sont prêtes"
 
-msgid "Your request has been queued for processing ..."
+msgid "Your export has been submitted for processing ..."
 msgstr "Votre demande a été mise en file d'attente pour traitement ..."
 
 msgid "Your request is being processed ..."

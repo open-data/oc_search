@@ -4,6 +4,7 @@ from nltk.tokenize.regexp import RegexpTokenizer
 import os
 import re
 from search.models import Search, Field
+from urllib import parse
 
 
 def url_part_escape(orig):
@@ -141,17 +142,17 @@ def create_solr_query(request: HttpRequest, search: Search, fields: dict, Codes:
                       override_sort=False):
     """
     Create a complete query to send to the SolrClient query.
-    :param request:
-    :param search:
-    :param fields:
-    :param Codes:
-    :param facets:
-    :param start_row:
-    :param rows:
-    :param record_id:
+    :param request: The HttpRequest for the page
+    :param search: The Search Model
+    :param fields: A dictionary or Field model objects
+    :param Codes: A dictionary of Code model objects
+    :param facets: A list of the facets used in the query
+    :param start_row: An integer of the starting row for results to return
+    :param rows: An integer of the number of reows to return
+    :param record_id: If used, is a list of record ID. Used to retrieve specific records from Solr
     :param export: Set to true if constructing the query for a /export Solr handler query
     :param highlighting: set to true if the query should include search term highlighting
-    :return:
+    :return: A dictionary representing a Solr query for use with the SolrClient library
     """
     using_facets = len(facets) > 0
 
@@ -159,16 +160,34 @@ def create_solr_query(request: HttpRequest, search: Search, fields: dict, Codes:
     known_fields = {}
     solr_query = {'q': '*', 'defType': 'edismax', 'sow': True}
 
-    for request_field in request.GET.keys():
-        if request_field == 'search_text' and not record_id:
-            solr_query['q'] = get_search_terms(request.GET.get('search_text'))
-        elif request_field == 'sort' and not record_id:
-            if request.LANGUAGE_CODE == 'fr':
-                solr_query['sort'] = request.GET.get('sort') if request.GET.get('sort') in search.results_sort_order_fr.split(',') else default_sort
-            else:
-                solr_query['sort'] = request.GET.get('sort') if request.GET.get('sort') in search.results_sort_order_en.split(',') else default_sort
-        elif request_field in fields:
-            known_fields[request_field] = request.GET.get(request_field).split('|')
+    # Most search pages in the app use HTTP GET method, but the data export uses POST method with CSTF protection.
+    # This impacts how user data is retrieved.
+
+    if len(request.GET) > 0:
+        for request_field in request.GET.keys():
+            if request_field == 'search_text' and not record_id:
+                solr_query['q'] = get_search_terms(request.GET.get('search_text'))
+            elif request_field == 'sort' and not record_id:
+                if request.LANGUAGE_CODE == 'fr':
+                    solr_query['sort'] = request.GET.get('sort') if request.GET.get('sort') in search.results_sort_order_fr.split(',') else default_sort
+                else:
+                    solr_query['sort'] = request.GET.get('sort') if request.GET.get('sort') in search.results_sort_order_en.split(',') else default_sort
+            elif request_field in fields:
+                known_fields[request_field] = request.GET.get(request_field).split('|')
+
+    elif request.POST.get("export_query"):
+
+        # Currently only the data export uses a POST form, so export fields are hard-coded here, and default sort order is used
+
+        qurl = parse.urlsplit(request.POST.get('export_search_path'))
+        keys = parse.parse_qs(qurl.query)
+        for request_field in keys:
+            if request_field == 'search_text' and not record_id:
+                solr_query['q'] = get_search_terms(keys[request_field][0])
+            elif request_field == 'sort' and not record_id:
+                solr_query['sort'] = default_sort
+            elif request_field in fields:
+                known_fields[request_field] = keys[request_field][0].split('|')
 
     # If sort not specified in the request, then use the default
     if 'sort' not in solr_query:
@@ -236,6 +255,7 @@ def create_solr_query(request: HttpRequest, search: Search, fields: dict, Codes:
         solr_query['facet'] = True
         solr_query['facet.sort'] = 'index'
         solr_query['facet.method'] = 'enum'
+        solr_query['facet.mincount'] = 1
         fq = []
         ff = []
         for facet in facets:
