@@ -45,10 +45,6 @@ def export_search_results_csv(request_url, query, lang, core):
     solr = SolrClient(settings.SOLR_SERVER_URL)
     solr_response = solr.query(core, query, request_handler='export')
 
-    # ### DEBUG
-    # if settings.DEBUG:
-    #     time.sleep(2)
-
     if cache_search_results_file(cached_filename=cached_filename, sr=solr_response):
         return f"{static_filename}"
     else:

@@ -237,6 +237,8 @@ CACHES = {
         'LOCATION': 'oc_search',
     }
 }
+# Object in the local cache expire after this many seconds. Not recommended to be less than 60 seconds.
+CACHE_LOCAL_TIMEOUT = 60 * 5
 
 SESSION_ENGINE="django.contrib.sessions.backends.file"
 SESSION_FILE_PATH = os.path.join(BASE_DIR, 'session')

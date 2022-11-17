@@ -80,6 +80,8 @@ class SearchView(View):
     searches = {}
     search_alias_en = {}
     search_alias_fr = {}
+    reverse_search_alias_en = {}
+    reverse_search_alias_fr = {}
     fields = {}
     facets_en = {}
     facets_fr = {}
@@ -114,15 +116,25 @@ class SearchView(View):
                 self.searches[s.search_id] = s
                 if s.search_alias_en:
                     self.search_alias_en[s.search_alias_en] = s.search_id
+                    self.reverse_search_alias_en[s.search_id] = s.search_alias_en
+                else:
+                    self.reverse_search_alias_en[s.search_id] = s.search_id
                 if s.search_alias_fr:
                     self.search_alias_fr[s.search_alias_fr] = s.search_id
-            cache.set('searches', self.searches, 3600)
-            cache.set('search_alias_en', self.search_alias_en, 3610)
-            cache.set('search_alias_fr', self.search_alias_fr, 3610)
+                    self.reverse_search_alias_fr[s.search_id] = s.search_alias_fr
+                else:
+                    self.reverse_search_alias_fr[s.search_id] = s.search_id
+            cache.set('searches', self.searches, settings.CACHE_LOCAL_TIMEOUT)
+            cache.set('search_alias_en', self.search_alias_en, settings.CACHE_LOCAL_TIMEOUT + 10)
+            cache.set('search_alias_fr', self.search_alias_fr, settings.CACHE_LOCAL_TIMEOUT + 10)
+            cache.set('reverse_search_alias_en', self.reverse_search_alias_en, settings.CACHE_LOCAL_TIMEOUT + 10)
+            cache.set('reverse_search_alias_fr', self.reverse_search_alias_fr, settings.CACHE_LOCAL_TIMEOUT + 10)
         else:
             self.searches = cache.get('searches')
             self.search_alias_en = cache.get('search_alias_en')
             self.search_alias_fr = cache.get('search_alias_fr')
+            self.reverse_search_alias_en = cache.get('reverse_search_alias_en')
+            self.reverse_search_alias_fr = cache.get('reverse_search_alias_fr')
 
         if cache.get('fields') is None:
             for sid in self.searches.keys():
@@ -161,13 +173,13 @@ class SearchView(View):
                 self.display_fields_names_en[sid] = self.get_default_display_fields('en', sid)
                 self.display_fields_names_fr[sid] = self.get_default_display_fields('fr', sid)
 
-            cache.set('fields', self.fields, 3600)
-            cache.set('facets_en', self.facets_en, 3610)
-            cache.set('facets_fr', self.facets_fr, 3610)
-            cache.set('display_fields_en', self.display_fields_en, 3610)
-            cache.set('display_fields_fr', self.display_fields_fr, 3610)
-            cache.set('display_fields_names_en', self.display_fields_names_en, 3610)
-            cache.set('display_fields_names_fr', self.display_fields_names_fr, 3610)
+            cache.set('fields', self.fields, settings.CACHE_LOCAL_TIMEOUT)
+            cache.set('facets_en', self.facets_en, settings.CACHE_LOCAL_TIMEOUT + 10)
+            cache.set('facets_fr', self.facets_fr, settings.CACHE_LOCAL_TIMEOUT + 10)
+            cache.set('display_fields_en', self.display_fields_en, settings.CACHE_LOCAL_TIMEOUT + 10)
+            cache.set('display_fields_fr', self.display_fields_fr, settings.CACHE_LOCAL_TIMEOUT + 10)
+            cache.set('display_fields_names_en', self.display_fields_names_en, settings.CACHE_LOCAL_TIMEOUT + 10)
+            cache.set('display_fields_names_fr', self.display_fields_names_fr, settings.CACHE_LOCAL_TIMEOUT + 10)
 
         else:
             self.fields = cache.get('fields')
@@ -194,8 +206,8 @@ class SearchView(View):
                     else:
                         self.codes_en[sid][code.field_fid.field_id] = {code.code_id: code.label_en}
                         self.codes_fr[sid][code.field_fid.field_id] = {code.code_id: code.label_fr}
-            cache.set('codes_en', self.codes_en, 3600)
-            cache.set('codes_fr', self.codes_fr, 3600)
+            cache.set('codes_en', self.codes_en, settings.CACHE_LOCAL_TIMEOUT)
+            cache.set('codes_fr', self.codes_fr, settings.CACHE_LOCAL_TIMEOUT)
         else:
             self.codes_en = cache.get('codes_en')
             self.codes_fr = cache.get('codes_fr')
@@ -282,7 +294,7 @@ class SearchView(View):
             context['export_query'] = request.META["QUERY_STRING"]
             context['export_search_path'] = request.get_full_path()
             context['about_msg'] = self.searches[search_type].about_message_fr if lang == 'fr' else self.searches[search_type].about_message_en
-
+            context['search_toggle'] = self.reverse_search_alias_en[search_type] if lang == 'fr' else self.reverse_search_alias_fr[search_type]
             solr = SolrClient(settings.SOLR_SERVER_URL)
 
             core_name = self.searches[search_type].solr_core_name
