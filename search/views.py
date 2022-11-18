@@ -788,6 +788,22 @@ class DownloadSearchResultsView(View):
 
     def get(self, request: HttpRequest, lang='en', search_type='', task_id=''):
 
+        if settings.SEARCH_LANG_USE_PATH:
+            subpaths = request.path.split('/')
+            if 'fr' in subpaths:
+                request.LANGUAGE_CODE = 'fr'
+                lang = 'fr'
+            else:
+                request.LANGUAGE_CODE = 'en'
+                lang = 'en'
+        else:
+            if request.get_host() == settings.SEARCH_FR_HOSTNAME:
+                request.LANGUAGE_CODE = 'fr'
+                lang = 'fr'
+            else:
+                request.LANGUAGE_CODE = 'en'
+                lang = 'en'
+
         # Replace search_type alias with actual search type
         if lang == 'fr':
             if search_type in self.search_alias_fr:
