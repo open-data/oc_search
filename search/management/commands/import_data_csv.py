@@ -149,7 +149,7 @@ class Command(BaseCommand):
                             if self.search_target.id_fields:
                                 id_values = []
                                 for id_field in self.search_target.id_fields.split(","):
-                                    id_values.append(csv_record[id_field])
+                                    id_values.append(str(csv_record[id_field]).replace("/", "_"))
                                 record_id = ",".join(id_values)
                         else:
 
