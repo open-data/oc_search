@@ -869,6 +869,15 @@ class MoreLikeThisView(SearchView):
 
     def get(self, request: HttpRequest, lang='en', search_type='', record_id=''):
         lang = request.LANGUAGE_CODE
+
+        # Replace search_type alias with actual search type
+        if lang == 'fr':
+            if search_type in self.search_alias_fr:
+                search_type = self.search_alias_fr[search_type]
+        else:
+            if search_type in self.search_alias_en:
+                search_type = self.search_alias_en[search_type]
+
         if search_type in self.searches:
             context = self.default_context(request, search_type, lang)
             context["search_item_snippet"] = self.searches[search_type].search_item_snippet
