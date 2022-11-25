@@ -12,11 +12,16 @@ def cache_search_results_file(cached_filename: str, sr: SolrResponse, rows=10000
     if len(sr.docs) == 0:
         return False
     if not os.path.exists(cached_filename):
+        # Write out the header with the UTF8 byte-order marker for Excel first
         with open(cached_filename, 'w', newline='', encoding='utf8') as csv_file:
-            cache_writer = csv.writer(csv_file, dialect='excel', quoting=csv.QUOTE_ALL)
+            cache_writer = csv.writer(csv_file, dialect='excel', quoting=csv.QUOTE_NONE)
             headers = list(sr.docs[0])
             headers[0] = u'\N{BOM}' + headers[0]
             cache_writer.writerow(headers)
+
+        # Use a CSV writer with forced quoting for the body of the file
+        with open(cached_filename, 'a', newline='', encoding='utf8') as csv_file:
+            cache_writer = csv.writer(csv_file, dialect='excel', quoting=csv.QUOTE_ALL)
             c = 0
             for i in sr.docs:
                 if c > rows:
