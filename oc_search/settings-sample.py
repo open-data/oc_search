@@ -278,3 +278,7 @@ CELERYD_TIME_LIMIT = 20
 CELERYD_CONCURRENCY = 2
 # the task will report its status as ‘started’ when the task is executed by a worker.
 CELERY_TASK_TRACK_STARTED = True
+
+# Log file to hold exported search logs
+SEARCH_LOGGING_ARCHIVE_FILE = os.path.join(BASE_DIR, 'data', 'search_logs.log')
+SEARCH_LOGGING_ARCHIVE_AFTER_X_DAYS = 7
