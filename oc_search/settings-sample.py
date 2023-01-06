@@ -282,3 +282,10 @@ CELERY_TASK_TRACK_STARTED = True
 # Log file to hold exported search logs
 SEARCH_LOGGING_ARCHIVE_FILE = os.path.join(BASE_DIR, 'data', 'search_logs.log')
 SEARCH_LOGGING_ARCHIVE_AFTER_X_DAYS = 7
+
+# Used by the Suggested Datasets Search
+
+SD_COMMENTS_BASE_EN = "http://127.0.0.1:8000/static/sd/"
+SD_COMMENTS_BASE_FR = "http://127.0.0.1:8000/static/sd/"
+SD_VOTES_BASE_EN = "http://127.0.0.1:8000/static/sd/"
+SD_VOTES_BASE_FR = "http://127.0.0.1:8000/static/sd/"

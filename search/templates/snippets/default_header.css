@@ -258,3 +258,26 @@
 
  .list-group-item.active .badge {background-color: #ffffff; color: #2572b4}
  .label {white-space: normal}
+
+.decal {
+    color: #fff;
+    background-color: #26374A;
+    border-color: #278400;
+    box-shadow: none;
+    padding: 0.5rem 1rem;
+    text-align: center;
+    font-size: smaller;
+    font-weight: bold;
+    display: inline-block;
+    border-radius: 12px;
+}
+
+.decal-status {
+    background: #137991;
+    color: #fff;
+}
+
+.decal-subject {
+    color: #000;
+    background: #B2DB99;
+}

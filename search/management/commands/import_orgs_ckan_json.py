@@ -31,6 +31,7 @@ class Command(BaseCommand):
                             code.label_fr = owner_org_titles[0].strip()
                         else:
                             code.label_fr = owner_org_titles[1].strip()
+                        code.extra_01 = org['id'].lower()
                         code.save()
             except Exception as x:
                 self.logger.error(x)
