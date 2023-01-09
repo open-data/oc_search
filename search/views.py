@@ -493,7 +493,7 @@ class RecordView(SearchView):
 
             solr_query = create_solr_query(request, self.searches[search_type], self.fields[search_type],
                                            self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
-                                           facets, start_row, 5, record_id)
+                                           facets, start_row, 25, record_id)
 
             # Call  plugin pre-solr-query if defined
             search_type_plugin = 'search.plugins.{0}'.format(search_type)
