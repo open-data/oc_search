@@ -263,13 +263,14 @@
     color: #fff;
     background-color: #26374A;
     border-color: #278400;
+    border: thin solid;
     box-shadow: none;
     padding: 0.5rem 1rem;
     text-align: center;
     font-size: smaller;
     font-weight: bold;
     display: inline-block;
-    border-radius: 12px;
+    border-radius: 6px;
 }
 
 .decal-status {
@@ -280,4 +281,11 @@
 .decal-subject {
     color: #000;
     background: #B2DB99;
+    border-color: #1bff7e;
+}
+
+.decal-outline {
+    background: #FFFFFF;
+    color: #000000;
+    border-color: #0b4961;
 }
