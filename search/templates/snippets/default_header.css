@@ -280,12 +280,14 @@
 
 .decal-subject {
     color: #000;
-    background: #B2DB99;
-    border-color: #1bff7e;
+    background: #e4f0cc;
+    border-color: #0d7f3a;
+    font-weight: normal;
 }
 
 .decal-outline {
-    background: #FFFFFF;
+    background: #def2f8;
     color: #000000;
     border-color: #0b4961;
+    font-weight: normal;
 }
