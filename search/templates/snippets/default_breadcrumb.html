@@ -24,13 +24,13 @@
                 "href": "https://www.canada.ca/{{ language_code }}.html",
             },{
                 "title": "{% translate 'Open Government' %}",
-                "href": "/{{ LANGUAGE_CODE }}",
+                "href": "{% if not url_uses_path %}{% if LANGUAGE_CODE == 'fr' %}{{ site_host_fr }}{% else %}{{ site_host_en }}{% endif %}{% endif %}/{{ LANGUAGE_CODE }}",
             },{
                 "title": "{% translate 'Open Information' %}",
-                "href": "{% if not url_uses_path %}{% if LANGUAGE_CODE == 'fr' %}https://{{ site_host_fr }}{% else %}https://{{ site_host_en }}{% endif %}{% endif %}{% translate '/en/open-information' %}",
+                "href": "{% if not url_uses_path %}{% if LANGUAGE_CODE == 'fr' %}{{ site_host_fr }}{% else %}{{ site_host_en }}{% endif %}{% endif %}{% translate '/en/open-information' %}",
             },{
                 "title": "{% translate 'Proactive Disclosure' %}",
-                "href": "{% if not url_uses_path %}{% if LANGUAGE_CODE == 'fr' %}https://{{ site_host_fr }}{% else %}https://{{ site_host_en }}{% endif %}{% endif %}{% translate '/en/proactive-disclosure' %}",
+                "href": "{% if not url_uses_path %}{% if LANGUAGE_CODE == 'fr' %}{{ site_host_fr }}{% else %}{{ site_host_en }}{% endif %}{% endif %}{% translate '/en/proactive-disclosure' %}",
             }]
         });
     </script>
