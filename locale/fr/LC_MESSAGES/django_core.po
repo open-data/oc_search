@@ -207,6 +207,9 @@ msgstr "Information ouverte"
 msgid "https://open.canada.ca/en/open-information"
 msgstr "https://ouvert.canada.ca/fr/information-ouverte"
 
+msgid "/en/open-information"
+msgstr "/fr/information-ouverte"
+
 #: .\search\templates\snippets\default_breadcrumb.html:24
 #: .\search\templates\snippets\default_record_breadcrumb.html:24
 msgid "Proactive Disclosure"
@@ -216,6 +219,9 @@ msgstr "Divulgation proactive"
 #: .\search\templates\snippets\default_record_breadcrumb.html:25
 msgid "https://open.canada.ca/en/proactive-disclosure"
 msgstr "https://ouvert.canada.ca/fr/divulgation-proactive"
+
+msgid "/en/proactive-disclosure"
+msgstr "/fr/divulgation-proactive"
 
 #: .\search\templates\snippets\default_info_message.html:6
 msgid "Transitional Period"
