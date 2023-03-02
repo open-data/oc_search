@@ -52,6 +52,7 @@ class Search(models.Model):
     results_sort_default_fr = models.CharField(blank=False, max_length=132, default="score desc", verbose_name="Default Sort-by Category used when no search terms provided (Français)")
     page_template = models.CharField(blank=False, default="search.html", max_length=132, verbose_name="Search Page Template")
     record_template = models.CharField(blank=False, default="record.html", max_length=132, verbose_name="Record Page Template")
+    more_like_this_template = models.CharField(blank=False, default="more_like_this.html", max_length=132, verbose_name="More-like-This Page Template")
     breadcrumb_snippet = models.CharField(blank=False, default="search_snippets/default_breadcrumb.html", max_length=132,
                                           verbose_name="Breadcrumb Snippet Path")
     footer_snippet = models.CharField(blank=False, default="search_snippets/default_footer.html", max_length=132,
@@ -128,6 +129,7 @@ class Search(models.Model):
         self.results_sort_default_fr = data_dict["results_sort_default_fr"]
         self.page_template = data_dict["page_template"]
         self.record_template = data_dict["record_template"]
+        self.more_like_this_template = data_dict["more_like_this_template"]
         self.breadcrumb_snippet = data_dict["breadcrumb_snippet"]
         self.footer_snippet = data_dict["footer_snippet"]
         self.info_message_snippet = data_dict["info_message_snippet"]

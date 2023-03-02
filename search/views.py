@@ -943,7 +943,7 @@ class MoreLikeThisView(SearchView):
                 context['back_to_url'] = request.session['prev_record']
             if 'prev_search' in request.session:
                 context['back_to_url'] = request.session['prev_search']
-            return render(request, "more_like_this.html", context)
+            return render(request, self.searches[search_type].more_like_this_template , context)
 
         else:
             return render(request, '404.html', get_error_context(search_type, lang))
