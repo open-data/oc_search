@@ -17,7 +17,7 @@ import os
 import pkgutil
 import re
 from .query import calc_pagination_range, calc_starting_row, create_solr_query, create_solr_mlt_query
-from search.models import Search, Field, Code
+from search.models import Search, Field, Code, Setting
 from django_celery_results.models import TaskResult
 import search.plugins
 from SolrClient import SolrClient, SolrResponse
@@ -299,6 +299,18 @@ class SearchView(View):
             context['export_search_path'] = request.get_full_path()
             context['about_msg'] = self.searches[search_type].about_message_fr if lang == 'fr' else self.searches[search_type].about_message_en
             context['search_toggle'] = self.reverse_search_alias_en[search_type] if lang == 'fr' else self.reverse_search_alias_fr[search_type]
+
+            # Get search drop in message:
+            context["general_msg"] = ""
+            if lang == 'en':
+                search_msg_en, is_new = Setting.objects.get_or_create(key="search.searchpage.topmessage.en")
+                if not is_new:
+                    context["general_msg"] = search_msg_en.value
+            else:
+                search_msg_fr, is_new = Setting.objects.get_or_create(key="search.searchpage.topmessage.fr")
+                if not is_new:
+                    context["general_msg"] = search_msg_fr.value
+
             solr = SolrClient(settings.SOLR_SERVER_URL)
 
             core_name = self.searches[search_type].solr_core_name

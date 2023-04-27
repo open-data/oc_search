@@ -1,6 +1,13 @@
 {% load i18n %}
 {% load search_extras %}
 
+{% if general_msg|length > 0 %}
+<div class="row">
+    <div class="col-md-12">
+        {{ general_msg | markdown_filter | safe }}
+    </div>
+</div>
+{% endif %}
 {% if about_msg|length > 0 %}
 <div class="row">
     <div class="col-md-12">
