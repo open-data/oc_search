@@ -58,7 +58,7 @@ msgstr "https://ouvert.canada.ca/fr/formulaire/faites-nous-part-de-vos-commentai
 
 #: .\search\templates\404.html:48
 #: .\search\templates\snippets\default_footer.html:9
-msgid "All Contacts"
+msgid "All contacts"
 msgstr "Toutes les coordonnées"
 
 #: .\search\templates\404.html:50
