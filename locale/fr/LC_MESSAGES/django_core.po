@@ -53,8 +53,8 @@ msgstr "Nous sommes désolés que vous ayez abouti ici. Il arrive parfois qu’u
 
 #: .\search\templates\404.html:47
 #: .\search\templates\snippets\default_footer.html:8
-msgid "https://open.canada.ca/en/forms/contact-us"
-msgstr "https://ouvert.canada.ca/fr/formulaire/faites-nous-part-de-vos-commentaires"
+msgid "https://www.canada.ca/en/contact.html"
+msgstr "https://www.canada.ca/fr/contact.html"
 
 #: .\search\templates\404.html:48
 #: .\search\templates\snippets\default_footer.html:9
