@@ -345,7 +345,11 @@ class Code(models.Model):
         self.lookup_codes_default = data_dict["lookup_codes_default"]
         self.lookup_codes_conditional = data_dict["lookup_codes_conditional"]
         self.lookup_date_field = data_dict["lookup_date_field"]
-        self.lookup_date = datetime.fromisoformat(data_dict["lookup_date"])
+        t_index = data_dict["lookup_date"].find('T')
+        if data_dict["lookup_date"][0:t_index] == '1-01-01':
+            self.lookup_date = datetime.fromisoformat("0001-01-01")
+        else:
+            self.lookup_date = datetime.fromisoformat(data_dict["lookup_date"][0:t_index])
         self.lookup_test = data_dict["lookup_test"]
         self.is_lookup = data_dict["is_lookup"]
         self.extra_01 = data_dict["extra_01"]
