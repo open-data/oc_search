@@ -43,7 +43,7 @@ class RampView(View):
         solr_query = {'q': q_text, 'defType': 'edismax', 'sow': True}
         solr_response = solr.query(settings.OPEN_DATA_CORE, solr_query)
         titles = {}
-        title_field = 'title_fr_s' if lang == "fr" else 'title_en_s'
+        title_field = 'title_translated_fr' if lang == "fr" else 'title_translated_en'
         for doc in solr_response.docs:
             titles[doc['id']] = doc[title_field]
 
@@ -58,6 +58,7 @@ class RampView(View):
             "ADOBE_ANALYTICS_URL": settings.ADOBE_ANALYTICS_URL,
             "GOOGLE_ANALYTICS_GTM_ID": settings.GOOGLE_ANALYTICS_GTM_ID,
             "GOOGLE_ANALYTICS_PROPERTY_ID": settings.GOOGLE_ANALYTICS_PROPERTY_ID,
+
         }
 
         # Get the configured RAMP URLs
