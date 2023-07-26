@@ -80,7 +80,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-    ('cdts', os.path.join(BASE_DIR, "cdts", "v4_0_32")),
+    ('cdts', os.path.join(BASE_DIR, "cdts", "v4_1_0")),
     ('search_snippets', os.path.join(BASE_DIR, 'search', 'templates', 'snippets')),
     ('cache', os.path.join(BASE_DIR, 'cache')),
 ]
@@ -188,7 +188,7 @@ SEARCH_LANG_USE_PATH = True
 
 # Active CDTS Version
 
-CDTS_VERSION = 'v4_0_32'
+CDTS_VERSION = 'v4_1_0'
 
 ANALYTICS_JS = ""
 

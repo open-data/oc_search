@@ -1,31 +1,18 @@
-{% load i18n %}
 
-<!-- Write closure template -->
-<script>
-    var defFooter = document.getElementById("def-footer");
-    defFooter.outerHTML = wet.builder.appFooter({
-        "footerSections": [{
-            "href": "{% translate 'https://www.canada.ca/en/contact.html' %}",
-            "text": "{% translate 'All contacts' %}"
-        },{
-            "href": "{% translate 'https://www.canada.ca/en/government/dept.html' %}",
-            "text": "{% translate 'Departments and agencies' %}"
-        },{
-            "href": "{% translate 'https://www.canada.ca/en/government/publicservice.html' %}",
-            "text": "{% translate 'Public service and military' %}"
-        },{
-            "href": "{% translate 'http://news.gc.ca/' %}",
-            "text": "{% translate 'News' %}"
-        },{
-            "href": "{% translate 'https://www.canada.ca/en/government/system/laws.html' %}",
-            "text": "{% translate 'Treaties, laws and regulations' %}"
-        },{
-            "href": "{% translate 'https://www.canada.ca/en/transparency/reporting.html' %}",
-            "text": "{% translate 'Government-wide reporting' %}"
-        },{
-            "href": "{% translate 'https://www.canada.ca/en/government/system.html' %}",
-            "text": "{% translate 'How government works' %}"
-        }],
-        "showFeatures": false
-    });
-</script>
+		<div id="def-footer">
+			<!-- Write closure fall-back static file -->
+			<!-- footer-en.html -->
+		</div>
+		<!-- Write closure template -->
+		<script>
+			var defFooter = document.getElementById("def-footer");
+			defFooter.outerHTML = wet.builder.footer({
+				"cdnEnv": "prod"
+			});
+		</script>
+		<!-- Write closure template -->
+		<script>
+			document.write(wet.builder.refFooter({
+				"cdnEnv": "prod"
+			}));
+		</script>

@@ -134,21 +134,9 @@
 </main>
 
 {% block footer %}
-<div id="def-footer">
-    <!-- Write closure fall-back static file -->
-    {% if LANGUAGE_CODE == 'fr' %}
-    {% include 'cdts/footer-fr.html' %}
-    {% else %}
-    {% include 'cdts/footer-en.html' %}
-    {% endif %}
-</div>
 
 {% include footer_snippet %}
 
-<!-- Write closure template -->
-<script>
-    document.write(wet.builder.refFooter({}));
-</script>
 {% endblock %}
 
 {% if body_js_snippet %}<script>{% include body_js_snippet %}</script>{% endif %}
