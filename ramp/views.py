@@ -58,7 +58,7 @@ class RampView(View):
             "ADOBE_ANALYTICS_URL": settings.ADOBE_ANALYTICS_URL,
             "GOOGLE_ANALYTICS_GTM_ID": settings.GOOGLE_ANALYTICS_GTM_ID,
             "GOOGLE_ANALYTICS_PROPERTY_ID": settings.GOOGLE_ANALYTICS_PROPERTY_ID,
-
+            "GOOGLE_ANALYTICS_GA4_ID": settings.GOOGLE_ANALYTICS_GA4_ID,
         }
 
         # Get the configured RAMP URLs
