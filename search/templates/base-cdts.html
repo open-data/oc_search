@@ -5,7 +5,7 @@
 {% language language %} {% get_current_language as LANGUAGE_CODE %}
 <!DOCTYPE html>
 <!--[if lt IE 9]><html class="no-js lt-ie9" lang="en" dir="ltr"><![endif]-->
-<!--[if gt IE 8]><!--><html class="no-js" lang="en" dir="ltr"><!--<![endif]-->
+<!--[if gt IE 8]><!--><html class="no-js" lang="{{ language }}" dir="ltr"><!--<![endif]-->
 	<head>
     <meta charset="utf-8">
     <!-- Web Experience Toolkit (WET) / Boîte à outils de l'expérience Web (BOEW)
@@ -25,9 +25,7 @@
     {% endblock %}
 
     <!-- Analytics -->
-    {% if not DEBUG %}
-        {% include 'search_snippets/site_analytics_head.html' %}
-    {% endif %}
+    {% include 'search_snippets/site_analytics_head.html' %}
 
     <script src="https://www.canada.ca/etc/designs/canada/cdts/gcweb/{{ cdts_version }}/cdts/compiled/soyutils.js"></script>
     <script src="https://www.canada.ca/etc/designs/canada/cdts/gcweb/{{ cdts_version }}/cdts/compiled/wet-{{ LANGUAGE_CODE }}.js"></script>
@@ -35,30 +33,8 @@
     <!-- Polyfill needed while WET still supports IE 11 :-( -->
     <script src="{% static 'search_snippets/index.js' %}"></script>
     <noscript>
-
         <!-- Write closure fall-back static file -->
         <!-- {% static 'refTop.html' %}-->
-        <!--[if gte IE 9 | !IE ]><!-->
-        <link href="https://www.canada.ca/etc/designs/canada/cdts/gcweb/{{ cdts_version }}/assets/favicon.ico"
-              rel="icon" type="image/x-icon">
-        <link rel="stylesheet"
-              href="https://www.canada.ca/etc/designs/canada/cdts/gcweb/{{ cdts_version }}/css/theme.min.css">
-        <link rel="stylesheet"
-              href="https://www.canada.ca/etc/designs/canada/cdts/gcweb/{{ cdts_version }}/cdts/cdtsfixes.css">
-        <!-- Are you using the application templates? If so add the following CSS file -->
-        <!-- <link rel="stylesheet" href="https://www.canada.ca/etc/designs/canada/cdts/gcweb/{{ cdts_version }}/cdts/cdtsapps.css">-->
-        <!--<![endif]-->
-        <!--[if lt IE 9]>
-        <link href="https://www.canada.ca/etc/designs/canada/cdts/gcweb/{{ cdts_version }}/assets/favicon.ico"
-              rel="shortcut icon"/>
-        <link rel="stylesheet"
-              href="https://www.canada.ca/etc/designs/canada/cdts/gcweb/{{ cdts_version }}/css/ie8-theme.min.css"/>
-        <![endif]-->
-        <!--[if lte IE 9]><![endif]-->
-        <link rel="stylesheet"
-              href="https://www.canada.ca/etc/designs/canada/cdts/gcweb/{{ cdts_version }}/css/noscript.min.css"/>
-        <link rel="stylesheet"
-              href="https://www.canada.ca/etc/designs/canada/cdts/gcweb/{{ cdts_version }}/cdts/cdtsnoscript.css"/>
     </noscript>
     <!-- Write closure template -->
     <script>
@@ -75,19 +51,16 @@
             font-weight: bold;
         }
     </style>
-
 </head>
-<body class="home" vocab="http://schema.org/" typeof="WebPage">
-<!-- Analytics -->
-{% if not DEBUG %}
-    {% include 'search_snippets/site_analytics_body_top.html' %}
-{% endif %}
+
+<body class="home page-type-nav" vocab="http://schema.org/" typeof="WebPage">
+
 <div id="def-top">
     <!-- Write closure fall-back static file -->
     {% if LANGUAGE_CODE == 'fr' %}
-    {% include 'cdts/top-fr.html' %}
+    {% include 'search_snippets/top-fr.html' %}
     {% else %}
-    {% include 'cdts/top-en.html' %}
+    {% include 'search_snippets/top-en.html' %}
     {% endif %}
     <!-- Write closure template -->
     {% block breadcrumb %}
@@ -96,7 +69,7 @@
 
 </div>
 
-<main role="main" property="mainContentOfPage" class="container">
+<main role="main" property="mainContentOfPage" typeof="WebPageElement" class="container">
     {% block main-content %}
     {% block main-content-title %}
     <h1 property="name" id="wb-cont">{% translate search_title %}</h1>
@@ -116,9 +89,9 @@
     <div id="def-preFooter">
         <!-- Write closure fall-back static file -->
         {% if LANGUAGE_CODE == 'fr' %}
-        {% include 'cdts/preFooter-fr.html' %}
+        {% include 'search_snippets/preFooter-fr.html' %}
         {% else %}
-        {% include 'cdts/preFooter-en.html' %}
+        {% include 'search_snippets/preFooter-en.html' %}
         {% endif %}
         <!-- Write closure template -->
     </div>
@@ -140,9 +113,7 @@
 {% endblock %}
 
 {% if body_js_snippet %}<script>{% include body_js_snippet %}</script>{% endif %}
-{% if not DEBUG %}
-    {% include 'search_snippets/site_analytics_body_bottom.html' %}
-{% endif %}
+{% include 'search_snippets/site_analytics_body_bottom.html' %}
 </body>
 </html>
 {% endlanguage %}
