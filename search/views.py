@@ -300,6 +300,10 @@ class SearchView(View):
             context['export_search_path'] = request.get_full_path()
             context['about_msg'] = self.searches[search_type].about_message_fr if lang == 'fr' else self.searches[search_type].about_message_en
             context['search_toggle'] = self.reverse_search_alias_en[search_type] if lang == 'fr' else self.reverse_search_alias_fr[search_type]
+            if hasattr(settings, "JSON_DOWNLOADS_ALLOWED") and isinstance(settings.JSON_DOWNLOADS_ALLOWED, bool):
+                context['json_download_allowed'] = settings.JSON_DOWNLOADS_ALLOWED
+            else:
+                context['json_download_allowed'] = False
 
             # Get search drop in message:
             context["general_msg"] = ""
@@ -472,7 +476,13 @@ class SearchView(View):
                                                                                                       self.searches[search_type],
                                                                                                       self.fields[search_type],
                                                                                                       self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type])
-                return render(request, self.searches[search_type].page_template, context)
+                # Users can optionally get the search results as a JSON object instead of the normal HTML page
+                search_format = request.GET.get("search_format", "html")
+                if search_format == 'json':
+                    doc_dict = {'num_count': context['total_hits'], 'docs': context['docs']}
+                    return JsonResponse(doc_dict)
+                else:
+                    return render(request, self.searches[search_type].page_template, context)
             except (ConnectionError, SolrError) as ce:
                 return render(request, 'error.html', get_error_context(search_type, lang, ce.args[0]))
         elif search_type in self.searches and self.searches[search_type].is_disabled:

@@ -272,3 +272,6 @@ msgstr "Votre requête est en cours de traitement ..."
 
 msgid "An unexpected error has occurred. Please return to the search page and try again."
 msgstr "Une erreur inattendue s'est produite. Veuillez retourner à la page de recherche et réessayer."
+
+msgid "Link to JSON format"
+msgstr "Lien au format JSON"
