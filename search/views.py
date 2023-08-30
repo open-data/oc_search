@@ -482,6 +482,14 @@ class SearchView(View):
                     doc_dict = {'num_count': context['total_hits'], 'docs': context['docs']}
                     return JsonResponse(doc_dict)
                 else:
+                    json_link = str(request.get_full_path())
+                    if json_link.endswith("/"):
+                        json_link = json_link + "?search_format=json"
+                    elif json_link.endswith("&") or json_link.endswith("?"):
+                        json_link = json_link + "search_format=json"
+                    else:
+                        json_link = json_link + "&search_format=json"
+                    context["json_format_url"] = json_link
                     return render(request, self.searches[search_type].page_template, context)
             except (ConnectionError, SolrError) as ce:
                 return render(request, 'error.html', get_error_context(search_type, lang, ce.args[0]))
