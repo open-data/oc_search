@@ -484,12 +484,20 @@ class SearchView(View):
                         facet_list = []
                         for facet_field in context['facets'][facet]:
                             if not facet_field.startswith('__'):
-                                facet_dict = {
-                                    'code': facet_field,
-                                    'label_en': self.codes_en[context['search_type']][facet][facet_field.lower()],
-                                    'label_fr': self.codes_fr[context['search_type']][facet][facet_field.lower()],
-                                    'count': context['facets'][facet][facet_field]
-                                }
+                                if self.fields[context['search_type']][facet].solr_field_is_coded:
+                                    facet_dict = {
+                                        'code': facet_field,
+                                        'label_en': self.codes_en[context['search_type']][facet][facet_field],
+                                        'label_fr': self.codes_fr[context['search_type']][facet][facet_field],
+                                        'count': context['facets'][facet][facet_field]
+                                    }
+                                else:
+                                    facet_dict = {
+                                        'code': facet_field,
+                                        'label_en': facet_field,
+                                        'label_fr': facet_field,
+                                        'count': context['facets'][facet][facet_field]
+                                    }
                                 facet_list.append(facet_dict)
                         full_facet_dict[facet] = facet_list
                     doc_dict = {'num_count': context['total_hits'],
