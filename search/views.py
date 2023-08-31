@@ -479,7 +479,25 @@ class SearchView(View):
                 # Users can optionally get the search results as a JSON object instead of the normal HTML page
                 search_format = request.GET.get("search_format", "html")
                 if search_format == 'json':
-                    doc_dict = {'num_count': context['total_hits'], 'docs': context['docs']}
+                    full_facet_dict = {}
+                    for facet in context['facets'].keys():
+                        facet_list = []
+                        for facet_field in context['facets'][facet]:
+                            if not facet_field.startswith('__'):
+                                facet_dict = {
+                                    'code': facet_field,
+                                    'label_en': self.codes_en[context['search_type']][facet][facet_field.lower()],
+                                    'label_fr': self.codes_fr[context['search_type']][facet][facet_field.lower()],
+                                    'count': context['facets'][facet][facet_field]
+                                }
+                                facet_list.append(facet_dict)
+                        full_facet_dict[facet] = facet_list
+                    doc_dict = {'num_count': context['total_hits'],
+                                'start': solr_response.data['response']['start'] + 1,
+                                'end': solr_response.data['response']['start'] + solr_response.docs.__len__(),
+                                'docs': context['docs'],
+                                'facets': full_facet_dict,
+                                'selected_facets': context['selected_facets'] if context['selected_facets'] else []}
                     return JsonResponse(doc_dict)
                 else:
                     json_link = str(request.get_full_path())
