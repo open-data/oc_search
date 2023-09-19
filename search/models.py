@@ -86,6 +86,10 @@ class Search(models.Model):
                                       help_text="Indicate if the this search will be using Solr's 'More Like This' functionality")
     mlt_items = models.IntegerField(blank=True, default=10, verbose_name="No. Items returned for More-Like-This",
                                     help_text="Number of itemsto show on the More-Like-This search results page. Default is 10")
+    json_response = models.BooleanField(blank=False, default=False, verbose_name="Enable JSON format response",
+                                        help_text="Allows JSON style responses suitable for REST API")
+    raw_solr_response = models.BooleanField(blank=False, default=False, verbose_name="Enable raw Solr format response",
+                                            help_text="Allows returning the raw Solr engine responses suitable for REST API")
 
     def __str__(self):
         return '%s (%s)' % (self.label_en, self.search_id)
@@ -148,6 +152,8 @@ class Search(models.Model):
         self.alt_formats = data_dict["alt_formats"]
         self.mlt_enabled = data_dict["mlt_enabled"]
         self.mlt_items = data_dict["mlt_items"]
+        self.json_response = data_dict["json_response"]
+        self.raw_solr_response = data_dict["raw_solr_response"]
 
 
 class Field(models.Model):

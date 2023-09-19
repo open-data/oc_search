@@ -300,10 +300,7 @@ class SearchView(View):
             context['export_search_path'] = request.get_full_path()
             context['about_msg'] = self.searches[search_type].about_message_fr if lang == 'fr' else self.searches[search_type].about_message_en
             context['search_toggle'] = self.reverse_search_alias_en[search_type] if lang == 'fr' else self.reverse_search_alias_fr[search_type]
-            if hasattr(settings, "JSON_DOWNLOADS_ALLOWED") and isinstance(settings.JSON_DOWNLOADS_ALLOWED, bool):
-                context['json_download_allowed'] = settings.JSON_DOWNLOADS_ALLOWED
-            else:
-                context['json_download_allowed'] = False
+            context['json_download_allowed'] = self.searches[search_type].json_response
 
             # Get search drop in message:
             context["general_msg"] = ""
@@ -478,7 +475,7 @@ class SearchView(View):
                                                                                                       self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type])
                 # Users can optionally get the search results as a JSON object instead of the normal HTML page
                 search_format = request.GET.get("search_format", "html")
-                if search_format == 'json':
+                if search_format == 'json' and self.searches[search_type].json_response:
                     full_facet_dict = {}
                     for facet in context['facets'].keys():
                         facet_list = []
@@ -507,6 +504,8 @@ class SearchView(View):
                                 'facets': full_facet_dict,
                                 'selected_facets': context['selected_facets'] if context['selected_facets'] else []}
                     return JsonResponse(doc_dict)
+                elif search_format == 'solr' and self.searches[search_type].raw_solr_response:
+                    return JsonResponse(solr_response.data)
                 else:
                     json_link = str(request.get_full_path())
                     if json_link.endswith("/"):
