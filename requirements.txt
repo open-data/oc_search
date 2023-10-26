@@ -2,10 +2,10 @@ Babel==2.12.1
 bleach==6.0.0
 celery==5.2.7
 ckanapi==4.7
-django==3.2.20
+django==3.2.21
 django-celery-beat==2.5.0
 django-celery-results==2.5.1
-django-cors-headers==3.13.0
+django-cors-headers==3.14.0
 django-jazzmin==2.6.0
 django-qurl-templatetag==0.0.14
 django-redis-cache==3.0.1
@@ -14,9 +14,9 @@ django-smuggler==1.0.4
 docutils==0.20.1
 email-validator==2.0.0.post2
 inflection==0.5.1
-markdown2==2.4.8
+markdown2==2.4.10
 nltk==3.8.1
-pandas==1.4.3
+pandas==1.4.4
 psycopg2==2.9.7
 python-dateutil==2.8.2
 PyYAML==6.0.1

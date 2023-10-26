@@ -94,6 +94,8 @@ class Command(BaseCommand):
 
             # Create the schema fields according to the definition from the search model record
             for solr_field in Field.objects.filter(search_id=search_target):
+                if not solr_field.solr_field_stored and not solr_field.solr_field_indexed:
+                    continue
                 new_field = {"name": solr_field.field_id,
                              "type": solr_field.solr_field_type,
                              "stored": solr_field.solr_field_stored,
