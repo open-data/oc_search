@@ -293,3 +293,9 @@ SD_COMMENTS_BASE_EN = "http://127.0.0.1:8000/static/sd/"
 SD_COMMENTS_BASE_FR = "http://127.0.0.1:8000/static/sd/"
 SD_VOTES_BASE_EN = "http://127.0.0.1:8000/static/sd/"
 SD_VOTES_BASE_FR = "http://127.0.0.1:8000/static/sd/"
+
+# Used by the import_data_csv console command
+
+IMPORT_DATA_CSV_DEFAULT_DEBUG = False
+IMPORT_DATA_CSV_SOLR_INDEX_GROUP_SIZE = 10
+IMPORT_DATA_CSV_DEFAULT_OLR_INDEX_GROUP_SIZE = 500

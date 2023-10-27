@@ -1,3 +1,5 @@
+import sys
+
 from babel.dates import format_date
 from babel.numbers import format_currency, format_decimal, parse_decimal
 from datetime import datetime
@@ -45,7 +47,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--search', type=str, help='The Search ID that is being loaded', required=True)
         parser.add_argument('--csv', type=str, help='CSV filename to import', required=True)
-        parser.add_argument('--debug', required=False, action='store_true', default=False,
+        parser.add_argument('--debug', required=False, action='store_true', default=settings.IMPORT_DATA_CSV_DEFAULT_DEBUG,
                             help='Only display error messages')
         parser.add_argument('--quiet', required=False, action='store_true', default=False,
                             help='Only display error messages')
@@ -368,7 +370,9 @@ class Command(BaseCommand):
                         solr_items.append(solr_record)
                         total += 1
 
-                        if (options['debug'] and index_cycle > 10) or index_cycle > 500:
+                        # In debug mode, index the data to Solr much more frequently. This can be helpful for isolating
+                        # problem rows. Otherwise use large batches
+                        if (options['debug'] and index_cycle > settings.IMPORT_DATA_CSV_SOLR_INDEX_GROUP_SIZE) or index_cycle > settings.IMPORT_DATA_CSV_DEFAULT_OLR_INDEX_GROUP_SIZE:
                             try:
                                 solr.index(self.solr_core, solr_items)
                                 commit_count += len(solr_items)
@@ -377,30 +381,19 @@ class Command(BaseCommand):
                                 self.logger.info(f"Solr error on row {total}. Row data {solr_items}")
                                 self.logger.error(cex)
                                 error_count += 1
-                                time.sleep(10)
+                                # Force a delay to give the network/system time to recover - hopefully
+                                time.sleep(5)
 
                             finally:
                                 solr_items.clear()
                                 index_cycle = 0
 
-                        # Write to Solr whenever the cycle threshold is reached
+                        # Commit to Solr whenever the cycle threshold is reached
                         if cycle >= self.cycle_on:
-                            # try to connect to Solr up to 3 times
-                            for countdown in reversed(range(3)):
-                                try:
-                                    solr.commit(self.solr_core, softCommit=True, waitSearcher=True)
-                                    cycle = 0
-                                    if not options['quiet']:
-                                        self.logger.info(f"{total} rows processed")
-                                    break
-                                except ConnectionError as cex:
-                                    if not countdown:
-                                        raise
-                                    self.logger.info(
-                                        f"Solr error: {0}. Waiting to try again ... {countdown}")
-                                    time.sleep((10 - countdown) * 5)
-                                error_count += 1
-                        if error_count > 10:
+                            if not options['quiet']:
+                                sys.stdout.write(f"{total} rows processed\r")
+                            cycle = 0
+                        if error_count > 100:
                             break
 
                     except Exception as x:
