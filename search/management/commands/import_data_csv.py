@@ -45,6 +45,8 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--search', type=str, help='The Search ID that is being loaded', required=True)
         parser.add_argument('--csv', type=str, help='CSV filename to import', required=True)
+        parser.add_argument('--debug', required=False, action='store_true', default=False,
+                            help='Only display error messages')
         parser.add_argument('--quiet', required=False, action='store_true', default=False,
                             help='Only display error messages')
         parser.add_argument('--nothing_to_report', required=False, action='store_true', default=False,
@@ -83,6 +85,8 @@ class Command(BaseCommand):
         total = 0
         commit_count = 0
         cycle = 0
+        index_cycle = 0
+        error_count = 0
 
         try:
             # Retrieve the Search  and Field models from the database
@@ -172,6 +176,7 @@ class Command(BaseCommand):
                             ids[record_id] = True
 
                         cycle += 1
+                        index_cycle += 1
 
                         # Call plugins if they exist for this search type. This is where a developer can introduce
                         # code to customize the data that is loaded into Solr for a particular search.
@@ -363,33 +368,51 @@ class Command(BaseCommand):
                         solr_items.append(solr_record)
                         total += 1
 
+                        if (options['debug'] and index_cycle > 10) or index_cycle > 500:
+                            try:
+                                solr.index(self.solr_core, solr_items)
+                                commit_count += len(solr_items)
+
+                            except ConnectionError as cex:
+                                self.logger.info(f"Solr error on row {total}. Row data {solr_items}")
+                                self.logger.error(cex)
+                                error_count += 1
+                                time.sleep(10)
+
+                            finally:
+                                solr_items.clear()
+                                index_cycle = 0
+
                         # Write to Solr whenever the cycle threshold is reached
                         if cycle >= self.cycle_on:
-                            # try to connect to Solr up to 10 times
-                            for countdown in reversed(range(10)):
+                            # try to connect to Solr up to 3 times
+                            for countdown in reversed(range(3)):
                                 try:
-                                    solr.index(self.solr_core, solr_items)
+                                    solr.commit(self.solr_core, softCommit=True, waitSearcher=True)
                                     cycle = 0
-                                    commit_count += len(solr_items)
-                                    self.logger.info(
-                                        "{0} rows processed, and {1} uploaded".format(total, commit_count))
-                                    solr_items.clear()
+                                    if not options['quiet']:
+                                        self.logger.info(f"{total} rows processed")
                                     break
                                 except ConnectionError as cex:
                                     if not countdown:
                                         raise
                                     self.logger.info(
-                                        "Solr error: {0}. Waiting to try again ... {1}".format(cex, countdown))
+                                        f"Solr error: {0}. Waiting to try again ... {countdown}")
                                     time.sleep((10 - countdown) * 5)
+                                error_count += 1
+                        if error_count > 10:
+                            break
+
                     except Exception as x:
                         self.logger.error('Unexpected Error "{0}" while processing row {1}'.format(x, row_num + 1))
-                        traceback.print_exception(type(x), x, x.__traceback__)
+                        if options['debug']:
+                            traceback.print_exception(type(x), x, x.__traceback__)
 
             # Write and remaining records to Solr and commit
 
             if len(solr_items) > 0:
-                # try to connect to Solr up to 10 times
-                for countdown in reversed(range(10)):
+                # try to connect to Solr up to 3 times
+                for countdown in reversed(range(3)):
                     try:
                         solr.index(self.solr_core, solr_items)
                         commit_count += len(solr_items)
