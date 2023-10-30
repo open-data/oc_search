@@ -377,28 +377,29 @@ class Command(BaseCommand):
                                 solr.index(self.solr_core, solr_items)
                                 commit_count += len(solr_items)
 
-                            except ConnectionError as cex:
-                                self.logger.info(f"Solr error on row {total}. Row data {solr_items}")
-                                self.logger.error(cex)
+                            except OSError as cex:
+                                self.logger.warning(f"Solr error on row {total}. Row data {solr_items}")
+                                self.logger.warning(f"Connection issues. Error no. {cex.errno} Args: {cex.args}")
                                 error_count += 1
                                 # Force a delay to give the network/system time to recover - hopefully
-                                time.sleep(5)
+                                time.sleep(2)
 
+                            except Exception as x:
+                                self.logger.warning(f"Unexpected error encountered while indexing")
                             finally:
                                 solr_items.clear()
                                 index_cycle = 0
 
                         # Commit to Solr whenever the cycle threshold is reached
                         if cycle >= self.cycle_on:
-                            if not options['quiet']:
-                                sys.stdout.write(f"{total} rows processed\r")
+                            sys.stdout.write(f"{total} rows processed\r")
                             cycle = 0
                         if error_count > 100:
-                            break
+                            self.logger.info(f"{error_count} errors so far")
 
                     except Exception as x:
                         self.logger.error('Unexpected Error "{0}" while processing row {1}'.format(x, row_num + 1))
-                        if options['debug']:
+                        if options['debug'] and not options['quiet']:
                             traceback.print_exception(type(x), x, x.__traceback__)
 
             # Write and remaining records to Solr and commit
@@ -409,18 +410,17 @@ class Command(BaseCommand):
                     try:
                         solr.index(self.solr_core, solr_items)
                         commit_count += len(solr_items)
-                        self.logger.info("Final: {0} rows processed, and {1} uploaded".format(total, commit_count))
                         solr_items.clear()
                         break
                     except ConnectionError as cex:
                         if not countdown:
-                            raise
+                            break
                         self.logger.info("Solr error: {0}. Waiting to try again ... {1}".format(cex, countdown))
-                        time.sleep((10 - countdown) * 5)
+                        time.sleep((3 - countdown) * 5)
 
             solr.commit(self.solr_core, softCommit=True, waitSearcher=True)
             self.logger.level = logging.INFO
             self.logger.info("Total rows processed: {0}, committed to Solr: {1}".format(total, commit_count))
 
         except Exception as x:
-            self.logger.error('Unexpected Error "{0}"'.format(x))
+            self.logger.error('Unexpected Error "{0}"'.format(x.args))
