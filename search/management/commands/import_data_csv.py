@@ -365,9 +365,16 @@ class Command(BaseCommand):
                                                                                                       'NTR' if options[
                                                                                                           'nothing_to_report'] else '')
 
+                        # Remove invalid characters
+                        sanitized_solr_record = {}
+                        for item in solr_record.keys():
+                            if type(solr_record[item]) == str:
+                                sanitized_solr_record[item] = solr_record[item].encode(encoding='utf-8', errors='ígnore').decode(sys.stdout.encoding)
+                            else:
+                                sanitized_solr_record[item] = solr_record[item]
                         # Add the prepared record to the list of records to be loaded into Solr
 
-                        solr_items.append(solr_record)
+                        solr_items.append(sanitized_solr_record)
                         total += 1
 
                         # In debug mode, index the data to Solr much more frequently. This can be helpful for isolating
@@ -402,21 +409,21 @@ class Command(BaseCommand):
                         if options['debug'] and not options['quiet']:
                             traceback.print_exception(type(x), x, x.__traceback__)
 
-            # Write and remaining records to Solr and commit
+                # Write and remaining records to Solr and commit
 
-            if len(solr_items) > 0:
-                # try to connect to Solr up to 3 times
-                for countdown in reversed(range(3)):
-                    try:
-                        solr.index(self.solr_core, solr_items)
-                        commit_count += len(solr_items)
-                        solr_items.clear()
-                        break
-                    except ConnectionError as cex:
-                        if not countdown:
+                if len(solr_items) > 0:
+                    # try to connect to Solr up to 3 times
+                    for countdown in reversed(range(3)):
+                        try:
+                            solr.index(self.solr_core, solr_items)
+                            commit_count += len(solr_items)
+                            solr_items.clear()
                             break
-                        self.logger.info("Solr error: {0}. Waiting to try again ... {1}".format(cex, countdown))
-                        time.sleep((3 - countdown) * 5)
+                        except ConnectionError as cex:
+                            if not countdown:
+                                break
+                            self.logger.info("Solr error: {0}. Waiting to try again ... {1}".format(cex, countdown))
+                            time.sleep((3 - countdown) * 5)
 
             solr.commit(self.solr_core, softCommit=True, waitSearcher=True)
             self.logger.level = logging.INFO
