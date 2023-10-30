@@ -369,7 +369,7 @@ class Command(BaseCommand):
                         sanitized_solr_record = {}
                         for item in solr_record.keys():
                             if type(solr_record[item]) == str:
-                                sanitized_solr_record[item] = solr_record[item].encode(encoding='utf-8', errors='ígnore').decode(sys.stdout.encoding)
+                                sanitized_solr_record[item] = str(solr_record[item]).encode(encoding='utf-8', errors='namereplace').decode(encoding='iso-8859-1')
                             else:
                                 sanitized_solr_record[item] = solr_record[item]
                         # Add the prepared record to the list of records to be loaded into Solr
@@ -384,15 +384,22 @@ class Command(BaseCommand):
                                 solr.index(self.solr_core, solr_items)
                                 commit_count += len(solr_items)
 
-                            except OSError as cex:
-                                self.logger.warning(f"Solr error on row {total}. Row data {solr_items}")
-                                self.logger.warning(f"Connection issues. Error no. {cex.errno} Args: {cex.args}")
+                            except ConnectionError as cex:
+                                self.logger.warning(f"Solr error starting on row {total}. Row data has {len(solr_items)} items")
+                                for sitm in solr_items:
+                                    self.logger.warning(f"{sitm}")
+                                self.logger.warning(f"Connection Error. Args: {cex.args}")
                                 error_count += 1
                                 # Force a delay to give the network/system time to recover - hopefully
                                 time.sleep(2)
 
                             except Exception as x:
-                                self.logger.warning(f"Unexpected error encountered while indexing")
+                                self.logger.warning(f"Unexpected error encountered while indexing starting on row {total}. Row data has {len(solr_items)} items")
+                                for sitm in solr_items:
+                                    self.logger.warning(f"{sitm}")
+                                error_count += 1
+                                # Force a delay to give the network/system time to recover - hopefully
+                                time.sleep(2)
                             finally:
                                 solr_items.clear()
                                 index_cycle = 0
@@ -420,6 +427,13 @@ class Command(BaseCommand):
                             solr_items.clear()
                             break
                         except ConnectionError as cex:
+                            self.logger.warning(
+                                f"Unexpected error encountered while indexing starting on row {total}. Row data has {len(solr_items)} items")
+                            for sitm in solr_items:
+                                self.logger.warning(f"{sitm}")
+                            error_count += 1
+                            # Force a delay to give the network/system time to recover - hopefully
+                            time.sleep(2)
                             if not countdown:
                                 break
                             self.logger.info("Solr error: {0}. Waiting to try again ... {1}".format(cex, countdown))
@@ -427,7 +441,7 @@ class Command(BaseCommand):
 
             solr.commit(self.solr_core, softCommit=True, waitSearcher=True)
             self.logger.level = logging.INFO
-            self.logger.info("Total rows processed: {0}, committed to Solr: {1}".format(total, commit_count))
+            self.logger.info("\nTotal rows processed: {0}, committed to Solr: {1}".format(total, commit_count))
 
         except Exception as x:
             self.logger.error('Unexpected Error "{0}"'.format(x.args))
