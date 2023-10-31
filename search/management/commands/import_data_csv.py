@@ -424,30 +424,31 @@ class Command(BaseCommand):
 
                     # Write and remaining records to Solr and commit
 
-                    if len(solr_items) > 0:
-                            try:
-                                solr.index(self.solr_core, solr_items)
-                                commit_count += len(solr_items)
-                            except ConnectionError as cex:
-                                self.logger.warning(
-                                    f"Unexpected error encountered while indexing starting on row {total}. Row data has {len(solr_items)} items")
-                                for sitm in solr_items:
-                                    self.logger.warning(f"{sitm}")
-                                    bd_writer.writerow(sitm)
-                                    bd_file.flush()
-                                error_count += 1
-                                # Force a delay to give the network/system time to recover - hopefully
-                                time.sleep(2)
-                            except Exception as ex:
-                                for sitm in solr_items:
-                                    self.logger.warning(f"{sitm}")
-                                    bd_writer.writerow(sitm)
-                                    bd_file.flush()
-                            finally:
-                                solr.commit(self.solr_core, softCommit=True, waitSearcher=True)
-                                self.logger.level = logging.INFO
-                                self.logger.info(
-                                    "\nTotal rows processed: {0}, committed to Solr: {1}".format(total, commit_count))
+
+                    try:
+                        if len(solr_items) > 0:
+                            solr.index(self.solr_core, solr_items)
+                            commit_count += len(solr_items)
+                    except ConnectionError as cex:
+                        self.logger.warning(
+                            f"Unexpected error encountered while indexing starting on row {total}. Row data has {len(solr_items)} items")
+                        for sitm in solr_items:
+                            self.logger.warning(f"{sitm}")
+                            bd_writer.writerow(sitm)
+                            bd_file.flush()
+                        error_count += 1
+                        # Force a delay to give the network/system time to recover - hopefully
+                        time.sleep(2)
+                    except Exception as ex:
+                        for sitm in solr_items:
+                            self.logger.warning(f"{sitm}")
+                            bd_writer.writerow(sitm)
+                            bd_file.flush()
+                    finally:
+                        solr.commit(self.solr_core, softCommit=True, waitSearcher=True)
+                        self.logger.level = logging.INFO
+                        self.logger.info(
+                            "\nTotal rows processed: {0}, committed to Solr: {1}".format(total, commit_count))
 
         except Exception as x:
             self.logger.error('Unexpected Error "{0}"'.format(x.args))
