@@ -57,6 +57,8 @@ class Command(BaseCommand):
                                  '"Nothing To Report" data')
         parser.add_argument('--report_duplicates', required=False, action='store_true', default=False,
                             help='Use this switch to indicate if the CSV files that is being loaded contains duplicate IDs')
+        parser.add_argument('--append', required=False, action='store_true', default=False,
+                            help='Add these records, do not truncate the Solr core')
 
     def set_empty_fields(self, solr_record: dict):
 
@@ -136,7 +138,7 @@ class Command(BaseCommand):
                 solr.delete_doc_by_query(self.solr_core, "format:NTR")
                 solr.commit(self.solr_core, softCommit=True)
                 self.logger.info("Purging NTR records")
-            else:
+            elif not options['append']:
                 solr.delete_doc_by_query(self.solr_core, "*:*")
                 self.logger.info("Purging all records")
                 # Not committing here, as we are going to be adding a lot of records
@@ -372,15 +374,7 @@ class Command(BaseCommand):
                             if bd_writer is None:
                                 bd_writer = csv.DictWriter(bd_file, fieldnames=solr_record.keys())
                                 bd_writer.writeheader()
-
-                            # Remove invalid characters
-                            # sanitized_solr_record = {}
-                            # for item in solr_record.keys():
-                            #     if type(solr_record[item]) == str:
-                            #         sanitized_solr_record[item] = str(solr_record[item]).encode(encoding='utf-8', errors='namereplace').decode(encoding='iso-8859-1')
-                            #     else:
-                            #         sanitized_solr_record[item] = solr_record[item]
-                            # Add the prepared record to the list of records to be loaded into Solr
+                                bd_file.flush()
 
                             solr_items.append(solr_record)
                             total += 1
@@ -408,6 +402,7 @@ class Command(BaseCommand):
                                     for sitm in solr_items:
                                         self.logger.warning(f"{sitm}")
                                         bd_writer.writerow(sitm)
+                                        bd_file.flush()
                                     error_count += 1
                                     # Force a delay to give the network/system time to recover - hopefully
                                     time.sleep(2)
@@ -430,30 +425,31 @@ class Command(BaseCommand):
                     # Write and remaining records to Solr and commit
 
                     if len(solr_items) > 0:
-                        # try to connect to Solr up to 3 times
-                        for countdown in reversed(range(3)):
                             try:
                                 solr.index(self.solr_core, solr_items)
                                 commit_count += len(solr_items)
-                                solr_items.clear()
-                                break
                             except ConnectionError as cex:
                                 self.logger.warning(
                                     f"Unexpected error encountered while indexing starting on row {total}. Row data has {len(solr_items)} items")
                                 for sitm in solr_items:
                                     self.logger.warning(f"{sitm}")
                                     bd_writer.writerow(sitm)
+                                    bd_file.flush()
                                 error_count += 1
                                 # Force a delay to give the network/system time to recover - hopefully
                                 time.sleep(2)
-                                if not countdown:
-                                    break
-                                self.logger.info("Solr error: {0}. Waiting to try again ... {1}".format(cex, countdown))
-                                time.sleep((3 - countdown) * 5)
-
-            solr.commit(self.solr_core, softCommit=True, waitSearcher=True)
-            self.logger.level = logging.INFO
-            self.logger.info("\nTotal rows processed: {0}, committed to Solr: {1}".format(total, commit_count))
+                            except Exception as ex:
+                                for sitm in solr_items:
+                                    self.logger.warning(f"{sitm}")
+                                    bd_writer.writerow(sitm)
+                                    bd_file.flush()
+                            finally:
+                                solr.commit(self.solr_core, softCommit=True, waitSearcher=True)
+                                self.logger.level = logging.INFO
+                                self.logger.info(
+                                    "\nTotal rows processed: {0}, committed to Solr: {1}".format(total, commit_count))
 
         except Exception as x:
             self.logger.error('Unexpected Error "{0}"'.format(x.args))
+        finally:
+            sys.stdout.write("Import completed")
