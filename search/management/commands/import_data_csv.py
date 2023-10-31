@@ -142,8 +142,8 @@ class Command(BaseCommand):
                 # Not committing here, as we are going to be adding a lot of records
 
             # Process the records in the CSV file one at a time
-            with (open(options['csv'], 'r', encoding='utf-8-sig', errors="ignore") as csv_file):
-                with (open(os.path.join(settings.IMPORT_DATA_CSV_BAD_DATA_DIR, os.path.basename(options['csv'])), 'w') as bd_file):
+            with open(options['csv'], 'r', encoding='utf-8-sig', errors="xmlcharrefreplace") as csv_file:
+                with open(os.path.join(settings.IMPORT_DATA_CSV_BAD_DATA_DIR, os.path.basename(options['csv'])), 'w') as bd_file:
 
                     csv_reader = csv.DictReader(csv_file, dialect='excel')
                     bd_writer = None
@@ -369,16 +369,20 @@ class Command(BaseCommand):
                                                                                                           'NTR' if options[
                                                                                                               'nothing_to_report'] else '')
 
+                            if bd_writer is None:
+                                bd_writer = csv.DictWriter(bd_file, fieldnames=solr_record.keys())
+                                bd_writer.writeheader()
+
                             # Remove invalid characters
-                            sanitized_solr_record = {}
-                            for item in solr_record.keys():
-                                if type(solr_record[item]) == str:
-                                    sanitized_solr_record[item] = str(solr_record[item]).encode(encoding='utf-8', errors='namereplace').decode(encoding='iso-8859-1')
-                                else:
-                                    sanitized_solr_record[item] = solr_record[item]
+                            # sanitized_solr_record = {}
+                            # for item in solr_record.keys():
+                            #     if type(solr_record[item]) == str:
+                            #         sanitized_solr_record[item] = str(solr_record[item]).encode(encoding='utf-8', errors='namereplace').decode(encoding='iso-8859-1')
+                            #     else:
+                            #         sanitized_solr_record[item] = solr_record[item]
                             # Add the prepared record to the list of records to be loaded into Solr
 
-                            solr_items.append(sanitized_solr_record)
+                            solr_items.append(solr_record)
                             total += 1
 
                             # In debug mode, index the data to Solr much more frequently. This can be helpful for isolating
@@ -389,9 +393,7 @@ class Command(BaseCommand):
                                     commit_count += len(solr_items)
 
                                 except ConnectionError as cex:
-                                    if bd_writer is None:
-                                        bd_writer = csv.DictWriter(bd_file, fieldnames=solr_items[0].keys())
-                                        bd_writer.writeheader()
+
                                     self.logger.warning(f"Solr error starting on row {total}. Row data has {len(solr_items)} items")
                                     for sitm in solr_items:
                                         self.logger.warning(f"{sitm}")
@@ -405,6 +407,7 @@ class Command(BaseCommand):
                                     self.logger.warning(f"Unexpected error encountered while indexing starting on row {total}. Row data has {len(solr_items)} items")
                                     for sitm in solr_items:
                                         self.logger.warning(f"{sitm}")
+                                        bd_writer.writerow(sitm)
                                     error_count += 1
                                     # Force a delay to give the network/system time to recover - hopefully
                                     time.sleep(2)
@@ -435,9 +438,6 @@ class Command(BaseCommand):
                                 solr_items.clear()
                                 break
                             except ConnectionError as cex:
-                                if bd_writer is None:
-                                    bd_writer = csv.DictWriter(bd_file, fieldnames=solr_items[0].keys())
-                                    bd_writer.writeheader()
                                 self.logger.warning(
                                     f"Unexpected error encountered while indexing starting on row {total}. Row data has {len(solr_items)} items")
                                 for sitm in solr_items:
