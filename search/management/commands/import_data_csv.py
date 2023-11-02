@@ -145,7 +145,7 @@ class Command(BaseCommand):
 
             # Process the records in the CSV file one at a time
             with open(options['csv'], 'r', encoding='utf-8-sig', errors="xmlcharrefreplace") as csv_file:
-                with open(os.path.join(settings.IMPORT_DATA_CSV_BAD_DATA_DIR, os.path.basename(options['csv'])), 'w') as bd_file:
+                with open(os.path.join(settings.IMPORT_DATA_CSV_BAD_DATA_DIR, os.path.basename(options['csv'])), 'w', encoding="utf-8-sig") as bd_file:
 
                     csv_reader = csv.DictReader(csv_file, dialect='excel')
                     bd_writer = None
@@ -375,6 +375,11 @@ class Command(BaseCommand):
                                 bd_writer = csv.DictWriter(bd_file, fieldnames=solr_record.keys())
                                 bd_writer.writeheader()
                                 bd_file.flush()
+
+                            # Temporary fix for connection blocking issue OPEN 2902
+                            for solr_field in solr_record:
+                                if type(solr_record[solr_field]) == str:
+                                    solr_record[solr_field] = str(solr_record[solr_field]).replace(" echo ", " ẹcho ")
 
                             solr_items.append(solr_record)
                             total += 1
