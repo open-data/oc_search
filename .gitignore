@@ -161,5 +161,9 @@ cython_debug/
 !/search/management/commands/contracts_*.py
 !/search/management/commands/nap5_*.py
 !/search/management/commands/qpnotes_*.py
+/nltk/corpora
+/nltk/tokenizers
+/nltk/*.model
+!/
 # Don't include CSV files from the cache
 !/cache/*.csv

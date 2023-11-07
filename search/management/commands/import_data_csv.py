@@ -376,11 +376,6 @@ class Command(BaseCommand):
                                 bd_writer.writeheader()
                                 bd_file.flush()
 
-                            # Temporary fix for connection blocking issue OPEN 2902
-                            for solr_field in solr_record:
-                                if type(solr_record[solr_field]) == str:
-                                    solr_record[solr_field] = str(solr_record[solr_field]).replace(" echo ", " ẹcho ")
-
                             solr_items.append(solr_record)
                             total += 1
 
