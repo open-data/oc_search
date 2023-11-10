@@ -45,7 +45,7 @@ class Command(BaseCommand):
                         self.indexed_count += 1
                     except ConnectionError as cex:
                         self.logger.warning(
-                            f"Unexpected error encountered while indexing starting on row {total}. Row data has {len(solr_items)} items")
+                            f"Unexpected error encountered while indexing starting on row {row_num + 1}. Row data has {len(solr_items)} items")
                         for sitm in solr_items:
                             self.logger.warning(f"{sitm}")
                         # Force a delay to give the network/system time to recover - hopefully
