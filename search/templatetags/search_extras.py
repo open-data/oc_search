@@ -11,6 +11,7 @@ from django.utils.translation import gettext
 from dateutil import parser
 import json
 import markdown2
+import re
 from search.query import url_part_unescape
 
 
@@ -171,6 +172,11 @@ def markdown_filter(text):
     html = bleach.clean(text, tags=settings.MARKDOWN_FILTER_WHITELIST_TAGS,
                         attributes=attrs)
     return bleach.linkify(html)
+
+
+@register.filter('strip_paragraph')
+def strip_paragraph(text):
+    return re.sub("(^<P>|</P>$)", "", text, flags=re.IGNORECASE)
 
 
 @register.filter('url_part_unescape')
