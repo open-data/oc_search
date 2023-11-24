@@ -42,8 +42,8 @@ def cache_search_results_file(cached_filename: str, sr: SolrResponse, rows=10000
 def export_search_results_csv(request_url, query, lang, core):
     cache_dir = settings.EXPORT_FILE_CACHE_DIR
     hashed_query = hashlib.sha1(request_url.encode('utf8')).hexdigest()
-    cached_filename = os.path.join(cache_dir, "{0}_{1}.csv".format(hashed_query, lang))
-    static_filename = f'{settings.EXPORT_FILE_CACHE_URL}/{hashed_query}_{lang}.csv'
+    cached_filename = os.path.join(cache_dir, f"{core}_{hashed_query}_{lang}.csv")
+    static_filename = f'{settings.EXPORT_FILE_CACHE_URL}/{core}_{hashed_query}_{lang}.csv'
 
     # Check the cache. If the results already exist,then just return the filename, no need to query Solr
     if os.path.exists(cached_filename):
