@@ -14,7 +14,7 @@ django-smuggler==1.0.4
 docutils==0.20.1
 email-validator==2.0.0.post2
 inflection==0.5.1
-markdown2==2.4.10
+markdown2==2.4.11
 nltk==3.8.1
 pandas==1.4.4
 psycopg2==2.9.9
