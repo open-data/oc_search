@@ -244,3 +244,19 @@ def split(value, key):
 @register.filter(name='add_str')
 def add_str(value: str, arg1: str):
     return value + arg1
+
+
+@register.filter('ds_status_label')
+def ds_status_label(value: str):
+    if value in ['In Progess', 'En cours']:
+        return 'label label-primary'
+    elif value in ['Behind']:
+        return 'label label-warning'
+    elif value in ['Completed', 'Terminé']:
+        return 'label label-success'
+    elif value in ['Paused', 'En pause']:
+        return 'label label-info'
+    else:
+        return 'label label-default'
+
+
