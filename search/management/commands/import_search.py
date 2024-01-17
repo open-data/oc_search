@@ -49,6 +49,12 @@ class Command(BaseCommand):
         cmd_path = path.join(root_path, "commands")
         if not path.exists(cmd_path):
             cmd_path = ''
+        model_path = path.join(root_path, "models")
+        if not path.exists(model_path):
+            model_path = ''
+        extras_path = path.join(root_path, "extras")
+        if not path.exists(extras_path):
+            extras_path = ''
 
         # Import Search - skip this if the option '--exclude-db'  was selected on the command line
 
@@ -167,9 +173,20 @@ class Command(BaseCommand):
                 copy_tree(data_path, data_export_dir)
                 logging.info("Copying custom data files to {0}".format(data_export_dir))
 
-            # Copy custom locale PO files to the django French PO file directory
+            # Copy custom command files to the django French PO file directory
             if path.exists(cmd_path):
-                cmd_export = custom_template_dir = path.join(BASE_DIR, 'management', 'commands')
+                cmd_export = path.join(BASE_DIR, 'management', 'commands')
                 copy_tree(cmd_path, cmd_export)
                 logging.info("Copying custom Django commands to {0}".format(cmd_export))
 
+            # Copy custom Django Database files to the django models file directory
+            if path.exists(model_path):
+                model_export = path.join(BASE_DIR, 'models', 'custom')
+                copy_tree(cmd_path, model_export)
+                logging.info("Copying custom Django Database models to {0}".format(model_export))
+
+            # Copy custom extra files to the extras directory
+            if path.exists(extras_path):
+                extra_export = path.join(BASE_DIR, 'extras')
+                copy_tree(extras_path, extra_export)
+                logging.info("Copying custom search extra files to {0}".format(extra_export))

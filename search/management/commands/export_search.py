@@ -54,6 +54,12 @@ class Command(BaseCommand):
         cmd_path = path.join(root_path, "commands")
         if not path.exists(cmd_path):
             mkdir(cmd_path)
+        model_path = path.join(root_path, 'models')
+        if not path.exists(model_path):
+            mkdir(model_path)
+        extra_path = path.join(root_path, "extras")
+        if not path.exists(extra_path):
+            mkdir(extra_path)
 
         # Export Database values - this is no longer recommended, instead use the database dump command
         if options['include_db']:
@@ -132,3 +138,22 @@ class Command(BaseCommand):
         for cmd in glob.glob(custom_commands):
             copy(cmd, cmd_path)
         logging.info("Copying custom commands to {0}".format(cmd_path))
+
+        # Copy custom data s
+        custom_data = path.join(BASE_DIR, 'data', options['search'], '*')
+        for data_file in glob.glob(custom_data):
+            copy(data_file, data_path)
+        logging.info("Copying custom data files to {0}".format(data_path))
+
+        # Copy custom Django database model file
+        custom_model = path.join(BASE_DIR, 'models', 'custom', f"{options['search']}_model.py")
+        if path.exists(custom_model):
+            copyfile(custom_model, path.join(model_path, f"{options['search']}_model.py"))
+            logging.info("Copying custom models files to {0}".format(extra_path))
+
+        # Copy custom extras s
+        custom_extras = path.join(BASE_DIR, 'extras', options['search'], '*')
+        for extra_file in glob.glob(custom_extras):
+            copy(extra_file, extra_path)
+            logging.info("Copying custom extra files to {0}".format(extra_path))
+

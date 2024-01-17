@@ -167,3 +167,5 @@ cython_debug/
 !/
 # Don't include CSV files from the cache
 !/cache/*.csv
+/search/data/
+!/search/data/Readme.md
