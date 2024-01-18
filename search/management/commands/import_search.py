@@ -182,11 +182,11 @@ class Command(BaseCommand):
             # Copy custom Django Database files to the django models file directory
             if path.exists(model_path):
                 model_export = path.join(BASE_DIR, 'models', 'custom')
-                copy_tree(cmd_path, model_export)
+                copy_tree(model_path, model_export)
                 logging.info("Copying custom Django Database models to {0}".format(model_export))
 
             # Copy custom extra files to the extras directory
             if path.exists(extras_path):
-                extra_export = path.join(BASE_DIR, 'extras')
+                extra_export = path.join(BASE_DIR, 'extras', options['search'])
                 copy_tree(extras_path, extra_export)
                 logging.info("Copying custom search extra files to {0}".format(extra_export))
