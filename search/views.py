@@ -1,7 +1,6 @@
 import collections
 import csv
 from datetime import datetime
-from django.views.decorators.cache import never_cache
 from django.conf import settings
 from django.core.cache import caches
 from django.core.exceptions import ObjectDoesNotExist
@@ -784,7 +783,7 @@ class ExportStatusView(View):
     def __init__(self):
         super().__init__()
 
-    @never_cache
+
     def get(self, request: HttpRequest, lang='en', search_type='', task_id=''):
         translation.activate(lang)
         response_dict = {"file_url": ""}

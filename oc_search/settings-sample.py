@@ -44,25 +44,23 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'qurl_templatetag',
-    'search'
+    'search',
 ]
 
 ## Optional applications
 # 'ramp',
 # 'smuggler',
-
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    "corsheaders.middleware.CorsPostCsrfMiddleware",
+    "django.middleware.common.CommonMiddleware",
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.cache.UpdateCacheMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.cache.FetchFromCacheMiddleware',
     'oc_search.middleware.CanadaBilingualMiddleware'
 ]
@@ -116,21 +114,18 @@ WSGI_APPLICATION = 'oc_search.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': '',
-    },
-    'search': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+
+JSON_DOWNLOADS_ALLOWED = False
 
 # Smuggler settings
 SMUGGLER_FIXTURE_DIR = os.path.join(BASE_DIR, 'smuggler')
 SMUGGLER_EXCLUDE_LIST = ['admin.logentry', 'auth.permission', 'auth.group', 'auth.user',
                          'contenttypes.contenttype',
                          'django_celery_results.chordcounter', 'django_celery_results.groupresult', 'django_celery_beat.taskresult']
-
-DATABASE_ROUTERS = ['search.db_router.SearchRouter']
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -236,10 +231,14 @@ CACHES = {
     'local': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         'LOCATION': 'oc_search',
-    }
+    },
+    'redis': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': 'redis://:password@localhost:6379',
+    },
 }
 # Object in the local cache expire after this many seconds. Not recommended to be less than 60 seconds.
-CACHE_LOCAL_TIMEOUT = 60 * 5
+CACHE_LOCAL_TIMEOUT = 30
 
 SESSION_ENGINE="django.contrib.sessions.backends.file"
 SESSION_FILE_PATH = os.path.join(BASE_DIR, 'session')
@@ -287,12 +286,18 @@ CELERY_TASK_TRACK_STARTED = True
 SEARCH_LOGGING_ARCHIVE_FILE = os.path.join(BASE_DIR, 'data', 'search_logs.log')
 SEARCH_LOGGING_ARCHIVE_AFTER_X_DAYS = 7
 
-# Used by the Suggested Datasets Search
+# Used by the Suggested Datasets Search if enabled
 
 SD_COMMENTS_BASE_EN = "http://127.0.0.1:8000/static/sd/"
 SD_COMMENTS_BASE_FR = "http://127.0.0.1:8000/static/sd/"
+SD_SUGGEST_A_DATASET_EN = "https://o127.0.0.1:8000/en/forms/suggest-dataset"
+SD_SUGGEST_A_DATASET_FR = "https://127.0.0.1:8000/fr/formulaire/proposez-un-formulaire-densemble-de-donnees"
 SD_VOTES_BASE_EN = "http://127.0.0.1:8000/static/sd/"
 SD_VOTES_BASE_FR = "http://127.0.0.1:8000/static/sd/"
+
+SD_RECORD_URL_EN = 'http://127.0.0.1:8000/en/sd/id/'
+SD_RECORD_URL_FR = 'http://127.0.0.1:8000/fr/sd/id/'
+SD_ALERT_EMAIL_FROM = ['My Name', 'my.email', 'my.domain.org']
 
 # Used by the import_data_csv console command
 

@@ -15,8 +15,6 @@ search_text_en = {
         "filters": [
             {"class": "solr.WordDelimiterGraphFilterFactory", "preserveOriginal": "1", "splitOnCaseChange": "0", "catenateAll": "1"},
             {"class": "solr.FlattenGraphFilterFactory"},
-            {"class": "solr.SynonymGraphFilterFactory", "expand": "true", "ignoreCase": "true", "synonyms": "lang/synonyms_en.txt"},
-            {"class": "solr.FlattenGraphFilterFactory"},
             {"class": "solr.StopFilterFactory", "words": "lang/stopwords_en.txt", "ignoreCase": "true"},
             {"class": "solr.LowerCaseFilterFactory"},
             {"class": "solr.EnglishPossessiveFilterFactory"},
@@ -29,8 +27,10 @@ search_text_en = {
         "tokenizer": {"class": "solr.WhitespaceTokenizerFactory"},
         "filters": [
             {"class": "solr.WordDelimiterGraphFilterFactory", "preserveOriginal": "1", "splitOnCaseChange": "0", "catenateAll": "1"},
+            {"class": "solr.FlattenGraphFilterFactory"},
             {"class": "solr.StopFilterFactory", "words": "lang/stopwords_en.txt", "ignoreCase": "true"},
             {"class": "solr.SynonymGraphFilterFactory", "expand": "true", "ignoreCase": "true", "synonyms": "lang/synonyms_en.txt"},
+            {"class": "solr.FlattenGraphFilterFactory"},
             {"class": "solr.LowerCaseFilterFactory"},
             {"class": "solr.EnglishPossessiveFilterFactory"},
             {"class": "solr.KeywordMarkerFilterFactory", "protected": "protwords.txt"},
@@ -44,19 +44,30 @@ search_text_fr = {
     "name": "search_text_fr",
     "class": "solr.TextField",
     "positionIncrementGap": "100",
-    "analyzer": {
+    "indexAnalyzer": {
         "charFilters": [{"class": "solr.HTMLStripCharFilterFactory"}],
         "tokenizer": {"class": "solr.StandardTokenizerFactory"},
         "filters": [
-            {"class": "solr.SynonymGraphFilterFactory", "expand": "true", "ignoreCase": "true", "synonyms": "lang/synonyms_fr.txt"},
-            {"class": "solr.FlattenGraphFilterFactory"},
             {"class": "solr.ElisionFilterFactory", "articles": "lang/contractions_fr.txt", "ignoreCase": "true"},
             {"class": "solr.LowerCaseFilterFactory"},
             {"class": "solr.StopFilterFactory", "format": "snowball", "words": "lang/stopwords_fr.txt", "ignoreCase": "true"},
-            {"class": "solr.SynonymGraphFilterFactory", "expand": "true", "ignoreCase": "true", "synonyms": "lang/synonyms_fr.txt"},
             {"class": "solr.FrenchLightStemFilterFactory"}
         ]
-    }
+    },
+    "queryAnalyzer": {
+        "charFilters": [{"class": "solr.HTMLStripCharFilterFactory"}],
+        "tokenizer": {"class": "solr.StandardTokenizerFactory"},
+        "filters": [
+            {"class": "solr.SynonymGraphFilterFactory", "expand": "true", "ignoreCase": "true",
+             "synonyms": "lang/synonyms_fr.txt"},
+            {"class": "solr.FlattenGraphFilterFactory"},
+            {"class": "solr.ElisionFilterFactory", "articles": "lang/contractions_fr.txt", "ignoreCase": "true"},
+            {"class": "solr.LowerCaseFilterFactory"},
+            {"class": "solr.StopFilterFactory", "format": "snowball", "words": "lang/stopwords_fr.txt",
+             "ignoreCase": "true"},
+            {"class": "solr.FrenchLightStemFilterFactory"}
+        ]
+    },
 }
 
 
