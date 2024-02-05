@@ -108,21 +108,21 @@ def get_search_terms(search_text: str):
     return solr_search_terms
 
 
-def get_query_fields(request: HttpRequest, fields: dict):
+def get_query_fields(query_lang: str, fields: dict):
     qf = ['id']
     for f in fields:
-        if fields[f].solr_field_lang in [request.LANGUAGE_CODE, 'bi']:
+        if fields[f].solr_field_lang in [query_lang, 'bi']:
             qf.append(f)
             if fields[f].solr_extra_fields:
-                if fields[f].solr_field_lang == request.LANGUAGE_CODE:
+                if fields[f].solr_field_lang == query_lang:
                     qf.extend(fields[f].solr_extra_fields.split(","))
                 else:
                     copy_fields = fields[f].solr_extra_fields.split(",")
                     for copy_field in copy_fields:
-                        if copy_field.endswith("_" + request.LANGUAGE_CODE):
+                        if copy_field.endswith("_" + query_lang):
                             qf.append(copy_field)
             if fields[f].solr_field_is_coded:
-                code_value_field = "{0}_{1}".format(f, request.LANGUAGE_CODE)
+                code_value_field = "{0}_{1}".format(f, query_lang)
                 if code_value_field not in qf:
                     qf.append(code_value_field)
     return qf
@@ -204,7 +204,7 @@ def create_solr_query(request: HttpRequest, search: Search, fields: dict, Codes:
     solr_query['q.op'] = search.solr_default_op
 
     # Create a Solr query field list based on the Fields Model. Expand the field list where needed
-    solr_query['qf'] = get_query_fields(request, fields)
+    solr_query['qf'] = get_query_fields(request.LANGUAGE_CODE, fields)
 
     if export:
         ef = ['id']
@@ -287,7 +287,7 @@ def create_solr_mlt_query(request: HttpRequest, search: Search, fields: dict, st
         'mlt.boost': True,
         'start': start_row,
         'rows': search.mlt_items,
-        'fl':  get_query_fields(request, fields),
+        'fl':  get_query_fields(request.LANGUAGE_CODE, fields),
         'mlt.fl': get_mlt_fields(request, fields),
         'mlt.mintf': 1,
         'mlt.minwl': 3,

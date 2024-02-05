@@ -7,7 +7,6 @@ from pathlib import Path
 class Command(BaseCommand):
     help = 'Combines .po files to the django.po file for use with builtin gettext support.'
 
-    requires_system_checks = False
     BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
     program = 'msgcat'
     french_locale_dir = path.join(BASE_DIR, 'locale', 'fr', 'LC_MESSAGES')
