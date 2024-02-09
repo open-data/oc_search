@@ -1050,13 +1050,10 @@ class DefaultView(View):
                 else:
                     return redirect('/search/{0}/'.format(request.LANGUAGE_CODE) )
         else:
-            if request.LANGUAGE_CODE == 'fr':
-                if settings.DEFAULT_SEARCH_TYPE:
-                    return redirect(f'/rechercher/{settings.DEFAULT_SEARCH_TYPE}/')
-                else:
-                    return redirect('/rechercher/')
+            if settings.DEFAULT_SEARCH_TYPE:
+                return redirect(f'/{settings.SEARCH_HOST_PATH}/{settings.DEFAULT_SEARCH_TYPE}/')
             else:
-                if settings.DEFAULT_SEARCH_TYPE:
-                    return redirect(f'/search/{settings.DEFAULT_SEARCH_TYPE}/')
+                if settings.SEARCH_HOST_PATH:
+                    return redirect(f'/{settings.SEARCH_HOST_PATH}/')
                 else:
-                    return redirect('/search/')
+                    return redirect('/')
