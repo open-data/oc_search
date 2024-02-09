@@ -1041,19 +1041,22 @@ class DefaultView(View):
         if settings.SEARCH_LANG_USE_PATH:
             if request.LANGUAGE_CODE == 'fr':
                 if settings.DEFAULT_SEARCH_TYPE:
-                    return redirect(f'/rechecher/fr/{settings.DEFAULT_SEARCH_TYPE}')
+                    return HttpResponseRedirect(f'/rechecher/fr/{settings.DEFAULT_SEARCH_TYPE}')
                 else:
-                    return redirect('/rechecher/fr/')
+                    return HttpResponseRedirect('/rechecher/fr/')
             else:
                 if settings.DEFAULT_SEARCH_TYPE:
-                    return redirect(f'/search/{request.LANGUAGE_CODE}/{settings.DEFAULT_SEARCH_TYPE}/')
+                    return HttpResponseRedirect(f'/search/{request.LANGUAGE_CODE}/{settings.DEFAULT_SEARCH_TYPE}/')
                 else:
-                    return redirect('/search/{0}/'.format(request.LANGUAGE_CODE) )
+                    return HttpResponseRedirect('/search/{0}/'.format(request.LANGUAGE_CODE) )
         else:
             if settings.DEFAULT_SEARCH_TYPE:
-                return redirect(f'/{settings.SEARCH_HOST_PATH}/{settings.DEFAULT_SEARCH_TYPE}/')
+                if settings.SEARCH_HOST_PATH:
+                    return HttpResponseRedirect(f'/{settings.SEARCH_HOST_PATH}/{settings.DEFAULT_SEARCH_TYPE}/')
+                else:
+                    return HttpResponseRedirect(f'/{settings.DEFAULT_SEARCH_TYPE}/')
             else:
                 if settings.SEARCH_HOST_PATH:
-                    return redirect(f'/{settings.SEARCH_HOST_PATH}/')
+                    return HttpResponseRedirect(f'/{settings.SEARCH_HOST_PATH}/')
                 else:
-                    return redirect('/')
+                    return HttpResponseRedirect('/')
