@@ -32,6 +32,7 @@ if settings.SEARCH_LANG_USE_PATH:
     urlpatterns += [
         path('', DefaultView.as_view(), name="HomePage"),
         path('search/', DefaultView.as_view(), name="HomePage"),
+        path('rechercher/', DefaultView.as_view(), name="HomePage"),
         path('search/<str:lang>/', HomeView.as_view(), name="HomePage"),
         path('search/<str:lang>/<str:search_type>/', SearchView.as_view(), name="SearchForm"),
         path('rechercher/<str:lang>/<str:search_type>/', SearchView.as_view(), name="SearchForm"),
@@ -55,7 +56,8 @@ if settings.SEARCH_LANG_USE_PATH:
         ]
 else:
     urlpatterns += [
-        path(settings.SEARCH_HOST_PATH, DefaultView.as_view(), name="HomePage"),
+        path('', DefaultView.as_view(), name="HomePage"),
+        path(settings.SEARCH_HOST_PATH, HomeView.as_view(), name="HomePage"),
         path(settings.SEARCH_HOST_PATH + '<str:search_type>/', SearchView.as_view(), name="SearchForm"),
         path(settings.SEARCH_HOST_PATH + 'record/<str:search_type>/<str:record_id>', RecordView.as_view(),
              name='RecordForm'),

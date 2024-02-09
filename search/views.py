@@ -1039,6 +1039,24 @@ class DefaultView(View):
 
     def get(self, request: HttpRequest):
         if settings.SEARCH_LANG_USE_PATH:
-            return redirect('/search/{0}/'.format(request.LANGUAGE_CODE) )
+            if request.LANGUAGE_CODE == 'fr':
+                if settings.DEFAULT_SEARCH_TYPE:
+                    return redirect(f'/rechecher/fr/{settings.DEFAULT_SEARCH_TYPE}')
+                else:
+                    return redirect('/rechecher/fr/')
+            else:
+                if settings.DEFAULT_SEARCH_TYPE:
+                    return redirect(f'/search/{request.LANGUAGE_CODE}/{settings.DEFAULT_SEARCH_TYPE}/')
+                else:
+                    return redirect('/search/{0}/'.format(request.LANGUAGE_CODE) )
         else:
-            return redirect('/search/')
+            if request.LANGUAGE_CODE == 'fr':
+                if settings.DEFAULT_SEARCH_TYPE:
+                    return redirect(f'/rechercher/{settings.DEFAULT_SEARCH_TYPE}/')
+                else:
+                    return redirect('/rechercher/')
+            else:
+                if settings.DEFAULT_SEARCH_TYPE:
+                    return redirect(f'/search/{settings.DEFAULT_SEARCH_TYPE}/')
+                else:
+                    return redirect('/search/')
