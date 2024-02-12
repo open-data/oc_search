@@ -68,6 +68,7 @@ MIDDLEWARE = [
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_REPLACE_HTTPS_REFERER = True
 SECURE_REFERRER_POLICY = 'unsafe-url'
+CRSF_ALLOWED_ORIGINS = ['http://127.0.0.1', 'http://search-local.open.canada.ca', 'http://rechercher-locale.ouvert.canada.ca']
 
 ROOT_URLCONF = 'oc_search.urls'
 

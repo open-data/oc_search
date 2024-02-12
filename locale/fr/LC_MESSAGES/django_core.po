@@ -47,6 +47,12 @@ msgstr "Nous n'avons pas trouvé cette page Web"
 msgid "Error 404"
 msgstr "Erreur 404"
 
+msgid "Error"
+msgstr "Erreur"
+
+msgid "An unexpected error has occurred. Please check back later"
+msgstr "Il y a un problème inattendu. Veuillez revenir plus tard"
+
 #: .\search\templates\404.html:33
 msgid "We're sorry you ended up here. Sometimes a page gets moved or deleted, but hopefully we can help you find what you're looking for."
 msgstr "Nous sommes désolés que vous ayez abouti ici. Il arrive parfois qu’une page ait été déplacée ou supprimée. Heureusement, nous pouvons vous aider à trouver ce que vous cherchez."
