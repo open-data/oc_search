@@ -421,7 +421,7 @@ class Setting(models.Model):
 
     key = models.CharField(max_length=512, primary_key=True, verbose_name="Setting Keyword (must be unique)",
                            validators=[MinLengthValidator(2)])
-    value = models.CharField(max_length=1024, verbose_name="Setting Value")
+    value = models.CharField(max_length=1024, verbose_name="Setting Value", blank=True, null=True)
 
 
 class SearchLog(models.Model):

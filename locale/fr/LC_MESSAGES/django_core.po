@@ -281,3 +281,9 @@ msgstr "Une erreur inattendue s'est produite. Veuillez retourner à la page de r
 
 msgid "Link to JSON format"
 msgstr "Lien au format JSON"
+
+msgid "Apply filters"
+msgstr "Appliquer les filtres"
+
+msgid "Large data exports may take several minutes to complete"
+msgstr "L'exportation de données volumineuses peut prendre plusieurs minutes"

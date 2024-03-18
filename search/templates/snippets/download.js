@@ -10,8 +10,10 @@ $(document).ready(function () {
             {
                 context: this
                 let msg_elem = $('#waiting_msg');
+                let delay_msg = $('#delay_msg')
                 if ((xhr.status === 200) && (asyncData.task_status === 'SUCCESS')) {
                     msg_elem.empty();
+                    delay_msg.empty();
                     let success_msg = document.createElement("p");
                     success_msg.innerText = asyncData.message;
                     msg_elem.append(success_msg);
