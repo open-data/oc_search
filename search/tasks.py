@@ -87,3 +87,14 @@ def save_search_logs_to_file():
             log_writer.writerow(log_entry)
             log.delete()
         logger.info(f'{older_logs.count()} log entries purged.')
+
+
+@shared_task()
+def purge_search_info_events():
+
+    logger = logging.getLogger(__name__)
+
+    one_hour_ago = datetime.today() - timedelta(hours=1)
+    old_ckan_events = Event.objects.filter(log_timestamp__lte=one_hour_ago, component_id='data_import_ckan_json.remote', category='success')
+    for event in old_ckan_events:
+        event.delete()
