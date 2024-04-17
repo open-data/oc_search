@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
-from .models import Search, Field, Code, ChronologicCode, Setting, SearchLog
+from .models import Search, Field, Code, ChronologicCode, Setting, Event
 
 # -- Searches ---
 
@@ -114,11 +114,11 @@ class SettingsAdmin(admin.ModelAdmin):
     save_as = True
 
 
-class SearchLogsAdmin(admin.ModelAdmin):
+class EventAdmin(admin.ModelAdmin):
 
-    list_display = ['search_id', 'log_id', 'log_timestamp', 'category']
-    list_filter = ['search_id', 'category']
-    search_fields = ['search_id', 'log_id', 'category']
+    list_display = ['search_id', 'component_id', 'category', 'title', 'event_timestamp']
+    list_filter = ['search_id', 'category', 'component_id']
+    search_fields = ['search_id', 'title', 'category']
 
 
 admin.site.register(Search, SearchAdmin)
@@ -126,4 +126,5 @@ admin.site.register(Field, FieldAdmin)
 admin.site.register(Code, CodeAdmin)
 admin.site.register(ChronologicCode, ChronologicCodesAdmin)
 admin.site.register(Setting, SettingsAdmin)
-admin.site.register(SearchLog, SearchLogsAdmin)
+admin.site.register(Event, EventAdmin)
+

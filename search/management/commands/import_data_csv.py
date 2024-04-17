@@ -132,7 +132,7 @@ class Command(BaseCommand):
 
             solr_items = []
 
-            # Clear out the Solr core when ioading default data
+            # Clear out the Solr core when loading default data
 
             if options['nothing_to_report']:
                 solr.delete_doc_by_query(self.solr_core, "format:NTR")
@@ -171,12 +171,14 @@ class Command(BaseCommand):
                                 elif 'quarter' in csv_record:
                                     if 'fiscal_year' in csv_record:
                                         record_id = "{0}-{1}-{2}".format(csv_record['owner_org'],
-                                                                         csv_record['fiscal_year'], csv_record['quarter'])
+                                                                         csv_record['fiscal_year'],
+                                                                         csv_record['quarter'])
                                     elif 'year' in csv_record:
                                         record_id = "{0}-{1}-{2}".format(csv_record['owner_org'], csv_record['year'],
                                                                          csv_record['quarter'])
                                     else:
-                                        record_id = "{0}-{1}-{2}".format(csv_record['owner_org'], csv_record['quarter'])
+                                        record_id = "{0}-{1}-{2}".format(
+                                            csv_record['owner_org'], csv_record['quarter'])
 
                             if options['report_duplicates']:
                                 if record_id in ids:
@@ -191,7 +193,8 @@ class Command(BaseCommand):
 
                             search_type_plugin = 'search.plugins.{0}'.format(options['search'])
                             if search_type_plugin in self.discovered_plugins:
-                                include, filtered_record = self.discovered_plugins[search_type_plugin].filter_csv_record(
+                                include, filtered_record = self.discovered_plugins[
+                                    search_type_plugin].filter_csv_record(
                                     csv_record, self.search_target, self.csv_fields, self.field_codes,
                                     'NTR' if options['nothing_to_report'] else '')
                                 if not include:
@@ -206,9 +209,10 @@ class Command(BaseCommand):
                                 # Verify that it is a known field
 
                                 fields_to_ignore = (
-                                'owner_org_title', 'owner_org', 'record_created', 'record_modified', 'user_modified')
+                                    'owner_org_title', 'owner_org', 'record_created', 'record_modified',
+                                    'user_modified')
                                 fields_not_loaded = (
-                                'owner_org_title', 'record_created', 'user_modified', 'record_modified',)
+                                    'owner_org_title', 'record_created', 'user_modified', 'record_modified',)
                                 if csv_field not in self.csv_fields and csv_field not in fields_to_ignore:
                                     self.logger.error("CSV files contains unknown field: {0}".format(csv_field))
                                     exit(-1)
@@ -271,8 +275,10 @@ class Command(BaseCommand):
                                                                                                 locale='fr_CA')
                                         else:
                                             csv_decimal = parse_decimal(solr_record[csv_field], locale='en_US')
-                                            solr_record[csv_field + '_en'] = format_decimal(csv_decimal, locale='en_CA')
-                                            solr_record[csv_field + '_fr'] = format_decimal(csv_decimal, locale='fr_CA')
+                                            solr_record[
+                                                csv_field + '_en'] = format_decimal(csv_decimal, locale='en_CA')
+                                            solr_record[
+                                                csv_field + '_fr'] = format_decimal(csv_decimal, locale='fr_CA')
                                     else:
                                         solr_record[csv_field + '_en'] = ''
                                         solr_record[csv_field + '_fr'] = ''
@@ -368,7 +374,8 @@ class Command(BaseCommand):
                                                                                                           self.search_target,
                                                                                                           self.csv_fields,
                                                                                                           self.field_codes,
-                                                                                                          'NTR' if options[
+                                                                                                          'NTR' if
+                                                                                                          options[
                                                                                                               'nothing_to_report'] else '')
 
                             if bd_writer is None:
@@ -423,7 +430,6 @@ class Command(BaseCommand):
                                 traceback.print_exception(type(x), x, x.__traceback__)
 
                     # Write and remaining records to Solr and commit
-
 
                     try:
                         if len(solr_items) > 0:

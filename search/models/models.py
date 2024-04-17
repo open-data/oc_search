@@ -424,16 +424,24 @@ class Setting(models.Model):
     value = models.CharField(max_length=1024, verbose_name="Setting Value", blank=True, null=True)
 
 
-class SearchLog(models.Model):
-
+class Event(models.Model):
+    EVENT_CATEGORY = [
+        ('notset', 'Undefined / Intéterminé'),
+        ('error', 'Error / Erreur'),
+        ('success', 'Success / Succès'),
+        ('info', 'Information'),
+        ('warning', 'Warning / Notification'),
+        ('critical', 'Critical / Urgent'),
+    ]
     id = models.AutoField(primary_key=True)
-    search_id = models.CharField(max_length=32, verbose_name="Search ID")
-    log_id = models.CharField(max_length=128, verbose_name="Log entry identifier")
-    log_timestamp = models.DateTimeField()
-    category = models.CharField(max_length=128, verbose_name="Log entry category", default="", blank=True)
-    message = models.TextField()
+    search_id = models.CharField(max_length=32, verbose_name="Search ID", blank=False, default="None")
+    component_id = models.CharField(max_length=64, verbose_name="Search 2 Component", blank=False, default="None")
+    title = models.CharField(max_length=512, verbose_name="Log entry name or title", blank=False)
+    event_timestamp = models.DateTimeField()
+    category = models.CharField(max_length=12, verbose_name="Category", default="notset", blank=False, choices=EVENT_CATEGORY)
+    message = models.TextField(blank=True, default="", verbose_name="Detailed Event Message")
 
     def save(self, *args, **kwargs):
-        if not self.id and not self.log_timestamp:
-            self.log_timestamp = utimezone.now()
+        if not self.id and not self.event_timestamp:
+            self.event_timestamp = utimezone.now()
         super().save(*args, **kwargs)

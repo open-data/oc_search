@@ -7,7 +7,7 @@ from django.conf import settings
 import hashlib
 import logging
 import os
-from .models import SearchLog
+from .models import Event
 from SolrClient import SolrClient, SolrResponse
 from SolrClient.exceptions import ConnectionError, SolrError
 import time
@@ -67,23 +67,23 @@ def save_search_logs_to_file():
     logger = logging.getLogger(__name__)
 
     one_week_ago = datetime.today() - timedelta(days=settings.SEARCH_LOGGING_ARCHIVE_AFTER_X_DAYS)
-    logger.info(f'Archiving Search Log entries older than {one_week_ago.strftime("%A, %B %d, %Y")} to {settings.SEARCH_LOGGING_ARCHIVE_FILE}')
+    logger.info(f'Archiving Search Event Log entries older than {one_week_ago.strftime("%A, %B %d, %Y")} to {settings.SEARCH_LOGGING_ARCHIVE_FILE}')
 
     # For new log files, write out the header
     if not os.path.exists('settings.SEARCH_LOGGING_ARCHIVE_FILE'):
         # Write out the header with the UTF8 byte-order marker for Excel first
         with open(settings.SEARCH_LOGGING_ARCHIVE_FILE, 'w', newline='', encoding='utf8') as csv_file:
             log_writer = csv.writer(csv_file, dialect='excel', quoting=csv.QUOTE_NONE)
-            headers = ['id', 'search_id', 'log_id', 'log_timestamp', 'message', 'category']
+            headers = ['id', 'search_id', 'component_id', 'title', 'event_timestamp', 'category', 'message']
             headers[0] = u'\N{BOM}' + headers[0]
             log_writer.writerow(headers)
 
     # Use a CSV writer with forced quoting for the body of the file
     with open(settings.SEARCH_LOGGING_ARCHIVE_FILE, 'a', newline='', encoding='utf8') as csv_file:
         log_writer = csv.writer(csv_file, dialect='excel', quoting=csv.QUOTE_ALL)
-        older_logs = SearchLog.objects.order_by('log_timestamp').filter(log_timestamp__lte=one_week_ago)
+        older_logs = Event.objects.order_by('log_timestamp').filter(log_timestamp__lte=one_week_ago)
         for log in older_logs:
-            log_entry = [log.id, log.search_id, log.log_id, log.log_timestamp, log.message, log.category]
+            log_entry = [log.id, log.search_id, log.component_id, log.title, log.event_timestamp, log.category, log.message]
             log_writer.writerow(log_entry)
             log.delete()
         logger.info(f'{older_logs.count()} log entries purged.')

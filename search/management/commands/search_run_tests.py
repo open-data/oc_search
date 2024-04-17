@@ -4,7 +4,7 @@ from django.conf import settings
 import json
 import logging
 from os import path
-from search.models import Search, Field, Code, Setting, SearchLog
+from search.models import Search, Field, Code, Setting
 from search.query import get_query_fields
 import traceback
 import SolrClient
