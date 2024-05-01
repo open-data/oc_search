@@ -9,7 +9,7 @@ from django.conf import settings
 import importlib
 import pkgutil
 import re
-from search.models import Search, Field, Code
+from search.models import Search, Field, Code, Event
 import search.plugins
 from SolrClient import SolrClient
 from SolrClient.exceptions import ConnectionError
@@ -435,6 +435,9 @@ class Command(BaseCommand):
                         if len(solr_items) > 0:
                             solr.index(self.solr_core, solr_items)
                             commit_count += len(solr_items)
+                            Event.objects.create(search_id=options['search'], component_id="import_data_csv",
+                                                 title=f"Total rows processed: {total}, committed to Solr: {commit_count}",
+                                                 category='success', message=f"For Search {options['search']}, {total} records loaded from {options['csv']}")
                     except ConnectionError as cex:
                         self.logger.warning(
                             f"Unexpected error encountered while indexing starting on row {total}. Row data has {len(solr_items)} items")
@@ -455,6 +458,8 @@ class Command(BaseCommand):
                         self.logger.level = logging.INFO
                         self.logger.info(
                             "\nTotal rows processed: {0}, committed to Solr: {1}".format(total, commit_count))
+
+
 
         except Exception as x:
             self.logger.error('Unexpected Error "{0}"'.format(x.args))

@@ -81,7 +81,7 @@ def save_search_logs_to_file():
     # Use a CSV writer with forced quoting for the body of the file
     with open(settings.SEARCH_LOGGING_ARCHIVE_FILE, 'a', newline='', encoding='utf8') as csv_file:
         log_writer = csv.writer(csv_file, dialect='excel', quoting=csv.QUOTE_ALL)
-        older_logs = Event.objects.order_by('log_timestamp').filter(log_timestamp__lte=one_week_ago)
+        older_logs = Event.objects.order_by('event_timestamp').filter(log_timestamp__lte=one_week_ago)
         for log in older_logs:
             log_entry = [log.id, log.search_id, log.component_id, log.title, log.event_timestamp, log.category, log.message]
             log_writer.writerow(log_entry)

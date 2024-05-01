@@ -23,6 +23,7 @@ from SolrClient import SolrClient, SolrResponse
 from SolrClient.exceptions import ConnectionError, SolrError
 from search.tasks import export_search_results_csv
 from unidecode import unidecode
+from urllib import parse
 
 
 def iter_namespace(ns_pkg):
@@ -31,6 +32,31 @@ def iter_namespace(ns_pkg):
     # import_module to work without having to do additional modification to
     # the name.
     return pkgutil.iter_modules(ns_pkg.__path__, ns_pkg.__name__ + ".")
+
+
+def log_search_results(request: HttpRequest, search_logger: logging.Logger, doc_count: int = 0):
+    qurl = parse.urlparse(request.get_full_path())
+
+    query_values = parse.parse_qs(request.META["QUERY_STRING"])
+    page = '1'
+    sort = 'default'
+    search_text = ""
+    facets = ''
+    search_format = 'default'
+    if 'page' in query_values:
+        page = query_values['page'][0]
+    if 'sort' in query_values:
+        sort = query_values['sort'][0]
+    if 'search_text' in query_values:
+        search_text = parse.quote_plus(query_values['search_text'][0])
+    if 'search_format' in query_values:
+        search_format = query_values['search_format'][0]
+    for q in query_values:
+        if q not in ['page', 'sort', 'search_text', 'search_format']:
+            facets += f"{q}:{parse.quote_plus(query_values[q][0])},"
+    search_type = qurl.path.rstrip('/').split('/')[-1]
+    log_message = f'{qurl.hostname},{search_type},{request.session.session_key},{page},{sort},"{search_text}","{facets}",{search_format},{doc_count}'
+    search_logger.info(log_message)
 
 
 def get_error_context(search_type: str, lang: str, error_msg=""):
@@ -96,6 +122,7 @@ class SearchView(View):
     discovered_plugins = {}
 
     logger = logging.getLogger(__name__)
+    search_logger = logging.getLogger("search_term_logger")
 
     def __init__(self):
         super().__init__()
@@ -514,6 +541,7 @@ class SearchView(View):
                     else:
                         json_link = json_link + "&search_format=json"
                     context["json_format_url"] = json_link
+                    log_search_results(request, self.search_logger, doc_count=solr_response.num_found)
                     return render(request, self.searches[search_type].page_template, context)
             except (ConnectionError, SolrError) as ce:
                 return render(request, 'error.html', get_error_context(search_type, lang, ce.args[0]))
