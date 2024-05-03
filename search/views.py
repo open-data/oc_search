@@ -34,13 +34,12 @@ def iter_namespace(ns_pkg):
     return pkgutil.iter_modules(ns_pkg.__path__, ns_pkg.__name__ + ".")
 
 
-def log_search_results(request: HttpRequest, search_logger: logging.Logger, doc_count: int = 0):
+def log_search_results(request: HttpRequest, search_logger: logging.Logger, search_type: str = "", format: str = "html", page_type: str = "search", search_text: str = '', doc_count: int = 0):
     qurl = parse.urlparse(request.get_full_path())
 
     query_values = parse.parse_qs(request.META["QUERY_STRING"])
     page = '1'
     sort = 'default'
-    search_text = ""
     facets = ''
     search_format = 'default'
     if 'page' in query_values:
@@ -54,8 +53,7 @@ def log_search_results(request: HttpRequest, search_logger: logging.Logger, doc_
     for q in query_values:
         if q not in ['page', 'sort', 'search_text', 'search_format']:
             facets += f"{q}:{parse.quote_plus(query_values[q][0])},"
-    search_type = qurl.path.rstrip('/').split('/')[-1]
-    log_message = f'{qurl.hostname},{search_type},{request.session.session_key},{page},{sort},"{search_text}","{facets}",{search_format},{doc_count}'
+    log_message = f'{qurl.hostname},{search_type},{page_type},{format},{request.session.session_key},{page},{sort},"{search_text}","{facets}",{doc_count}'
     search_logger.info(log_message)
 
 
@@ -541,7 +539,7 @@ class SearchView(View):
                     else:
                         json_link = json_link + "&search_format=json"
                     context["json_format_url"] = json_link
-                    log_search_results(request, self.search_logger, doc_count=solr_response.num_found)
+                    log_search_results(request, self.search_logger, search_type=search_type, format=search_format, page_type='search', doc_count=solr_response.num_found)
                     return render(request, self.searches[search_type].page_template, context)
             except (ConnectionError, SolrError) as ce:
                 return render(request, 'error.html', get_error_context(search_type, lang, ce.args[0]))
@@ -664,6 +662,7 @@ class RecordView(SearchView):
                                                                                                   self.searches[search_type],
                                                                                                   self.fields[search_type],
                                                                                                   self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type])
+            log_search_results(request, self.search_logger, search_type=search_type, format='html', page_type='record', search_text=record_id, doc_count=solr_response.num_found)
             return render(request, self.searches[search_type].record_template, context)
 
         else:
