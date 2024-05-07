@@ -199,6 +199,24 @@ LOGGING = {
         'console': {
             'class': 'logging.StreamHandler',
         },
+        'query_log': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'search_term_formatter',
+            'encoding': 'utf8',
+        },
+    },
+    'formatters': {
+        'search_term_formatter': {
+            'format': '%(asctime)s,%(message)s',
+            'datefmt': '%Y-%m-%dT%H:%M:%SZ'
+        }
+    },
+    'loggers': {
+        'search_term_logger': {
+            'handlers': ['query_log'],
+            'level': 'INFO',
+            'propagate': False,
+        },
     },
     'root': {
         'handlers': ['console'],

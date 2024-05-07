@@ -445,3 +445,18 @@ class Event(models.Model):
         if not self.id and not self.event_timestamp:
             self.event_timestamp = utimezone.now()
         super().save(*args, **kwargs)
+
+
+class SearchLog(models.Model):
+    id = models.AutoField(primary_key=True)
+    timestamp = models.DateTimeField()
+    hostname = models.CharField(max_length=512, verbose_name="Hostname", blank=False)
+    search_type = models.CharField(max_length=32, verbose_name="Search ID", blank=False, default="None")
+    page_type = models.CharField(max_length=32, verbose_name="Page Type", blank=False, default="search")
+    search_format = models.CharField(max_length=32, verbose_name="Search Format", blank=False, default="html")
+    session_id = models.CharField(max_length=128, verbose_name="Session ID", blank=False, default="None")
+    page_no = models.IntegerField(verbose_name="Page Number", blank=False, default=1)
+    sort_order = models.CharField(max_length=64, verbose_name="Sort Order", blank=False, default="asc")
+    search_text = models.TextField(verbose_name="Search Text", blank=False, default="None")
+    facets = models.TextField(verbose_name="Facets", blank=False, default="None")
+    results_no = models.IntegerField(verbose_name="Results Number", blank=False, default=0)
