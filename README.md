@@ -12,9 +12,9 @@ with a focus on searching Solr cores.
 
 ### System Requirements
 
-OCSs is built with the [Django 3.x framework](https://www.djangoproject.com/), and can run in any environment capable of supporting Django 3.x
+OCSs is built with the [Django 4.x framework](https://www.djangoproject.com/), and can run in any environment capable of supporting Django 4.x
 which is built with Python 3. Version 3.9 or higher is recommended. For more details, see the [Django project
-pages](https://docs.djangoproject.com/en/3.1/intro/install/). OCS has been tested on both Windows 10 and 11 and CentOS/RHEL 7 and 8.
+pages](https://docs.djangoproject.com/en/3.1/intro/install/). OCS2 has been tested on both Windows 10 and 11 and CentOS/RHEL 7 and 8.
 It is highly recommended that users have some basic familiarity with Django before installing OCS2.
 
 OCS2 requires a database backend that is supported by Django such as PostgreSQL or MySQL. Initial development can be done with the SQLite engine
@@ -25,7 +25,6 @@ OCS2 also requires access to a Solr v8.x server. For information on installing S
 
 For background data processing, OCS2 using [Celery for Django](https://docs.celeryq.dev/en/latest/django/first-steps-with-django.html#django-celery-results-using-the-django-orm-cache-as-a-result-backend).
 
-
 ### Django Extensions
 
 [Django extensions](https://docs.djangoproject.com/en/3.2/topics/external-packages/) are re-usable code modules [provided by third party developers](https://djangopackages.org/) that provide additional
@@ -33,17 +32,17 @@ functionality to Django applications. The Django core project comes with several
 used by OCS2. It also uses several well-known plugins provided by third party developers. The python modules for
 these extensions are included in the project's requirements.txt file.
 
-1. [Django Cors Headers](https://github.com/adamchainz/django-cors-headers) A Django App that adds Cross-Origin Resource Sharing (CORS) headers to responses. This allows in-browser requests to your Django application from other origins.
-1. [Django Jazzmin Admin Theme](https://django-jazzmin.readthedocs.io/) Provides a more modern Ui for the Django admin interface
-1. [Django QUrl Template Tag](https://github.com/sophilabs/django-qurl-templatetag) A Django template tag to modify url's query string
-1. [Django Celery Beat](https://github.com/celery/django-celery-beat) This extension enables you to store the periodic task schedule in the database.
+1. [Django CORS Headers](https://github.com/adamchainz/django-cors-headers) A Django App that adds Cross-Origin Resource Sharing (CORS) headers to responses. This allows in-browser requests to your Django application from other origins.
+2. [Django Jazzmin Admin Theme](https://django-jazzmin.readthedocs.io/) Provides a more modern Ui for the Django admin interface
+3. [Django QUrl Template Tag](https://github.com/sophilabs/django-qurl-templatetag) A Django template tag to modify url's query string
+4. [Django Celery Beat](https://github.com/celery/django-celery-beat) This extension enables you to store the periodic task schedule in the database.
    The periodic tasks can be managed from the Django Admin interface, where you can create, edit and delete periodic tasks and how often they should run.
-1. [Django Celery Results](https://github.com/celery/django-celery-results)  This extension enables you to store Celery task results using the Django ORM.
-1. [Django Smuggler](https://github.com/semente/django-smuggler) Django Smuggler is a pluggable application for Django Web Framework to easily dump/load fixtures via the automatically-generated administration interface
+5. [Django Celery Results](https://github.com/celery/django-celery-results)  This extension enables you to store Celery task results using the Django ORM.
+6. [Django Smuggler](https://github.com/semente/django-smuggler) Django Smuggler is a pluggable application for Django Web Framework to easily dump/load fixtures via the automatically-generated administration interface
+7. [Django Timezone Field](https://pypi.org/project/django-timezone-field/) A Django app providing DB, form, and REST framework fields for [`zoneinfo`](https://docs.python.org/3/library/zoneinfo.html) and [`pytz`](http://pypi.python.org/pypi/pytz/) timezone objects.
 
 These Django plugins are enabled in the Django application's settings.py file. Example configuration can be found in
 [settings-sample.py](https://github.com/open-data/oc_search/blob/master/oc_search/settings-sample.py)
-
 
 ### Installing OCS2
 
@@ -55,7 +54,6 @@ Before installing OCS2, set up the prerequisites:
 
 For production instances you will want a uWSGI server like uWSGI or Gunicorn
 
-
 #### Steps
 
 Before downloading code and setting up your virtual environment, choose an appropriate directory like
@@ -65,25 +63,15 @@ Change to your installation directory, optionally switch to the dedicated user,
 and follow these steps.
 
 1. Clone the OCS2 project from GitHub: https://github.com/open-data/oc_search
-
-
 2. Clone the SolrClient project from GitHub: https://github.com/open-data/SolrClient
-
-
 3. Clone the OCS2 custom searches from GitHub: https://github.com/open-data/oc_searches.git
-
-
 4. Create a python virtual environment using Python 3.6 or higher.
 
    For example `python -m venv venv`.
-
-
 5. Activate the new virtual environment.
 
    On Linux, the command is `source venv/bin/activate`. On Windows, the command `venv\Scripts\activate` where
    `venv` is the name of the virtual environment.
-
-
 6. Install [SolrClient library](https://github.com/open-data/SolrClient).
 
    Change into the SolrClient project directory and install the prerequisites from
@@ -92,16 +80,12 @@ and follow these steps.
    `pip install -r requirements.txt`
 
    `python setup.py develop`
-
-
 7. Install the OCS2 python library prerequisites.
 
    Change to the directory where OCS2 project was cloned from GitHub, then install from the
    [requirements.txt](https://github.com/open-data/oc_search/blob/master/requirements.txt) file
 
    `pip install -r requirements.txt`
-
-
 8. Create a Django project settings file.
 
    Django by default with read project runtime settings from a `settings.py` file located in the
@@ -111,8 +95,6 @@ and follow these steps.
 
    For more information on customizing the settings file, see the
    [Django Project documentation.](https://docs.djangoproject.com/en/3.2/topics/settings/)
-
-
 9. Create the Django, OCS2, and Celery database tables.
 
    In the settings.py file set the appropriate database settings and create the database tables.
@@ -128,25 +110,19 @@ and follow these steps.
 
    `python .\manage.py migrate django_celery_results` <br>
    `python .\manage.py migrate django_celery_beat`
-
-
 10. Start the Celery workers. **Note**, in production, the Celery workers should be [daemonized](https://docs.celeryq.dev/en/stable/userguide/daemonizing.html#daemonizing).
 
     `celery -A oc_search worker -l INFO --pool=solo` [Windows] <br>
     `celery -A oc_search worker -l INFO` [Linux] <br><br>
     `celery -A proj beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler`
-
-
 11. Create an admin user for Django.
 
     `python manage.py createsuperuser`
-
-
-11. Test your installation by running Django.
+12. Test your installation by running Django.
 
     `python manage.py runserver`
 
-### Next Steps ###
+### Next Steps
 
 The Search application is a blank framework. The next steps include making custom search plugins to
 create a custom interactive search application.
@@ -154,20 +130,60 @@ create a custom interactive search application.
 For production, Django should be installed as a WSGI application. For instruction on doing this with
 uWSGI, see the [Django Documentation](https://docs.djangoproject.com/en/3.2/howto/deployment/wsgi/uwsgi/)
 
+### Note on Logging
+
+OCS2 has two logs, one for regular logging information and another for recording search activity.
+In the logging settings, be sure to set up your logging using a format similar to this:
+
+```javascript
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+        'query_log': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'search_term_formatter',
+            'encoding': 'utf8',
+        },
+    },
+    'formatters': {
+        'search_term_formatter': {
+            'format': '%(asctime)s,%(message)s',
+            'datefmt': '%Y-%m-%dT%H:%M:%SZ'
+        }
+    },
+    'loggers': {
+        'search_term_logger': {
+            'handlers': ['query_log'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+```
+
+The search query log needs to be in a specific format so that the custom `import_query_logs` command can load the
+log file into the database where it can be processed. Logs will accumulate over time, so be sure to set up an information management policy for
+managing the logs.
+
 ### Installing Custom Searches
 
 @TODO Start Here
+
 - In Admin interfaceCreate Search, Fields, Codes
 - Create Solr core
   As Solr User run these commands
   + /opt/solr/bin/solr create -c search_ati
   + cd /var/solr/data
-  +  cp -Rf search_ei/conf search_ati/
+  + cp -Rf search_ei/conf search_ati/
   + Reload core
 - Create solr core: ` python .\manage.py create_solr_core --search ati`
 - load orgs
 - load date
-- create a snippets folderr
+- create a snippets folder
 
 ---
 
@@ -177,7 +193,7 @@ OCS2 is made of several components including:
 
 1. The Django web application that provides the search and administration web interfaces. The
    [Django framework](https://www.djangoproject.com/) is a general purpose web application framework written in Python and is well supported.
-1. A relational database backend supported by Django. The database is used to hold routing, messaging,
+2. A relational database backend supported by Django. The database is used to hold routing, messaging,
    search definitions, and other permanent data. OCS2 has been tested with PostgreSQL 13.
 3. An [Apache Solr](https://lucene.apache.org/solr/) text search engine that provides the semantic search engine. OCS2 uses the
    [SolrClient](https://github.com/open-data/SolrClient) library to both query with Solr and dynamically
@@ -185,8 +201,6 @@ OCS2 is made of several components including:
 4. A Celery backe-end
 
 ![High Level Architecture Diagram](./docs/images/high_level_diagram.png "High Level OCS2 Architecture")
-
-![Source Code Visualization](./diagram.svg "OCS2 Source Code Visualization")
 
 
 ## Database
