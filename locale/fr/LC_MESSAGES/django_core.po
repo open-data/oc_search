@@ -287,3 +287,12 @@ msgstr "Appliquer les filtres"
 
 msgid "Large data exports may take several minutes to complete"
 msgstr "L'exportation de données volumineuses peut prendre plusieurs minutes"
+
+msgid "Original Data"
+msgstr "Provenance des données"
+
+msgid "Similar Data"
+msgstr "Données similaires"
+
+msgid "No similar data was found"
+msgstr "Aucune donnée similaire n'a été trouvée"

@@ -489,7 +489,7 @@ class SearchView(View):
                     next_page = (last_page if next_page > last_page else next_page)
                     context['next_page'] = next_page
                     context['currentpage'] = page
-                if search_type_plugin in self.discovered_plugins and self.discovered_plugins[search_type_plugin].plugin_api_version() >= 1.1:
+                if search_type_plugin in self.discovered_plugins and self.discovered_plugins[search_type_plugin].plugin_api_version() == 1.1:
                     context, template = self.discovered_plugins[search_type_plugin].pre_render_search(context,
                                                                                                       self.searches[search_type].page_template,
                                                                                                       request,
@@ -497,6 +497,15 @@ class SearchView(View):
                                                                                                       self.searches[search_type],
                                                                                                       self.fields[search_type],
                                                                                                       self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type])
+                elif search_type_plugin in self.discovered_plugins and self.discovered_plugins[search_type_plugin].plugin_api_version() >= 1.2:
+                    context, template = self.discovered_plugins[search_type_plugin].pre_render_search(context,
+                                                                                                      self.searches[search_type].page_template,
+                                                                                                      request,
+                                                                                                      lang,
+                                                                                                      self.searches[search_type],
+                                                                                                      self.fields[search_type],
+                                                                                                      self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
+                                                                                                      view_type='search')
                 # Users can optionally get the search results as a JSON object instead of the normal HTML page
                 search_format = request.GET.get("search_format", "html")
                 if search_format == 'json' and self.searches[search_type].json_response:
@@ -1013,20 +1022,29 @@ class MoreLikeThisView(SearchView):
             context['docs'] = solr_response.data['moreLikeThis'][record_id]['docs']
             context['original_doc'] = solr_response.docs[0]
 
-            if search_type_plugin in self.discovered_plugins and self.discovered_plugins[search_type_plugin].plugin_api_version() >= 1.1:
+            if search_type_plugin in self.discovered_plugins and self.discovered_plugins[search_type_plugin].plugin_api_version() == 1.1:
                 context, template = self.discovered_plugins[search_type_plugin].pre_render_search(context,
-                                                                                                  self.searches[search_type].page_template,
+                                                                                                  self.searches[search_type].more_like_this_template,
                                                                                                   request,
                                                                                                   lang,
                                                                                                   self.searches[search_type],
                                                                                                   self.fields[search_type],
                                                                                                   self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type])
+            elif search_type_plugin in self.discovered_plugins and self.discovered_plugins[search_type_plugin].plugin_api_version() >= 1.2:
+                context, template = self.discovered_plugins[search_type_plugin].pre_render_search(context,
+                                                                                                  self.searches[search_type].more_like_this_template,
+                                                                                                  request,
+                                                                                                  lang,
+                                                                                                  self.searches[search_type],
+                                                                                                  self.fields[search_type],
+                                                                                                  self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
+                                                                                                  view_type="mlt")
 
             if 'prev_record' in request.session:
                 context['back_to_url'] = request.session['prev_record']
             if 'prev_search' in request.session:
                 context['back_to_url'] = request.session['prev_search']
-            return render(request, self.searches[search_type].more_like_this_template , context)
+            return render(request, template, context)
 
         else:
             return render(request, '404.html', get_error_context(search_type, lang))

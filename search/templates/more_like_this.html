@@ -17,7 +17,7 @@
         <div class="col-md-12 mrgn-tp-lg">
         <div class="panel panel-info">
             <header class="panel-heading">
-                <h5 class="panel-title">{% translate 'Original Record' %}</h5>
+                <h5 class="panel-title">{% translate 'Original Data' %}</h5>
             </header>
             <div class="row mrgn-tp-md mrgn-bttm-md mrgn-lft-md mrgn-rght-md">
             {% include search_item_snippet with doc=original_doc %}
@@ -28,7 +28,7 @@
         <div class="col-md-12 mrgn-tp-md">
         <div class="panel panel-default">
             <header class="panel-heading">
-                <h5 class="panel-title">{% translate 'Similar Records' %}</h5>
+                <h5 class="panel-title">{% translate 'Similar Data' %}</h5>
             </header>
             <div class="row mrgn-tp-md mrgn-bttm-md mrgn-lft-md mrgn-rght-md">
             {% block main-content-search-items %}
@@ -37,7 +37,7 @@
                         {% include search_item_snippet %}
                     {% endfor %}
                 {% else %}
-                    {% translate "No similar records were found" %}
+                    {% translate "No similar data was found" %}
                 {% endif %}
             {% endblock main-content-search-items %}
             </div>

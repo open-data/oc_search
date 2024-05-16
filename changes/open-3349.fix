@@ -1,0 +1,5 @@
+The "More like this" results in the Open Data search had been reformatted to work
+with CKAN's dataset page. This returns just a basic HTML list. Search has been
+updated so then when users click on this link in the Open Data search results page
+they are shown the Search app's default well formatted More-like-this results page.
+CKAN will continue to receive the expected basic list.
