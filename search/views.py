@@ -83,6 +83,22 @@ def get_error_context(search_type: str, lang: str, error_msg=""):
     }
 
 
+def get_search_path(search_defn: Search, lang):
+    return_url = ""
+
+    if settings.SEARCH_LANG_USE_PATH:
+        if lang == 'fr':
+            return_url = f"/rechercher/fr/{search_defn.search_alias_fr}"
+        else:
+            return_url = f"/search/en/{search_defn.search_alias_en}"
+    else:
+        if lang == 'fr':
+            return_url = parse.urljoin(settings.SEARCH_HOST_PATH, f'/{search_defn.search_alias_fr}')
+        else:
+            return_url = parse.urljoin(settings.SEARCH_HOST_PATH, f'/{search_defn.search_alias_en}')
+    return return_url
+
+
 class FieldFormView(View):
     def __init__(self):
         super().__init__()
@@ -579,8 +595,7 @@ class RecordView(SearchView):
             context['record_detail_snippet'] = self.searches[search_type].record_detail_snippet
             context["download_ds_url_en"] = self.searches[search_type].dataset_download_url_fr if lang == 'fr' else self.searches[search_type].dataset_download_url_en
             context["search_text"] = request.GET.get("search_text", "")
-            if 'prev_search' in request.session:
-                context['back_to_url'] =  request.session['prev_search']
+            context['back_to_url'] = get_search_path(self.searches[search_type], lang)
             request.session['prev_record'] = request.build_absolute_uri()
             solr = SolrClient(settings.SOLR_SERVER_URL)
 
@@ -947,8 +962,7 @@ class DownloadSearchResultsView(View):
                     context['download_status_url'] = f"{settings.SEARCH_HOST_PATH}/rapport-de-recherche/fr/{search_type}/{task_id}"
                 else:
                     context['download_status_url'] = f"{settings.SEARCH_HOST_PATH}/search-results/en/{search_type}/{task_id}"
-            if 'prev_search' in request.session:
-                context['back_to_url'] = request.session['prev_search']
+            context['back_to_url'] = get_search_path(self.searches[search_type], lang)
             return render(request, 'download.html',  context)
         elif search_type in self.searches and self.searches[search_type].is_disabled:
             context = {"language": lang,}

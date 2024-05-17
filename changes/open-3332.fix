@@ -1,0 +1,4 @@
+Update the Record and Search Download pages to link directly to the parent search page.
+It was using the session variable, however this is not reliable if the end user has multiple
+web browser tabs open to multiple searches, switches languages or undertakes some action
+which can confuse the previous logic.
