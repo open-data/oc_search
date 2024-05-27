@@ -155,8 +155,8 @@ msgstr "Suivant"
 
 #: .\search\templates\search.html:16
 #, python-format
-msgid "Found %(result_num)s record%(result_s)s"
-msgstr "%(result_num)s dossier%(result_s)s trouvé%(result_s)s"
+msgid "Found <span data-testid=\"itemsfound\">%(result_num)s</span> record%(result_s)s"
+msgstr "<span data-testid=\"itemsfound\">%(result_num)s</span> dossier%(result_s)s trouvé%(result_s)s"
 
 msgid "%(result_num)s record%(result_s)s"
 msgstr "%(result_num)s dossier%(result_s)s"
@@ -166,6 +166,9 @@ msgstr "%(result_num)s dossier%(result_s)s"
 #: .\search\templates\search.html:31
 msgid "Search"
 msgstr "Recherche"
+
+msgid "Search text"
+msgstr "Texte de recherche"
 
 #: .\search\templates\search.html:38
 msgid "Order By"

@@ -12,9 +12,9 @@ with a focus on searching Solr cores.
 
 ### System Requirements
 
-OCSs is built with the [Django 4.x framework](https://www.djangoproject.com/), and can run in any environment capable of supporting Django 4.x
-which is built with Python 3. Version 3.9 or higher is recommended. For more details, see the [Django project
-pages](https://docs.djangoproject.com/en/3.1/intro/install/). OCS2 has been tested on both Windows 10 and 11 and CentOS/RHEL 7 and 8.
+OCS is built with the [Django 4.x framework](https://www.djangoproject.com/), and can run in any environment capable of supporting Django 4.x
+which is built with Python 3. Version 3.9 or higher of python is recommended. For more details, see the [Django project
+pages](https://docs.djangoproject.com/en/3.1/intro/install/). OCS2 has been tested on both Windows 10 and 11 and RHEL 8.
 It is highly recommended that users have some basic familiarity with Django before installing OCS2.
 
 OCS2 requires a database backend that is supported by Django such as PostgreSQL or MySQL. Initial development can be done with the SQLite engine
@@ -28,7 +28,7 @@ For background data processing, OCS2 using [Celery for Django](https://docs.cele
 ### Django Extensions
 
 [Django extensions](https://docs.djangoproject.com/en/3.2/topics/external-packages/) are re-usable code modules [provided by third party developers](https://djangopackages.org/) that provide additional
-functionality to Django applications. The Django core project comes with several contributed modules which are
+functionality to Django. The Django core project comes with several contributed modules which are
 used by OCS2. It also uses several well-known plugins provided by third party developers. The python modules for
 these extensions are included in the project's requirements.txt file.
 
@@ -44,7 +44,7 @@ these extensions are included in the project's requirements.txt file.
 These Django plugins are enabled in the Django application's settings.py file. Example configuration can be found in
 [settings-sample.py](https://github.com/open-data/oc_search/blob/master/oc_search/settings-sample.py)
 
-### Installing OCS2
+### Before Installing
 
 Before installing OCS2, set up the prerequisites:
 
@@ -63,15 +63,25 @@ Change to your installation directory, optionally switch to the dedicated user,
 and follow these steps.
 
 1. Clone the OCS2 project from GitHub: https://github.com/open-data/oc_search
+
+
 2. Clone the SolrClient project from GitHub: https://github.com/open-data/SolrClient
+
+
 3. Clone the OCS2 custom searches from GitHub: https://github.com/open-data/oc_searches.git
+
+
 4. Create a python virtual environment using Python 3.6 or higher.
 
    For example `python -m venv venv`.
+
+
 5. Activate the new virtual environment.
 
    On Linux, the command is `source venv/bin/activate`. On Windows, the command `venv\Scripts\activate` where
    `venv` is the name of the virtual environment.
+
+
 6. Install [SolrClient library](https://github.com/open-data/SolrClient).
 
    Change into the SolrClient project directory and install the prerequisites from
@@ -80,12 +90,16 @@ and follow these steps.
    `pip install -r requirements.txt`
 
    `python setup.py develop`
+
+
 7. Install the OCS2 python library prerequisites.
 
    Change to the directory where OCS2 project was cloned from GitHub, then install from the
    [requirements.txt](https://github.com/open-data/oc_search/blob/master/requirements.txt) file
 
    `pip install -r requirements.txt`
+
+
 8. Create a Django project settings file.
 
    Django by default with read project runtime settings from a `settings.py` file located in the
@@ -95,6 +109,8 @@ and follow these steps.
 
    For more information on customizing the settings file, see the
    [Django Project documentation.](https://docs.djangoproject.com/en/3.2/topics/settings/)
+
+
 9. Create the Django, OCS2, and Celery database tables.
 
    In the settings.py file set the appropriate database settings and create the database tables.
@@ -110,14 +126,20 @@ and follow these steps.
 
    `python .\manage.py migrate django_celery_results` <br>
    `python .\manage.py migrate django_celery_beat`
+
+
 10. Start the Celery workers. **Note**, in production, the Celery workers should be [daemonized](https://docs.celeryq.dev/en/stable/userguide/daemonizing.html#daemonizing).
 
     `celery -A oc_search worker -l INFO --pool=solo` [Windows] <br>
     `celery -A oc_search worker -l INFO` [Linux] <br><br>
     `celery -A proj beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler`
+
+
 11. Create an admin user for Django.
 
     `python manage.py createsuperuser`
+
+
 12. Test your installation by running Django.
 
     `python manage.py runserver`
@@ -169,21 +191,10 @@ The search query log needs to be in a specific format so that the custom `import
 log file into the database where it can be processed. Logs will accumulate over time, so be sure to set up an information management policy for
 managing the logs.
 
-### Installing Custom Searches
 
-@TODO Start Here
+### Automated Testing
 
-- In Admin interfaceCreate Search, Fields, Codes
-- Create Solr core
-  As Solr User run these commands
-  + /opt/solr/bin/solr create -c search_ati
-  + cd /var/solr/data
-  + cp -Rf search_ei/conf search_ati/
-  + Reload core
-- Create solr core: ` python .\manage.py create_solr_core --search ati`
-- load orgs
-- load date
-- create a snippets folder
+OCS2 comes with a basic end-to-end test suite that employs Playwright. See [Tests](./docs/Test.md) for more information.
 
 ---
 
@@ -198,7 +209,7 @@ OCS2 is made of several components including:
 3. An [Apache Solr](https://lucene.apache.org/solr/) text search engine that provides the semantic search engine. OCS2 uses the
    [SolrClient](https://github.com/open-data/SolrClient) library to both query with Solr and dynamically
    create search cores on the Solr server.
-4. A Celery backe-end
+4. A Celery background worker
 
 ![High Level Architecture Diagram](./docs/images/high_level_diagram.png "High Level OCS2 Architecture")
 
@@ -223,13 +234,13 @@ Django provides an administrative user interface for editing the search definiti
 The OC Search admin screens have been modified with helpful customizations to make it easier to
 customize a search.
 
-Note tha actual search data is not stored in the relational database, but is stored only in the Solr search engine. The
+Tha actual search data is not stored in the relational database, but is stored only in the Solr search engine. The
 database contains the metadata model of the search application which _describes_ the formant of the data that is searched,
 and the search interface,
 
 ![Database Schema](./docs/images/database.png "Database schema")
 
-Importing and exporting of search definitions is done using [Django Smuggler](https://github.com/semente/django-smuggler).
+Importing and exporting of search definitions is done using custom Django management commands..
 
 ### Generating a Search from CKAN yaml
 
@@ -288,70 +299,6 @@ To run: `python manage.py --csv <CSV file> --search <Unique search ID> --core <S
 
 ---
 
-# Creating a New Search
-
-Creating a new proactive disclosure search requires several steps
-
-1. Create a new blank Solr core and copy in the synonym files
-2. Create a search model by importing the CKAN recombinant Yaml file using the `import_schema_ckan_yaml` command
-3. Customize the Solr core schema for the seacrh model using the `create_solr_core` command
-4. Import the data from the proactive disclosure CSV file using the `import_data_csv` command
-
-## Step 1 - Create a new Solr core
-
-Using Solr 8.x, create a new Solr core from the command line using the `solr` command, and copy the
-custom synonyms files to the new Solr core's configuration folder. The default solrconfig.xml file
-generated by the solr create command does not need to be modified.
-
-Example:
-
-```
-sudo -u solr /opt/solr/bin/solr create -c search_core1
-cp oc_search/solr/conf/synonyms_*.txt /var/solr/data/search_core1/conf/lang/
-```
-
-After copying the synonym text files to the new Solr core<s language configuration directory, restart Solr
-or reload the new core in order to activate the new configuration files.
-
-## Step 2 - Create a search model
-
-The search model consists of three components: search, fields, and codes (optional).
-
-<img src="./docs/images/search_definition.svg" alt="Search Components" width="200"/>
-
-It is possible to create a new search module using the Django admin UI, but this would
-be laborious and error prone. Instead, there are two custom commands that can be used to
-create new searches based on either an existing CKAN Recombinant YAML file or from a
-basic CSV file with a header. See <a href="#import_schema_ckan_yaml">import_schema_ckan_yaml</a> and
-`generic_csv_schema` commands for details.
-
-## Step 3 - Set up Solr Core/Collection schema
-
-In order to take advantage of the language features of Solr, the search application requires
-that the search core use a schema. OCS is able to use Solr's dynamic schema functionality to
-create a custom schema based on the search definition. Once you have finalized the search defintion,
-run <a href="#create_solr_core"> `create_solr_core`</a> command line utility.
-
-## Step 4 - Load Search Data
-
-Load CSV data into the search core using the <a href="#import_data_csv">import_data_csv</a> command.
-
-# Installing the RAMP viewer *(Optional)*
-
-By default, the [RAMP viewer](https://github.com/fgpv-vpgf/fgpv-vpgf#usage) is not enabled, and it is not required for searching. It is used by
-Open Canada for visualizing [Open Maps](https://search.open.canada.ca/en/od/?od-search-col=Open%20Maps) geospatial data
-
-To install,
-
-1. Download the latest [RAMP viewer release from GitHub](https://github.com/fgpv-vpgf/fgpv-vpgf/releases/latest).
-   Extract the contents into the `ramp/viewer` folder in the project.
-2. Download [the Canada.ca design system distribution files](https://wet-boew.github.io/GCWeb/home.html) and extract
-   the contents into `ramp/viewer/GCWeb`.
-3. Download the non-CDN version of [the WET-BOEW design system distribution files](https://github.com/wet-boew/wet-boew/releases)
-   and extract the contents into `ramp/viewer/GCWeb`.
-4. Run Django's `collectstatic` command. The RAMP viewer will look for Canada.ca and WET-BOEW files in
-   the path `[static url root]/ramp/`. If using Nginx oor equivalent to server static files, be sure to set this
-   path up.
 
 For [Open Maps](https://search.open.canada.ca/en/od/?od-search-col=Open%20Maps), the viewer is
 using the remote configuration services (RCS). The local RCS definition files are also located in the
@@ -369,6 +316,14 @@ Added two new API functions that are called just before the search page is rende
 def pre_render_search(context: dict, template: str, request: HttpRequest, lang: str, search: Search, fields: dict, codes: dict):
 
 def pre_render_record(context: dict, template: str, request: HttpRequest, lang: str, search: Search, fields: dict, codes: dict):
+```
+
+## Version 1.2
+
+`pre_render_search()` function updated to include a view-type parameter, that allows rendering to differentiate between views like
+Search and More-Like-This
+```python
+def pre_render_search(context: dict, template: str, request: HttpRequest, lang: str, search: Search, fields: dict, codes: dict, view_type='search'):
 ```
 
 # Debugging Celery with PyCharm on Windows

@@ -1,8 +1,8 @@
-Babel==2.14.0
+Babel==2.15.0
 bleach==6.1.0
 celery==5.3.6
 ckanapi==4.7
-django==4.2.9
+django==4.2.13
 django-celery-beat==2.5.0
 django-celery-results==2.5.1
 django-cors-headers==4.3.1
@@ -12,7 +12,7 @@ django-redis-sessions==0.6.2
 django-smuggler==1.0.4
 email-validator==2.1.0.post1
 inflection==0.5.1
-markdown2==2.4.12
+markdown2==2.4.13
 nltk==3.8.1
 pandas==2.2.0
 psycopg2==2.9.9

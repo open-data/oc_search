@@ -17,10 +17,10 @@
           <label for="search_text" class="wb-inv">{% translate 'Search' %}</label>
           <input type="text" name="search_text" class="form-control mrgn-lft-sm" id="search_text"
              value="{{ search_text }}" placeholder="{% translate 'Search' %}"
-             aria-label="{% translate 'Search' %}" style="flex: 0.7 0 auto; height: 37px"/>
+             aria-label="{% translate 'Search text' %}" style="flex: 0.7 0 auto; height: 37px"/>
 
           <label for="search-button" class="wb-inv">{% translate "Search" %}</label>
-          <button type="button" class="btn btn-call-to-action form-submit mrgn-lft-sm" id="search-button" onclick="submitForm();" style="padding: .4em 1em"><span class="glyphicon glyphicon-search" aria-hidden="true"></span>  {% translate "Search" %}
+          <button type="button" class="btn btn-call-to-action form-submit mrgn-lft-sm" id="search-button" aria-label="Search button" onclick="submitForm();" style="padding: .4em 1em"><span class="glyphicon glyphicon-search" aria-hidden="true"></span>  {% translate "Search" %}
           </button>
         </div>
       <div class="col-md-12"  style="display: flex; justify-content: center; font-size: small">
@@ -49,9 +49,9 @@
           <div class="row mrgn-bttm-lg">
               <div class="col-sm-5 col-xs-12" style="justify-content: left">
               {% if not show_all_results %}
-              <b>{% blocktrans with result_num=total_hits|apnumber result_s=total_hits|pluralize %}Found {{result_num}} record{{result_s}}{% endblocktrans %}</b>
+                <b>{% blocktrans with result_num=total_hits|apnumber result_s=total_hits|pluralize %}Found <span data-testid="itemsfound">{{result_num}}</span> record{{result_s}}{% endblocktrans %}</b>
               {% else %}
-              <b>{% blocktrans with result_num=total_hits|apnumber result_s=total_hits|pluralize %}{{result_num}} record{{result_s}}{% endblocktrans %}</b>
+                <b>{% blocktrans with result_num=total_hits|apnumber result_s=total_hits|pluralize %}<span data-testid="itemsfound">{{result_num}}</span> record{{result_s}}{% endblocktrans %}</b>
               {% endif %}
               </div>
               <div class="col-sm-7 col-xs-12"><div style="display: flex; justify-content: right">
@@ -158,13 +158,13 @@
                                 <div class="mrgn-tp-0 col-sm-10">
                                     {% if key in codes.keys %}
                                     <label class="small"><div>
-                                        <input type="checkbox"
+                                        <input type="checkbox" aria-label="facet-{{ key }}-{{ subkey }}"
                                              onclick='selectFacet("{{ key }}", "{{ subkey }}" )'
                                              style="vertical-align:middle;position:relative;top:-1px;height: 20px;width: 20px;" value="{{ key }}"
                                              {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}
                                     >&nbsp;&nbsp;{{ codes|get_dict_value:key|get_dict_value:subkey }} </div></label>
                                     {% else %}
-                                    <label><div class="small"><input type="checkbox"
+                                    <label><div class="small"><input type="checkbox" aria-label="facet-{{ key }}-{{ subkey }}"
                                              onclick='selectFacet("{{ key }}", "{{ subkey }}" )'
                                              style="vertical-align:middle;position:relative;top:-1px;height: 20px;width: 20px;" value="{{ key }}"
                                              {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}
@@ -184,6 +184,7 @@
                                 <div class="mrgn-tp-0 mrgn-bttm-0 col-sm-10">
                                     {% if key in codes.keys %}
                                     <label class="small" style="font-size: smaller"><div><input type="checkbox"
+                                             aria-label="facet-{{ key }}-{{ subkey }}"
                                              onclick='selectFacet("{{ key }}", "{{ subkey }}" )'
                                              style="vertical-align:middle;position:relative;top:-1px;height: 20px;width: 20px" value="{{ key }}"
                                              {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}
@@ -191,6 +192,7 @@
                                     {% else %}
                                     <label class="small"><div class="small"><input type="checkbox"
                                              onclick='selectFacet("{{ key }}", "{{ subkey }}" )'
+                                             aria-label="facet-{{ key }}-{{ subkey }}"
                                              style="vertical-align:middle;position:relative;top:-1px;height: 20px;width: 20px" value="{{ key }}"
                                              {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}
                                     >&nbsp;&nbsp;{{ subkey }} </div></label>
