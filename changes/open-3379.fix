@@ -1,0 +1,1 @@
+Fixed missing hostname in the search query logs - automatically sets it now
