@@ -289,6 +289,8 @@ RAMP_CHART_JS_URL = 'https://viewer-visualiseur.services.geo.ca/apps/RAMP/contri
 RAMP_STYLE_CSS_URL = 'https://viewer-visualiseur.services.geo.ca/apps/RAMP/fgpv/fgpv-3.3.5/rv-styles.css'
 RAMP_MAIN_JS_URL = 'https://viewer-visualiseur.services.geo.ca/apps/RAMP/fgpv/fgpv-3.3.5/rv-main.js'
 RAMP_LEGACY_API_JS_URL = 'https://viewer-visualiseur.services.geo.ca/apps/RAMP/fgpv/fgpv-3.3.5/legacy-api.js'
+RAMP_GA_RESOURCE_EN = "https://open.canada.ca/data/en/dataset/2916fad5-ebcc-4c86-b0f3-4f619b29f412/resource/15eeafa2-c331-44e7-b37f-d0d54a51d2eb"
+RAMP_GA_RESOURCE_FR = "https://ouvert.canada.ca/data/fr/dataset/2916fad5-ebcc-4c86-b0f3-4f619b29f412/resource/15eeafa2-c331-44e7-b37f-d0d54a51d2eb"
 
 CELERY_BROKER_URL = 'redis://:<redis_password>@localhost:6379/0'
 CELERY_RESULT_BACKEND = 'django-db'

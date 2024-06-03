@@ -34,6 +34,7 @@ class RampView(View):
             if uuid_regex.match(uuid):
                 valid_uuids.append(uuid)
         keys = ",".join(valid_uuids)
+        ga_keys = "|".join([f"id:{x}" for x in valid_uuids])
 
         # Get the titles
 
@@ -73,6 +74,10 @@ class RampView(View):
             "legacy_api": settings.RAMP_LEGACY_API_JS_URL,
         }
         context.update(ramp_urls)
+
+        if hasattr(settings, "RAMP_GA_RESOURCE_EN"):
+            context['ramp_ga_resource_en'] = f"{settings.RAMP_GA_RESOURCE_EN}?filters={ga_keys}"
+            context['ramp_ga_resource_fr'] = f"{settings.RAMP_GA_RESOURCE_FR}?filters={ga_keys}"
 
         return render(request, 'ramp.html', context)
 

@@ -52,7 +52,14 @@
         <h1 property="name" id="wb-cont" class="fgp-h1-top">{% translate 'Open Maps' %}</h1>
         <ul>{% for id, title in titles.items %}
             <li><a href="{{ open_data_url }}{{ id }}">{{ title | safe }}</a></li>
-        {% endfor %}</ul>
+        {% endfor %}
+        {% if language == 'fr' %}
+          {% if ramp_ga_resource_fr %}<li><a href="{{ ramp_ga_resource_fr }}" target="_blank">les données de mesure d'audience</a></li>{% endif %}
+        {% else %}
+          {% if ramp_ga_resource_en %}<li><a href="{{ ramp_ga_resource_en }}" target="_blank">Web analytics data</a></li>{% endif %}
+        {% endif %}
+        </ul>
+    
         <div id="fgpSignIn" class="row">
             <div class="panel panel-default">
                 <div class="panel-body clearfix">
