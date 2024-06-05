@@ -8,7 +8,7 @@
             "lngLinks": [{
                 "lang": "{{ language_code | SwapLangCode }}",
                 {% if url_uses_path %}
-                "href": "/search/{{ language_code | SwapLangCode }}/{% if search_type %}{{ search_toggle }}/{% if query_path %}?{{ query_path }}{% endif %}{% endif %}",
+                "href": "/{% if language_code == 'en' %}rechercher{% else %}search{% endif %}/{{ language_code | SwapLangCode }}/{% if search_type %}{{ search_toggle }}/{% if query_path %}?{{ query_path }}{% endif %}{% endif %}",
                 {% else %}
                   {% if language_code == 'en' %}
                 "href": "https://{{ url_host_fr }}/{{ url_host_path }}{% if search_type %}{{ search_toggle }}/{% if query_path %}?{{ query_path }}{% endif %}{% endif %}",

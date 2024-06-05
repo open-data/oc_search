@@ -335,7 +335,7 @@ class SearchView(View):
             context["search_item_snippet"] = self.searches[search_type].search_item_snippet
             context["download_ds_url"] = self.searches[search_type].dataset_download_url_fr if lang == 'fr' else self.searches[search_type].dataset_download_url_en
             context["download_ds_text"] = self.searches[search_type].dataset_download_text_fr if lang == 'fr' else self.searches[search_type].dataset_download_text_en
-            context["search_text"] = request.GET.get("search_text", "")
+            context["search_text"] = request.GET.get("search_text", "").strip()
             context["id_fields"] = self.searches[search_type].id_fields.split(',') if self.searches[
                 search_type].id_fields else []
             context["export_path"] = "{0}export/".format(request.META["PATH_INFO"])
@@ -977,6 +977,7 @@ class DownloadSearchResultsView(View):
         else:
             return render(request, '404.html', get_error_context(search_type, lang))
 
+
 class MoreLikeThisView(SearchView):
 
     def __init__(self):
@@ -1061,7 +1062,7 @@ class MoreLikeThisView(SearchView):
                 context['back_to_url'] = request.session['prev_record']
             if 'prev_search' in request.session:
                 context['back_to_url'] = request.session['prev_search']
-            return render(request, template, context)
+            return render(request, "more_like_this.html", context)
 
         else:
             return render(request, '404.html', get_error_context(search_type, lang))
