@@ -1058,10 +1058,7 @@ class MoreLikeThisView(SearchView):
                                                                                                   self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
                                                                                                   view_type="mlt")
 
-            if 'prev_record' in request.session:
-                context['back_to_url'] = request.session['prev_record']
-            if 'prev_search' in request.session:
-                context['back_to_url'] = request.session['prev_search']
+            context['back_to_url'] = get_search_path(self.searches[search_type], lang)
             return render(request, "more_like_this.html", context)
 
         else:
