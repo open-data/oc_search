@@ -1040,6 +1040,7 @@ class MoreLikeThisView(SearchView):
             context['docs'] = solr_response.data['moreLikeThis'][record_id]['docs']
             context['original_doc'] = solr_response.docs[0]
 
+            template = "more_like_this.html"
             if search_type_plugin in self.discovered_plugins and self.discovered_plugins[search_type_plugin].plugin_api_version() == 1.1:
                 context, template = self.discovered_plugins[search_type_plugin].pre_render_search(context,
                                                                                                   self.searches[search_type].more_like_this_template,
@@ -1059,7 +1060,7 @@ class MoreLikeThisView(SearchView):
                                                                                                   view_type="mlt")
 
             context['back_to_url'] = get_search_path(self.searches[search_type], lang)
-            return render(request, "more_like_this.html", context)
+            return render(request, template, context)
 
         else:
             return render(request, '404.html', get_error_context(search_type, lang))
