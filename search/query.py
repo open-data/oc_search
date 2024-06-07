@@ -167,6 +167,10 @@ def create_solr_query(request: HttpRequest, search: Search, fields: dict, Codes:
         for request_field in request.GET.keys():
             if request_field == 'search_text' and not record_id:
                 solr_query['q'] = get_search_terms(request.GET.get('search_text'))
+                if request.LANGUAGE_CODE == 'fr':
+                    solr_query['q'] = solr_query['q'].replace(' OU ', ' OR ').replace(" ET ", " AND ").replace(' PAS ', ' NOT ').replace("(PAS ", "(NOT ")
+                    if solr_query['q'].startswith('PAS '):
+                        solr_query['q'] = "NOT " + solr_query['q'][4:]
             elif request_field == 'sort' and not record_id:
                 if request.LANGUAGE_CODE == 'fr':
                     solr_query['sort'] = request.GET.get('sort') if request.GET.get('sort') in search.results_sort_order_fr.split(',') else default_sort

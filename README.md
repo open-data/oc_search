@@ -8,6 +8,8 @@ Open Canada Search (OCS2) is a Django 3.x application that uses Solr 8.x to prov
 for the Open Canada data catalog and the proactive disclosure data. OCS provides a standard customizable web interface
 with a focus on searching Solr cores.
 
+The search application [supports Boolean searching](./docs/Searching.md).
+
 ## Installing OCS from Source
 
 ### System Requirements
