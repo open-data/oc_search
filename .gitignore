@@ -169,3 +169,5 @@ cython_debug/
 !/cache/*.csv
 /search/data/
 !/search/data/Readme.md
+# Don't include custom tests
+¡/tests/test_*.py

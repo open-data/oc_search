@@ -55,6 +55,9 @@ class Command(BaseCommand):
         extras_path = path.join(root_path, "extras")
         if not path.exists(extras_path):
             extras_path = ''
+        tests_path = path.join(root_path, 'tests')
+        if not path.exists(tests_path):
+            tests_path = ""
 
         # Import Search - skip this if the option '--exclude-db'  was selected on the command line
 
@@ -190,3 +193,9 @@ class Command(BaseCommand):
                 extra_export = path.join(BASE_DIR, 'extras', options['search'])
                 copy_tree(extras_path, extra_export)
                 logging.info("Copying custom search extra files to {0}".format(extra_export))
+
+            # Copy custom PyTest files to the tests directory
+            if path.exists(tests_path):
+                tests_export = path.join(Path(__file__).resolve().parent.parent.parent.parent, 'tests')
+                copy_tree(tests_path, tests_export)
+                logging.info("Copying custom PyTest files to {0}".format(tests_export))

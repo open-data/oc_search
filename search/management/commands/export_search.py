@@ -60,6 +60,9 @@ class Command(BaseCommand):
         extra_path = path.join(root_path, "extras")
         if not path.exists(extra_path):
             mkdir(extra_path)
+        tests_path = path.join(root_path, 'tests')
+        if not path.exists(tests_path):
+            mkdir(tests_path)
 
         # Export Database values - this is no longer recommended, instead use the database dump command
         if options['include_db']:
@@ -157,3 +160,8 @@ class Command(BaseCommand):
             copy(extra_file, extra_path)
             logging.info("Copying custom extra files to {0}".format(extra_path))
 
+        DJANGO_DIR = Path(__file__).resolve().parent.parent.parent.parent
+        custom_tests = path.join(DJANGO_DIR, 'tests', f"test_{options['search']}*.py")
+        for test_file in glob.glob(custom_tests):
+            copy(test_file, tests_path)
+            logging.info("Copying custom PyTest files to {0}".format(tests_path))
