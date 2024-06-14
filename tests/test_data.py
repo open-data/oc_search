@@ -9,13 +9,22 @@ def test_page_title(page: Page):
 
 
 def test_uuid_search_title_en(page: Page):
-    page.goto(search_path('data', 'en', path="?owner_org=tbs-sct&page=1&sort=metadata_modified+desc&search_text=009f9a49-c2d9-4d29-a6d4-1a228da335ce"))
+    page.goto(search_path('data', 'en'))
+    tb = page.get_by_label("Search text")
+    tb.fill('009f9a49-c2d9-4d29-a6d4-1a228da335ce')
+    bt = page.get_by_label("Search button")
+    bt.click()
     count = page.get_by_test_id("itemsfound")
     expect(count).to_have_text("one")
 
 
+
 def test_uuid_search_title_fr(page: Page):
-    page.goto(search_path('data', 'fr', path="?owner_org=tbs-sct&page=1&sort=metadata_modified+desc&search_text=009f9a49-c2d9-4d29-a6d4-1a228da335ce"))
+    page.goto(search_path('data', 'fr'))
+    tb = page.get_by_label("Recherche")
+    tb.fill('009f9a49-c2d9-4d29-a6d4-1a228da335ce')
+    bt = page.get_by_label("Search button")
+    bt.click()
     count = page.get_by_test_id("itemsfound")
     expect(count).to_have_text("un")
 
