@@ -17,7 +17,7 @@
           <label for="search_text" class="wb-inv">{% translate 'Search' %}</label>
           <input type="text" name="search_text" class="form-control mrgn-lft-sm" id="search_text"
              value="{{ search_text }}" placeholder="{% translate 'Search' %}"
-             aria-label="{% translate 'Search text' %}" style="flex: 0.7 0 auto; height: 37px"/>
+             aria-label="{% translate 'Search text' %}" data-testid="search-text" style="flex: 0.7 0 auto; height: 37px"/>
 
           <label for="search-button" class="wb-inv">{% translate "Search" %}</label>
           <button type="button" class="btn btn-call-to-action form-submit mrgn-lft-sm" id="search-button" aria-label="Search button" onclick="submitForm();" style="padding: .4em 1em"><span class="glyphicon glyphicon-search" aria-hidden="true"></span>  {% translate "Search" %}

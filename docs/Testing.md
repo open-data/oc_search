@@ -18,7 +18,7 @@ utility to execute the entire test suite or individual test files.
 
 ```shell
  > pytest # run all tests
- > pytest test/test_opendata.py
+ > pytest test/test_data.py
 ```
 
 The tests use Django's standard `settings.py` file to determine the URL to search pages.
