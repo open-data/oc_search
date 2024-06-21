@@ -1126,6 +1126,8 @@ class PageView(View):
             "url_uses_path": settings.SEARCH_LANG_USE_PATH,
             "site_host_en": settings.OPEN_DATA_HOST_EN,
             "site_host_fr": settings.OPEN_DATA_HOST_FR,
+            "url_host_en": settings.SEARCH_EN_HOSTNAME,
+            "url_host_fr": settings.SEARCH_FR_HOSTNAME,
             "footer_snippet": "search_snippets/default_footer.html",
             "breadcrumb_snippet": "search_snippets/default_breadcrumb.html",
             "info_message_snippet": "search_snippets/default_info_message.html",

@@ -11,9 +11,9 @@
                 "href": "/{% if language_code == 'en' %}rechercher{% else %}search{% endif %}/{{ language_code | SwapLangCode }}/page/{{ page_toggle }}",
                 {% else %}
                   {% if language_code == 'en' %}
-                "href": "https://{{ url_host_fr }}/{{ url_host_path }}{% if search_type %}{{ search_toggle }}/{% if query_path %}?{{ query_path }}{% endif %}{% endif %}",
+                "href": "https://{{ url_host_fr }}/{{ url_host_path }}page/{{ page_toggle }}",
                   {% else %}
-                "href": "https://{{ url_host_en }}/{{ url_host_path }}{% if search_type %}{{ search_toggle }}/{% if query_path %}?{{ query_path }}{% endif %}{% endif %}",
+                "href": "https://{{ url_host_en }}/{{ url_host_path }}page/{{ page_toggle }}",
                   {% endif %}
                 {% endif %}
                 "text": "{{ language_code | SwapLangName}}"
