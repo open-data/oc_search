@@ -299,3 +299,6 @@ msgstr "Données similaires"
 
 msgid "No similar data was found"
 msgstr "Aucune donnée similaire n'a été trouvée"
+
+msgid "Search Tips"
+msgstr "Conseils pour la recherche"

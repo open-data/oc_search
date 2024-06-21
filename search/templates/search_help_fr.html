@@ -1,0 +1,82 @@
+{% extends "base-cdts.html" %}
+{% load static %}
+{% load humanize %}
+{% load i18n %}
+{% load search_extras %}
+
+{% block breadcrumb %}
+  {% include 'snippets/default_page_breadcrumb.html' with language_code=language %}
+{% endblock breadcrumb %}
+
+{% block main-content-title %}
+  <h1 property="name" id="wb-cont">Conseils pour la recherche</h1>
+{% endblock main-content-title %}
+
+{% block main-content-body %}
+  <div class="row" xmlns="http://www.w3.org/1999/html">
+    <div class="col-md-12">
+      <div class="row">
+        <div class="col-md-12">
+          La recherche sur le portail du gouvernement ouvert permet d'utiliser des "opérateurs booléens", c'est-à-dire des mots ou des symboles spéciaux qui peuvent être utilisés pour élargir ou restreindre les paramètres de la recherche.
+          Des exemples sont présentés ci-dessous.
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <table class="table table-responsive table-striped">
+            <caption class="wb-inv">Opérateur booléen</caption>
+            <thead>
+            <tr>
+              <th>Opérateur booléen</th>
+              <th>Description</th>
+              <th>Exemple</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+              <td><b>ET</b></td>
+              <td>Fournit des résultats qui contiennent les deux mots-clés ou tous les mots-clés. Cet opérateur peut être utilisé lorsque vous souhaitez que les résultats de votre recherche contiennent au moins deux termes spécifiques</td>
+              <td>Eau ET Air</td>
+            </tr>
+            <tr>
+              <td><b>OU</b></td>
+              <td>Fournit des résultats qui contiennent l'un ou l'autre des mots clés. Utilisez cet opérateur lorsque vous souhaitez que les résultats contiennent au moins un (ou pas nécessairement les deux) des mots-clés choisis.</td>
+              <td>Eau OU Air</td>
+            </tr>
+            <tr>
+              <td><b>PAS</b></td>
+              <td>Fournit des résultats qui contiennent le premier mot-clé, mais pas le second (ou d'autres qui suivent). Il est important de placer l'astérisque après le premier mot car il exclura les derniers mots-clés</td>
+              <td>Eau PAS Mer</td>
+            </tr>
+            <tr>
+              <td><b>Guillemets ""</b></td>
+              <td>Permet d'obtenir des résultats qui contiennent une expression exacte ou des mots-clés précis</td>
+              <td>"Objectifs de qualité de l'eau"</td>
+            </tr>
+            <tr>
+              <td><b>Parenthèses ()</b></td>
+              <td>Permet de regrouper des termes de recherche et de contrôler l'ordre dans lequel ils sont recherchés. Les mots-clés inclus dans les parenthèses seront recherchés en premier, suivis de ceux qui ne sont pas entre
+                parenthèses.
+              </td>
+              <td>Qualité ET (eau OU air)</td>
+            </tr>
+            <tr>
+              <td><b>Astérisque *</b></td>
+              <td>Fournit des résultats de recherche qui contiennent une variante d'un mot-clé. Cette option peut être utilisée lorsque vous souhaitez que la recherche renvoie des résultats contenant un mot-clé saisi ou d'autres mots
+                commençant par les mêmes lettres. Attention, les astérisques ne fonctionnent qu'à la fin du mot.
+              </td>
+              <td>Financ*</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <b>Notez</b> que ces termes de l'opérateur booléen sont sensibles à la casse et doivent être mis en majuscules. En outre, les résultats de la recherche incluent automatiquement certains mots apparentés. Par exemple, le
+            terme de recherche <code>run</code> renverra des résultats comprenant <code>running</code> et <code>runs</code>.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

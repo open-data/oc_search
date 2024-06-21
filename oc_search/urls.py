@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path
 from django.conf.urls import include
 from django.views.decorators.cache import never_cache
-from search.views import SearchView, RecordView, ExportView, MoreLikeThisView, HomeView, DefaultView, ExportStatusView, DownloadSearchResultsView
+from search.views import SearchView, RecordView, ExportView, MoreLikeThisView, HomeView, DefaultView, ExportStatusView, DownloadSearchResultsView, PageView
 from ramp.views import RampView
 
 
@@ -32,8 +32,10 @@ if settings.SEARCH_LANG_USE_PATH:
     urlpatterns += [
         path('', DefaultView.as_view(), name="HomePage"),
         path('search/', DefaultView.as_view(), name="HomePage"),
+        path('search/<str:lang>/page/<str:page_type>/', PageView.as_view(), name="StaticPage"),
         path('rechercher/', DefaultView.as_view(), name="HomePage"),
         path('search/<str:lang>/', HomeView.as_view(), name="HomePage"),
+        path('rechercher/<str:lang>/page/<str:page_type>/', PageView.as_view(), name="StaticPage"),
         path('search/<str:lang>/<str:search_type>/', SearchView.as_view(), name="SearchForm"),
         path('rechercher/<str:lang>/<str:search_type>/', SearchView.as_view(), name="SearchForm"),
         path('search/<str:lang>/<str:search_type>/record/<path:record_id>', RecordView.as_view(), name='RecordForm'),
@@ -58,6 +60,7 @@ else:
     urlpatterns += [
         path('', DefaultView.as_view(), name="HomePage"),
         path(settings.SEARCH_HOST_PATH, HomeView.as_view(), name="HomePage"),
+        path(settings.SEARCH_HOST_PATH + 'page/<str:page_type>/', PageView.as_view(), name="StaticPage"),
         path(settings.SEARCH_HOST_PATH + '<str:search_type>/', SearchView.as_view(), name="SearchForm"),
         path(settings.SEARCH_HOST_PATH + 'record/<str:search_type>/<path:record_id>', RecordView.as_view(),
              name='RecordForm'),

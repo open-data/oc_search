@@ -305,6 +305,16 @@ class SearchView(View):
         utl_fragments = utl_fragments if utl_fragments[-2] == search_type else utl_fragments[:-2]
         if utl_fragments[-1]:
             utl_fragments.append('')
+        if settings.SEARCH_LANG_USE_PATH:
+            if lang == 'fr':
+                context['help_page'] = '/rechercher/fr/page/aide'
+            else:
+                context['help_page'] = '/search/en/page/help'
+        else:
+            if lang == 'fr':
+                context['help_page'] = f'{settings.SEARCH_HOST_PATH}/page/aide'
+            else:
+                context['help_page'] = f'{settings.SEARCH_HOST_PATH}/page/help'
 
         context['parent_path'] = "/".join(utl_fragments)
 
@@ -1094,6 +1104,42 @@ class HomeView(SearchView):
         }
 
         return render(request, "homepage.html", context)
+
+
+class PageView(View):
+
+    def __init__(self):
+        super().__init__()
+
+    def get(self, request: HttpRequest, lang='en', page_type=''):
+        lang = request.LANGUAGE_CODE
+        context = {
+            "language": lang,
+            "cdts_version": settings.CDTS_VERSION,
+            "dcterms_lang": 'fra' if lang == 'fr' else 'eng',
+            "ADOBE_ANALYTICS_URL": settings.ADOBE_ANALYTICS_URL,
+            "GOOGLE_ANALYTICS_GTM_ID": settings.GOOGLE_ANALYTICS_GTM_ID,
+            "GOOGLE_ANALYTICS_PROPERTY_ID": settings.GOOGLE_ANALYTICS_PROPERTY_ID,
+            "query_path": request.META["QUERY_STRING"],
+            "path_info": request.META["PATH_INFO"],
+            'parent_path': request.META["PATH_INFO"],
+            "url_uses_path": settings.SEARCH_LANG_USE_PATH,
+            "site_host_en": settings.OPEN_DATA_HOST_EN,
+            "site_host_fr": settings.OPEN_DATA_HOST_FR,
+            "footer_snippet": "search_snippets/default_footer.html",
+            "breadcrumb_snippet": "search_snippets/default_breadcrumb.html",
+            "info_message_snippet": "search_snippets/default_info_message.html",
+            "about_message_snippet": "search_snippets/default_about_message.html",
+        }
+
+        if page_type == 'help' and lang == 'en':
+            context['page_toggle'] = 'aide'
+            return render(request, "search_help_en.html", context)
+        elif page_type == 'aide' and lang == 'fr':
+            context['page_toggle'] = 'help'
+            return render(request, "search_help_fr.html", context)
+        else:
+            return render(request, '404.html', context)
 
 
 class DefaultView(View):

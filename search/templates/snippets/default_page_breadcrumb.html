@@ -1,0 +1,31 @@
+
+{% load i18n %}
+{% load search_extras %}
+
+<script>
+        var defTop = document.getElementById("def-top");
+        defTop.outerHTML = wet.builder.top({
+            "lngLinks": [{
+                "lang": "{{ language_code | SwapLangCode }}",
+                {% if url_uses_path %}
+                "href": "/{% if language_code == 'en' %}rechercher{% else %}search{% endif %}/{{ language_code | SwapLangCode }}/page/{{ page_toggle }}",
+                {% else %}
+                  {% if language_code == 'en' %}
+                "href": "https://{{ url_host_fr }}/{{ url_host_path }}{% if search_type %}{{ search_toggle }}/{% if query_path %}?{{ query_path }}{% endif %}{% endif %}",
+                  {% else %}
+                "href": "https://{{ url_host_en }}/{{ url_host_path }}{% if search_type %}{{ search_toggle }}/{% if query_path %}?{{ query_path }}{% endif %}{% endif %}",
+                  {% endif %}
+                {% endif %}
+                "text": "{{ language_code | SwapLangName}}"
+            }],
+            search: false,
+            "breadcrumbs": [{
+                "title": "Canada.ca",
+                "href": "https://www.canada.ca/{{ language_code }}.html",
+            },{
+                "title": "{% translate 'Open Government' %}",
+                "href": "{% if not url_uses_path %}{% if LANGUAGE_CODE == 'fr' %}{{ site_host_fr }}{% else %}{{ site_host_en }}{% endif %}{% endif %}/{{ LANGUAGE_CODE }}",
+            }]
+        });
+    </script>
+

@@ -1,0 +1,79 @@
+{% extends "base-cdts.html" %}
+{% load static %}
+{% load humanize %}
+{% load i18n %}
+{% load search_extras %}
+
+{% block breadcrumb %}
+  {% include 'snippets/default_page_breadcrumb.html' with language_code=language %}
+{% endblock breadcrumb %}
+
+{% block main-content-title %}
+<h1 property="name" id="wb-cont">Search Tips</h1>
+{% endblock main-content-title %}
+
+{% block main-content-body %}
+  <div class="row" xmlns="http://www.w3.org/1999/html">
+    <div class="col-md-12">
+      <div class="row">
+        <div class="col-md-12">
+          The Open Government Portal Search supports the use of ‘Boolean Operators’, which are special words or symbols that can be used to expand or narrow your search parameters. Examples are captured below.
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <table class="table table-responsive table-striped">
+            <caption class="wb-inv">Boolean Operators</caption>
+            <thead>
+            <tr>
+              <th>Boolean Operator</th>
+              <th>Description</th>
+              <th>Example</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+              <td><b>AND</b></td>
+              <td>Provides results that contain both or all keywords. This can be used when you want your search results to contain two or more specific terms</td>
+              <td>Water AND Air</td>
+            </tr>
+            <tr>
+              <td><b>OR</b></td>
+              <td>Provides results that contain either keyword. Use this when you want results to contain at least one (or not necessarily both) of your chosen keywords.</td>
+              <td>Water OR Air</td>
+            </tr>
+            <tr>
+              <td><b>NOT</b></td>
+              <td>Provides results that contain the first keyword, but not the second (or others that follow). It is important to put the asterisk after the first word as it will exclude the latter keywords</td>
+              <td>Water NOT Sea</td>
+            </tr>
+            <tr>
+              <td><b>Quotation marks “”</b></td>
+              <td>Provides results that include an exact phrase or precise keywords</td>
+              <td>"Water Quality Objectives"</td>
+            </tr>
+            <tr>
+              <td><b>Parentheses ()</b></td>
+              <td>Allows you to group together search terms and to control the order that they are searched. Keywords included within the parentheses will be searched first, followed by those outside of parentheses.</td>
+              <td>Quality AND (water OR air)</td>
+            </tr>
+            <tr>
+              <td><b>Asterisk * </b></td>
+              <td>Provides search results that contain a variation of a keyword. This can be used when you want the search to return results that contain a keyword that is entered or other words that begin with the same letters. Note, the
+                asterisks will only work at the end of the word.
+              </td>
+              <td>Financ*</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <b>Note</b>, these Boolean Operator terms are case sensitive, and must be capitalized. Also, search results automatically include some words which are related. For example, the search term <code>run</code> will return results
+            that include <code>running</code> and <code>runs</code>.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
