@@ -307,14 +307,14 @@ class SearchView(View):
             utl_fragments.append('')
         if settings.SEARCH_LANG_USE_PATH:
             if lang == 'fr':
-                context['help_page'] = '/rechercher/fr/page/aide'
+                context['help_page'] = f'/rechercher/fr/page/aide?{self.reverse_search_alias_fr[search_type]}'
             else:
-                context['help_page'] = '/search/en/page/help'
+                context['help_page'] = f'/search/en/page/help?{self.reverse_search_alias_en[search_type]}'
         else:
             if lang == 'fr':
-                context['help_page'] = f'{settings.SEARCH_HOST_PATH}/page/aide'
+                context['help_page'] = f'{settings.SEARCH_HOST_PATH}/page/aide?{self.reverse_search_alias_fr[search_type]}'
             else:
-                context['help_page'] = f'{settings.SEARCH_HOST_PATH}/page/help'
+                context['help_page'] = f'{settings.SEARCH_HOST_PATH}/page/help?{self.reverse_search_alias_en[search_type]}'
 
         context['parent_path'] = "/".join(utl_fragments)
 
@@ -1106,13 +1106,14 @@ class HomeView(SearchView):
         return render(request, "homepage.html", context)
 
 
-class PageView(View):
+class PageView(SearchView):
 
     def __init__(self):
         super().__init__()
 
     def get(self, request: HttpRequest, lang='en', page_type=''):
         lang = request.LANGUAGE_CODE
+        # noinspection PyDictCreation
         context = {
             "language": lang,
             "cdts_version": settings.CDTS_VERSION,
@@ -1133,6 +1134,19 @@ class PageView(View):
             "info_message_snippet": "search_snippets/default_info_message.html",
             "about_message_snippet": "search_snippets/default_about_message.html",
         }
+        # Validate the query string and set a back-to path
+        context['back_to_url'] = ''
+        if lang == 'fr':
+            if request.META["QUERY_STRING"] in self.search_alias_fr:
+                if settings.SEARCH_LANG_USE_PATH:
+                    context['back_to_url'] = f'/rechercher/fr/{request.META["QUERY_STRING"]}'
+                else:
+                    context['back_to_url'] = f'{settings.SEARCH_HOST_PATH}/{request.META["QUERY_STRING"]}'
+        elif request.META["QUERY_STRING"] in self.search_alias_en:
+            if settings.SEARCH_LANG_USE_PATH:
+                context['back_to_url'] = f'/search/en/{request.META["QUERY_STRING"]}'
+            else:
+                context['back_to_url'] = f'{settings.SEARCH_HOST_PATH}/{request.META["QUERY_STRING"]}'
 
         if page_type == 'help' and lang == 'en':
             context['page_toggle'] = 'aide'

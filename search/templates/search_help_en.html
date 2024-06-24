@@ -13,7 +13,14 @@
 {% endblock main-content-title %}
 
 {% block main-content-body %}
-  <div class="row" xmlns="http://www.w3.org/1999/html">
+  {% if back_to_url %}
+  <div class="row mrgn-tp-md">
+      <div class="col-md-12">
+          <a class="btn btn-default" href="{{ back_to_url }}"><span class="glyphicon glyphicon-menu-left"></span> {% translate 'Back to search' %}</a>
+      </div>
+  </div>
+  {% endif %}
+  <div class="row mrgn-tp-md" xmlns="http://www.w3.org/1999/html">
     <div class="col-md-12">
       <div class="row">
         <div class="col-md-12">
