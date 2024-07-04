@@ -328,3 +328,6 @@ IMPORT_DATA_CSV_SOLR_INDEX_GROUP_SIZE = 10
 IMPORT_DATA_CSV_BAD_DATA_DIR = os.path.join(BASE_DIR, 'bad_data')
 
 NLTK_DATADIR = os.path.join(BASE_DIR, 'nltk')
+
+# Invitation Manager
+IM_ENABLED = False

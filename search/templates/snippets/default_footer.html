@@ -1,3 +1,4 @@
+{% load static %}
 
 		<div id="def-footer">
 			<!-- Write closure fall-back static file -->
@@ -16,3 +17,9 @@
 				"cdnEnv": "prod"
 			}));
 		</script>
+    {% if im_enabled %}
+      <!--InvitationManager Files -->
+      <script src="{% static 'search_snippets/im/Overlay.js' %}"></script>
+      <script src="{% static 'search_snippets/im/InvitationManager.js' %}"></script>      
+      <!-- End InvitationManager Files -->  
+    {% endif %}

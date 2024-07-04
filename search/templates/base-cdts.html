@@ -44,7 +44,12 @@
     {# Include search page specific javascript and css. Location comes from the admin db #}
     {% if header_js_snippet %}<script>{% include header_js_snippet %}</script>{% endif %}
     {% if header_css_snippet %}<style>{% include header_css_snippet %}</style>{% endif %}
-
+    {% if im_enabled %}
+      <!--InvitationManager Files -->
+      <link rel="stylesheet" href="{% static 'search_snippets/im/Overlay.css' %}">
+      <!-- End InvitationManager Files -->  
+    {% endif %}
+  
     <style>
         mark {
             background-color: yellow;

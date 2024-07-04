@@ -300,6 +300,7 @@ class SearchView(View):
             "mlt_enabled": self.searches[search_type].mlt_enabled,
             "query_path": request.META["QUERY_STRING"],
             "path_info": request.META["PATH_INFO"],
+            "im_enabled": settings.IM_ENABLED if hasattr(settings, 'IM_ENABLED') else False,
         }
         utl_fragments = request.META["PATH_INFO"].split('/')
         utl_fragments = utl_fragments if utl_fragments[-2] == search_type else utl_fragments[:-2]
@@ -599,6 +600,7 @@ class RecordView(SearchView):
             context["download_ds_url_en"] = self.searches[search_type].dataset_download_url_fr if lang == 'fr' else self.searches[search_type].dataset_download_url_en
             context["search_text"] = request.GET.get("search_text", "")
             context['back_to_url'] = get_search_path(self.searches[search_type], lang)
+            context['im_enabled'] = False
             request.session['prev_record'] = request.build_absolute_uri()
             solr = SolrClient(settings.SOLR_SERVER_URL)
 
