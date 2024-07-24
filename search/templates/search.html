@@ -38,8 +38,11 @@
           {% endif %}
           {% if json_download_allowed %}<a href="{{ json_format_url }}" class="btn btn-link" target="_blank" rel="unsafe-url">
           <span class="glyphicon glyphicon-list text-info"></span>  {% translate 'Link to JSON format' %} </a>{% endif %}
+          {# July 24, 2024: TEMPORARY Measure - only show search tips link on the Open Data Search page #}
+          {% if search_type == 'data' %}
           <a href="{{ help_page }}" class="btn btn-link">
             <span class="glyphicon glyphicon-question-sign"></span> {% translate 'Search Tips' %}</a>
+          {% endif %}
       </div>
     </div>
     {% endblock main-centre-search-box %}
