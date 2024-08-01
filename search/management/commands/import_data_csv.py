@@ -2,7 +2,7 @@ import os
 import sys
 
 from babel.dates import format_date
-from babel.numbers import format_currency, format_decimal, parse_decimal
+from babel.numbers import format_currency, format_decimal, parse_decimal, NumberFormatError
 from datetime import datetime
 from django.core.management.base import BaseCommand
 from django.conf import settings
@@ -259,26 +259,33 @@ class Command(BaseCommand):
                                             solr_record[csv_field] = "0"
                                         if self.csv_fields[csv_field].solr_field_is_currency:
                                             csv_normalized = re.sub("[^-0-9.,]", '', solr_record[csv_field])
-                                            csv_decimal = parse_decimal(csv_normalized, locale='en_US').normalize()
-                                            if self.csv_fields[csv_field].solr_field_type == 'pfloat':
-                                                solr_record[csv_field] = float(csv_decimal)
-                                            elif self.csv_fields[csv_field].solr_field_type == 'pint':
-                                                solr_record[csv_field] = int(csv_decimal)
-                                            solr_record[csv_field + '_en'] = format_currency(csv_decimal, 'CAD',
-                                                                                             locale='en_CA')
                                             try:
-                                                solr_record[csv_field + '_fr'] = format_currency(csv_decimal, 'CAD',
-                                                                                                 locale='fr_CA')
-                                            except KeyError as kex:
-                                                # Sometimes the Babel locale cannot properly format the currency for French
-                                                solr_record[csv_field + '_fr'] = format_decimal(csv_decimal,
-                                                                                                locale='fr_CA')
+                                                csv_decimal = parse_decimal(csv_normalized, locale='en_US').normalize()
+                                                if self.csv_fields[csv_field].solr_field_type == 'pfloat':
+                                                    solr_record[csv_field] = float(csv_decimal)
+                                                elif self.csv_fields[csv_field].solr_field_type == 'pint':
+                                                    solr_record[csv_field] = int(csv_decimal)
+                                                solr_record[csv_field + '_en'] = format_currency(csv_decimal, 'CAD',
+                                                                                             locale='en_CA')
+
+                                                try:
+                                                    solr_record[csv_field + '_fr'] = format_currency(csv_decimal, 'CAD',
+                                                                                                     locale='fr_CA')
+                                                except KeyError as kex:
+                                                    # Sometimes the Babel locale cannot properly format the currency for French
+                                                    solr_record[csv_field + '_fr'] = format_decimal(csv_decimal,
+                                                                                                    locale='fr_CA')
+                                            except NumberFormatError as nfx:
+                                                self.logger.error(f'Unexpected Error "{nfx}" while processing field {csv_field} in row {row_num + 1}')
                                         else:
-                                            csv_decimal = parse_decimal(solr_record[csv_field], locale='en_US')
-                                            solr_record[
-                                                csv_field + '_en'] = format_decimal(csv_decimal, locale='en_CA')
-                                            solr_record[
-                                                csv_field + '_fr'] = format_decimal(csv_decimal, locale='fr_CA')
+                                            try:
+                                                csv_decimal = parse_decimal(solr_record[csv_field], locale='en_US')
+                                                solr_record[
+                                                    csv_field + '_en'] = format_decimal(csv_decimal, locale='en_CA')
+                                                solr_record[
+                                                    csv_field + '_fr'] = format_decimal(csv_decimal, locale='fr_CA')
+                                            except NumberFormatError as nfx:
+                                                self.logger.error(f'Unexpected Error "{nfx}" while processing field {csv_field} in row {row_num + 1}')
                                     else:
                                         solr_record[csv_field + '_en'] = ''
                                         solr_record[csv_field + '_fr'] = ''
@@ -405,7 +412,7 @@ class Command(BaseCommand):
                                     time.sleep(2)
 
                                 except Exception as x:
-                                    self.logger.warning(f"Unexpected error encountered while indexing starting on row {total}. Row data has {len(solr_items)} items")
+                                    self.logger.warning(f'Unexpected error "{x}" encountered while indexing starting on row {total}. Row data has {len(solr_items)} items')
                                     for sitm in solr_items:
                                         self.logger.warning(f"{sitm}")
                                         bd_writer.writerow(sitm)
@@ -425,7 +432,7 @@ class Command(BaseCommand):
                                 self.logger.info(f"{error_count} errors so far")
 
                         except Exception as x:
-                            self.logger.error('Unexpected Error "{0}" while processing row {1}'.format(x, row_num + 1))
+                            self.logger.error(f'Unexpected Error "{x}" while processing row {row_num + 1}')
                             if options['debug'] and not options['quiet']:
                                 traceback.print_exception(type(x), x, x.__traceback__)
 
