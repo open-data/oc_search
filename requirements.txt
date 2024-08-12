@@ -13,7 +13,7 @@ django-smuggler==1.0.4
 email-validator==2.1.0.post1
 inflection==0.5.1
 markdown2==2.4.13
-nltk==3.8.1
+nltk==3.8.2
 pandas==2.2.0
 psycopg2==2.9.9
 python-dateutil==2.8.2
