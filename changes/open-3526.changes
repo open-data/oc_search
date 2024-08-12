@@ -1,0 +1,2 @@
+Improvements made to the Contracts search to better handle minor data variations.
+Result is fewer indexing errors reported during loading of contracts data.
