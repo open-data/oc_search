@@ -70,6 +70,25 @@ search_text_fr = {
     },
 }
 
+string_keyword = {
+    "name": "text_keyword",
+    "class": "solr.TextField",
+    "positionIncrementGap": "100",
+    "indexAnalyzer": {
+        "tokenizer": {"class": "solr.KeywordTokenizerFactory"},
+        "filters": [
+            {"class": "solr.LowerCaseFilterFactory"},
+            {"class": "solr.ASCIIFoldingFilterFactory", "preserveOriginal": "false"}
+        ]
+    },
+    "queryAnalyzer": {
+        "tokenizer": {"class": "solr.KeywordTokenizerFactory"},
+        "filters": [
+            {"class": "solr.LowerCaseFilterFactory"},
+            {"class": "solr.ASCIIFoldingFilterFactory", "preserveOriginal": "false"}
+        ]
+    }
+}
 
 class Command(BaseCommand):
     help = 'Using the specified Search model, create a Solr core using the Solr Schema API'
@@ -100,6 +119,8 @@ class Command(BaseCommand):
                 solr.schema.create_field_type(solr_core, search_text_en)
             if not solr.schema.does_field_type_exist(solr_core, 'search_text_fr'):
                 solr.schema.create_field_type(solr_core, search_text_fr)
+            if not solr.schema.does_field_type_exist(solr_core, 'text_keyword'):
+                solr.schema.create_field_type(solr_core, string_keyword)
             create_year_field = False
             create_month_field = False
 

@@ -167,6 +167,7 @@ class Field(models.Model):
         ('text_general', 'Generic Text'),
         ('pint', 'Integer'),
         ('string', 'String'),
+        ('text_keyword', 'Keyword'),
         ('pdate', 'Date'),
         ('pfloat', 'Float/Currency')
     ]
