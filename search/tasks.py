@@ -13,7 +13,7 @@ from SolrClient.exceptions import ConnectionError, SolrError
 import time
 
 
-def cache_search_results_file(cached_filename: str, sr: SolrResponse, rows=100000):
+def cache_search_results_file(cached_filename: str, sr: SolrResponse, rows=0):
     if len(sr.docs) == 0:
         return False
     if not os.path.exists(cached_filename):
@@ -29,7 +29,7 @@ def cache_search_results_file(cached_filename: str, sr: SolrResponse, rows=10000
             cache_writer = csv.writer(csv_file, dialect='excel', quoting=csv.QUOTE_ALL)
             c = 0
             for i in sr.docs:
-                if c > rows:
+                if rows != 0 and c > rows:
                     break
                 try:
                     cache_writer.writerow(i.values())
