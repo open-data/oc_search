@@ -335,11 +335,12 @@ class Command(BaseCommand):
                                             codes_en = []
                                             codes_fr = []
                                             for code_value in csv_record[csv_field].split(","):
-                                                if code_value.lower() in self.field_codes[csv_field]:
+                                                cv = code_value.lower().strip()
+                                                if cv in self.field_codes[csv_field]:
                                                     codes_en.append(
-                                                        self.field_codes[csv_field][code_value.lower()].label_en)
+                                                        self.field_codes[csv_field][cv].label_en)
                                                     codes_fr.append(
-                                                        self.field_codes[csv_field][code_value.lower()].label_fr)
+                                                        self.field_codes[csv_field][cv].label_fr)
                                                 else:
                                                     self.logger.warning(
                                                         "Row {0}, Record {1}. Unknown code value: {2} for field: {3}".format(
