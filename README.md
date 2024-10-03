@@ -4,7 +4,7 @@
 
 ## About
 
-Open Canada Search (OCS2) is a Django 3.x application that uses Solr 8.x to provide a customizable search interface
+Open Canada Search (OCS2) is a Django 4.x application that uses Solr 9.x to provide a customizable search interface
 for the Open Canada data catalog and the proactive disclosure data. OCS provides a standard customizable web interface
 with a focus on searching Solr cores.
 
@@ -22,7 +22,7 @@ It is highly recommended that users have some basic familiarity with Django befo
 OCS2 requires a database backend that is supported by Django such as PostgreSQL or MySQL. Initial development can be done with the SQLite engine
 that is included with Python.
 
-OCS2 also requires access to a Solr v8.x server. For information on installing Solr, please visit the
+OCS2 also requires access to a Solr v9.x server. For information on installing Solr, please visit the
 [Apache Solr Reference Guide](https://lucene.apache.org/solr/guide/).
 
 For background data processing, OCS2 using [Celery for Django](https://docs.celeryq.dev/en/latest/django/first-steps-with-django.html#django-celery-results-using-the-django-orm-cache-as-a-result-backend).
@@ -52,7 +52,7 @@ Before installing OCS2, set up the prerequisites:
 
 - Python 3.9+
 - PostgreSQL 13 (recommended) or other Django supported database
-- Apache Solr Search Server 8.x
+- Apache Solr Search Server 9.x
 
 For production instances you will want a uWSGI server like uWSGI or Gunicorn
 
@@ -81,7 +81,7 @@ and follow these steps.
 5. Activate the new virtual environment.
 
    On Linux, the command is `source venv/bin/activate`. On Windows, the command `venv\Scripts\activate` where
-   `venv` is the name of the virtual environment.
+   `venv` is the name of your virtual environment.
 
 
 6. Install [SolrClient library](https://github.com/open-data/SolrClient).
@@ -104,10 +104,9 @@ and follow these steps.
 
 8. Create a Django project settings file.
 
-   Django by default with read project runtime settings from a `settings.py` file located in the
-   [application sub-directory](https://github.com/open-data/oc_search/tree/master/oc_search). OCS2
-   provides an example settings file. Use the provided file [settings-sample.py](https://github.com/open-data/oc_search/blob/master/oc_search/settings-sample.py) as a template
-   for your own project.
+   Django reads project runtime settings from a `settings.py` file located in the
+   [application sub-directory](https://github.com/open-data/oc_search/tree/master/oc_search). OCS2 provides an example settings file. Use the provided
+   file [settings-sample.py](https://github.com/open-data/oc_search/blob/master/oc_search/settings-sample.py) as a template for your own project.
 
    For more information on customizing the settings file, see the
    [Django Project documentation.](https://docs.djangoproject.com/en/3.2/topics/settings/)
@@ -115,14 +114,16 @@ and follow these steps.
 
 9. Create the Django, OCS2, and Celery database tables.
 
-   In the settings.py file set the appropriate database settings and create the database tables.
-   OCS2 has been tested with PostgreSQL 13.
+   In the settings.py file set the appropriate database settings and create the database tables
+   using the Django command-line management tool.
+   OCS2 has been tested with PostgreSQL 13 and SqLite 3.
 
    - `python manage.py makemigrations search`
    - `python manage.py sqlmigrate search 0001`
    - `python manage.py migrate`
 
-   Downloading search results makes use of a Celery background worker that offloads the process for
+
+10. (Optional) Downloading search results makes use of a Celery background worker that offloads the process for
    generating large CSV files that contain the data found for a given search from the main Django web
    application. To set up [Celery for Django](https://pypi.python.org/pypi/django-celery-results/) run the provided database migrations.
 
@@ -130,14 +131,14 @@ and follow these steps.
    `python .\manage.py migrate django_celery_beat`
 
 
-10. Start the Celery workers. **Note**, in production, the Celery workers should be [daemonized](https://docs.celeryq.dev/en/stable/userguide/daemonizing.html#daemonizing).
+11. (Optional) Start the Celery workers. **Note**, in production, the Celery workers should be [daemonized](https://docs.celeryq.dev/en/stable/userguide/daemonizing.html#daemonizing).
 
     `celery -A oc_search worker -l INFO --pool=solo` [Windows] <br>
     `celery -A oc_search worker -l INFO` [Linux] <br><br>
     `celery -A proj beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler`
 
 
-11. Create an admin user for Django.
+12. Create an admin user for Django using the admin tool and answering the prompts.
 
     `python manage.py createsuperuser`
 
@@ -146,6 +147,7 @@ and follow these steps.
 
     `python manage.py runserver`
 
+
 ### Next Steps
 
 The Search application is a blank framework. The next steps include making custom search plugins to
@@ -153,6 +155,7 @@ create a custom interactive search application.
 
 For production, Django should be installed as a WSGI application. For instruction on doing this with
 uWSGI, see the [Django Documentation](https://docs.djangoproject.com/en/3.2/howto/deployment/wsgi/uwsgi/)
+
 
 ### Note on Logging
 
@@ -244,19 +247,6 @@ and the search interface,
 
 Importing and exporting of search definitions is done using custom Django management commands..
 
-### Generating a Search from CKAN yaml
-
-Creating a new search from scratch can be laborious. There are two command line utilities that can be used to
-generate new search definitions from existing data sources.
-One works with the CKAN yaml files that are used by Open Canada's proactive disclosure system,
-and another that createa a simple search derives from a basic search from a  generic CSV files with a header.
-
-Use the custom **import_schema_ckan_yaml** Django command to create a new search definition based on a schema defined
-in a CKAN scheming yaml file.
-
-For example:
-
-`python manage.py import_schema_ckan_yaml --yaml_file .\data\travela.yaml --search_id travela --title_en "Travel Expenses" --title_fr "Dépenses de voyage gouvernementaux"`
 
 ### Generate for CSV
 
@@ -274,7 +264,7 @@ Several custom Django management commands are available
 
 ### create_solr_core
 
-To run: `python manage.py create_solr_core <search name>`
+To run: `python manage.py create_solr_core --search <search name>`
 
 `<search name` Is the name of a search that has been  defined either by running a load script or
 through the Django admin UI.
@@ -283,7 +273,9 @@ through the Django admin UI.
 
 <div id="import_schema_ckan_yaml">
 
-### import_schema_ckan_yaml
+### (Unsupported) import_schema_ckan_yaml
+
+__Please note that this commond no longer works with newer versions of CKAN or Search__
 
 To run: `python manage.py import_schema_ckan_yaml --yaml_file <yaml file> --search_id <unique search ID> --title_en <English Title> --title_fr <French Title> [--reset]`
 
@@ -295,7 +287,9 @@ This command will parse the CKAN YAML file and load it into the search model dat
 
 ### import_data_csv
 
-To run: `python manage.py --csv <CSV file> --search <Unique search ID> --core <Solr Core Name> [--nothing_to_report]`
+This command is used to load Proactive Disclosure and other CSV style data into a search core.
+
+To run: `python manage.py import_date_csv --csv <CSV file> --search <Unique search ID> [--nothing_to_report]`
 
 </div>
 
