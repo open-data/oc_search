@@ -153,6 +153,8 @@ and follow these steps.
 The Search application is a blank framework. The next steps include making custom search plugins to
 create a custom interactive search application.
 
+For information on importing an existing custom search, see [Import Custom Searches](https://github.com/open-data/oc_search/blob/master/docs/import_custom_search.md)
+
 For production, Django should be installed as a WSGI application. For instruction on doing this with
 uWSGI, see the [Django Documentation](https://docs.djangoproject.com/en/3.2/howto/deployment/wsgi/uwsgi/)
 
