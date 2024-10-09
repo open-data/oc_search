@@ -8,15 +8,17 @@ before importing.
 ### 1. Create a Solr Core ###
 
 On the Solr server, create a new core. Search uses the convention `search_<search id>`
-for the name of the Solr core. Search ID is the unique search indentifier. Open Data is
-an exception and uses the Solr core name search_opencanada. Copy in the language extensions
-from the OC Search project into the new core's configuration.
+for the name of the Solr core. Search ID is the unique search identifier. Open Data is
+an exception and uses the Solr core name `search_opencanada`. Copy in the language extensions
+folder from the OC Search project into the new core's configuration. Do not overwrite the
+exiting files in the `conf\lang` folder for the Solr core.
 
 ```bash
 solr create -c search_opencanada
-cp -Rf `oc_search\oc_search\solr\conf \var\solr\data\search_opencanada\conf\`
+cp -Rf oc_search\oc_search\solr\conf \var\solr\data\search_opencanada\conf\`
 ```
 Reload the new core using the Solr Web Admin interface.
+![Screenshot of using the Solr Admin UI to reload a Solr core.](./images/Reload-Solr-Core.png)
 
 ### 2. Clone the Git Repository ###
 
@@ -41,6 +43,9 @@ Use the `import_search` command to import the new defintion.
 python .\manage.py import_search --search data --import_dir ..\oc_searches\ --include_db
 ```
 
+Once the search definition is loaded, the Solr Core needs to be configured. Search will
+uses Solr's dynamic schema API to create a custom schema in Solr. Be sure to complete this
+step before loading data.
 After importing the search, there are several commands needed to completely rebuilt the Django resources
 ```bash
 python manage.py combine_messages
