@@ -130,6 +130,13 @@ class Command(BaseCommand):
             if options['report_duplicates']:
                 ids = {}
 
+            # Test for the existence of the bad data directory.
+
+            if not os.path.exists(settings.IMPORT_DATA_CSV_BAD_DATA_DIR):
+                self.logger.error(f'Error report directory: "{settings.IMPORT_DATA_CSV_BAD_DATA_DIR}" cannot be found.'
+                                  ' Location is set by IMPORT_DATA_CSV_BAD_DATA_DIR in the settings file')
+                exit(-1)
+
             solr_items = []
 
             # Clear out the Solr core when loading default data
