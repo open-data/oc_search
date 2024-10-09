@@ -55,6 +55,21 @@ and import it into Solr using a custom command.
 python .\manage.py data_import_ckan_json --search data --type jsonl --json .\data\od-do-canada.jsonl --reset
 ```
 
+For most custom searches that use Proactive Disclosure, the data is imported from CSV files. For
+these, use the `data_import_csv` command. _NOTE_ this command erases all existing data in
+the Solr core
+
+```bash
+python .\manage.py import_data_csv --search travelq --csv .\data\travelq\travelq.csv
+```
+
+For Nothing to Report CSV files, use the `--nothing_to_report` parameter. When loading the NTR data,
+existing data in the Solr core is _NOT_ removed.
+
+```bash
+python .\manage.py import_data_csv --search travelq --csv .\data\travelq\travelq-nil.csv --nothing_to_report
+```
+
 ### 5. Run Django ###
 
 In a development environment, you can start the Django web application from the command line.
