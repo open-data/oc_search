@@ -135,7 +135,7 @@ and follow these steps.
 
     `celery -A oc_search worker -l INFO --pool=solo` [Windows] <br>
     `celery -A oc_search worker -l INFO` [Linux] <br><br>
-    `celery -A proj beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler`
+    `celery -A oc_search beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler`
 
 
 12. Create an admin user for Django using the admin tool and answering the prompts.
