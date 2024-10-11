@@ -221,7 +221,7 @@ msgstr "/fr/information-ouverte"
 
 #: .\search\templates\snippets\default_breadcrumb.html:24
 #: .\search\templates\snippets\default_record_breadcrumb.html:24
-msgid "Proactive Disclosure"
+msgid "Proactive disclosure"
 msgstr "Divulgation proactive"
 
 #: .\search\templates\snippets\default_breadcrumb.html:25

@@ -25,6 +25,13 @@
             },{
                 "title": "{% translate 'Open Government' %}",
                 "href": "{% if not url_uses_path %}{% if LANGUAGE_CODE == 'fr' %}{{ site_host_fr }}{% else %}{{ site_host_en }}{% endif %}{% endif %}/{{ LANGUAGE_CODE }}",
+            },{
+              "title": "{% translate 'Proactive disclosure' %}",
+              {% if not url_uses_path %}
+              "href": "{% if LANGUAGE_CODE == 'fr' %}{{ site_host_fr }}/fr/divulgation-proactive{% else %}{{ site_host_en }}/en/proactive-disclosure{% endif %}",
+              {% else %}
+              "href": "{% translate 'https://open.canada.ca/en/proactive-disclosure' %}",
+              {% endif %}
             }]
         });
     </script>
