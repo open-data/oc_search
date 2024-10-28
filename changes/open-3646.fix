@@ -1,0 +1,1 @@
+Improved error handling of the data_import_ckan_json command to avoid throwing a second exception when try to log very large error messages.
