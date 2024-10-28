@@ -260,3 +260,7 @@ def ds_status_label(value: str):
         return 'label label-default'
 
 
+@register.filter('intformat')
+def int_format(value: int, formatstr: str):
+    return formatstr.format(value)
+
