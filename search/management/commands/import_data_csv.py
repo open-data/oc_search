@@ -37,7 +37,7 @@ class Command(BaseCommand):
     field_codes = {}
 
     # Number of rows to commit to Solr at a time
-    cycle_on = 1000
+    cycle_on = settings.IMPORT_DATA_CSV_SOLR_INDEX_GROUP_SIZE
 
     discovered_plugins = {
         name: importlib.import_module(name)
