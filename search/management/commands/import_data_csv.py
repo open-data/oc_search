@@ -6,6 +6,7 @@ from babel.numbers import format_currency, format_decimal, parse_decimal, Number
 from datetime import datetime
 from django.core.management.base import BaseCommand
 from django.conf import settings
+from .goc_prev_org_names import add_prev_dept_names
 import importlib
 import pkgutil
 import re
@@ -59,6 +60,8 @@ class Command(BaseCommand):
                             help='Use this switch to indicate if the CSV files that is being loaded contains duplicate IDs')
         parser.add_argument('--append', required=False, action='store_true', default=False,
                             help='Add these records, do not truncate the Solr core')
+        parser.add_argument('--not_pd', required=False, action='store_true', default=False,
+                            help='Not Loading GoC Proactive Disclosure data, so do not do default department data handling')
 
     def set_empty_fields(self, solr_record: dict):
 
@@ -365,6 +368,17 @@ class Command(BaseCommand):
                                                     csv_record[csv_field].lower()].label_en
                                                 solr_record[csv_field + '_fr'] = self.field_codes[csv_field][
                                                     csv_record[csv_field].lower()].label_fr
+
+                                                if csv_field == "owner_org" and not options['not_pd']:
+                                                    solr_record = add_prev_dept_names(
+                                                        csv_record['owner_org'],
+                                                        solr_record,
+                                                        [self.field_codes[csv_field][csv_record[csv_field].lower()].label_en],
+                                                        [self.field_codes[csv_field][csv_record[csv_field].lower()].label_fr],
+                                                        [csv_record['owner_org'].split('-')[0] if "-" in csv_record['owner_org'] else csv_record['owner_org']],
+                                                        [csv_record['owner_org'].split('-')[1] if "-" in csv_record['owner_org'] else csv_record['owner_org']]
+                                                    )
+
                                             else:
                                                 self.logger.warning(
                                                     "Row {0}, Record {1}. Unknown code value: {2} for field: {3}".format(
