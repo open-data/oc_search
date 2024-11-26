@@ -1,6 +1,9 @@
-### Creating a Custom Search
 
-@TODO Start Here
+# Creating a New Proactive Disclosure Search
+
+## TL;DR Quick Start ##
+
+These are the basic steps to create a new proactive disclosure search
 
 - In Admin interfaceCreate Search, Fields, Codes
 - Create Solr core
@@ -13,6 +16,7 @@
 - load orgs
 - load date
 - create a snippets folder
+- export the search
 
 # Creating a New Proactive Disclosure Search
 
