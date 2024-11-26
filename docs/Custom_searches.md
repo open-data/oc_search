@@ -1,22 +1,40 @@
 
 # Creating a New Proactive Disclosure Search
 
-## TL;DR Quick Start ##
+## TL;DR - Quick Start ##
 
-These are the basic steps to create a new proactive disclosure search
+Custom Search definitions for Open Canada Search are made of number of components including
+a database content files, python scripts, gettext portables, and HTML template snippets.
 
-- In Admin interfaceCreate Search, Fields, Codes
-- Create Solr core
-  As Solr User run these commands
-  + /opt/solr/bin/solr create -c search_ati
-  + cd /var/solr/data
-  + cp -Rf search_ei/conf search_ati/
-  + Reload core
-- Create solr core: ` python .\manage.py create_solr_core --search ati`
-- load orgs
-- load date
-- create a snippets folder
-- export the search
+Before developing a custom search, be sure to set up and run the OC Search application: https://github.com/open-data/oc_search
+
+These are the basic steps to create a new proactive disclosure search. Steps did not have to be
+done in exactly this order.
+
+- In the Django Admin interface create, create the database models that describe the Search. These
+models include:
+  - Search,
+  - Fields, and
+  - Codes
+- Create a new Solr core and copy in the custom synonym files. As the Solr user run these commands
+  ```bash
+  /opt/solr/bin/solr create -c search_ati
+  cd /var/solr/data
+  cp -Rf search_ei/conf search_ati/
+   ```
+  Reload core the Solr core using the Solr Web Admin UI
+
+
+- Customize the blank Solr core based on the search model using the `create_solr_core` command:
+
+  ` python .\manage.py create_solr_core --search ati`
+
+- _If required_ load the list of government departments using the `import_org_ckan_json` command.
+- Create a code plug-in for the search that can contain python code for customizing the serach
+- Load CSV data using the `import_data_csv` command.
+- Create a snippets folder to hold Django template snaps to customize the appear of the search results page.
+- Export the search definition (including all custom components) using the `export_search` command
+- Import the search definition to another instance of Open Canada search using the `import_earch` command.
 
 # Creating a New Proactive Disclosure Search
 
@@ -181,7 +199,7 @@ The Search application allows the developer to override multiple components of t
 | No. Items returned for More-Like-This  | Number of items to show on the page | 10 |
 
 
-### 3.2. Add Mew Fields to the Search ###
+### 3.2. Add New Fields to the Search ###
 
 Field components describe the individual fields that make up the records that are being loaded into Search.
 
