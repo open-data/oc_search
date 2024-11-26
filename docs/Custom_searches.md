@@ -111,7 +111,7 @@ asterisk.
 #### General Tab
 
 | *Field* | *Description* | *Example Value* |
-| _____ | ___________ | _______ |
+| --------| ------------- | --------------- |
 | Search ID  | Unique Search object identifier | contracts |
 | Solr Core Name | Name of the core on the Solr service | search_contracts |
 | Solr debugging | Enabled Solr debugging in response. Normally should be disabled |  |
@@ -133,16 +133,16 @@ asterisk.
 
 #### Disabled Tab
 
-| Field | Description |
-| _____ | ___________ |
-| Search is disabled | Yes/No field. Select to replace the Search page with a plain not-available pate |
-| Disabled Search Message - English | Message to show on the not-available page |
-| Disabled Search Message - French | French message to show on the not-available page |
+| Field                             | Description                                                                     |
+| --------------------------------- | ------------------------------------------------------------------------------- |
+| Search is disabled                | Yes/No field. Select to replace the Search page with a plain not-available pate |
+| Disabled Search Message - English | Message to show on the not-available page                                       |
+| Disabled Search Message - French  | French message to show on the not-available page                                |
 
 #### Results
 
-| Field | Description | Example |
-| _____ | ___________ | _______ |
+| *Field* | *Description* | *Example Value* |
+| --------| ------------- | --------------- |
 | No. of Search Results Per Page | Provide a number | 10 |
 | Sort-by Categories (English)  | The Solr sort options used on the drop-down page. Separate options with a comma. _DO NOT_ include extra spaces except for the sort order | score desc,start_date desc,owner_org_en asc |
 | Sort-by Categories (Français) | The French Solr sort options used on the drop-down page. The English and French fields do not need to match. | score desc,start_date desc,owner_org_fr asc |
@@ -157,8 +157,8 @@ asterisk.
 
 The Search application allows the developer to override multiple components of the Search web pages, including the Search page itself.
 
-| Field | Description | Example |
-| _____ | ___________ | _______ |
+| *Field* | *Description* | *Example Value* |
+| --------| ------------- | --------------- |
 | Search Page Template | Django template file to use on the Search page. Can use the default template page or a custom page. | search.html |
 | Record Page Template | Django template file to use on the individual Record page. There is a generic default page, but in most cases a custom page is needed. | search_snippets/custom/contracts/contracts_record.html |
 | Breadcrumb Snippet Path | Django template snippet to use for the the page breadcrumbs. There is a generic default page, or a custom one can be used. | search_snippets/default_breadcrumb.html |
@@ -175,8 +175,8 @@ The Search application allows the developer to override multiple components of t
 
 #### More Like This ####
 
-| Field | Description | Example |
-| _____ | ___________ | _______ |
+| *Field* | *Description* | *Example Value* |
+| --------| ------------- | --------------- |
 | Enable More-Like-This | By default, most searches disable this functionality | False |
 | No. Items returned for More-Like-This  | Number of items to show on the page | 10 |
 
@@ -189,8 +189,8 @@ Each field is associated with a specific Search model. The Field Model UI consis
 
 #### General ####
 
-| Field | Description | Example |
-| _____ | ___________ | _______ |
+| *Field* | *Description* | *Example Value* |
+| --------| ------------- | --------------- |
 | Unique Field Identifier | A code identifier that is unique to this search. |  |
 | Search ID | Select the associated Search |  |
 | English Label | Default English label |  |
@@ -206,8 +206,8 @@ Each field is associated with a specific Search model. The Field Model UI consis
 
 These choices are associated with Solr field attributes.
 
-| Field | Description | Example |
-| _____ | ___________ | _______ |
+| *Field* | *Description* | *Example Value* |
+| --------| ------------- | --------------- |
 | Stored in Solr | Save value to Solr |  |
 | Indexed in Solr | Field is searchable |  |
 | Multiple Values | Field has multiple values |  |
@@ -218,8 +218,8 @@ These choices are associated with Solr field attributes.
 
 These choices apply only if the field is also a filter or facet value.
 
-| Field | Description | Example |
-| _____ | ___________ | _______ |
+| *Field* | *Description* | *Example Value* |
+| --------| ------------- | --------------- |
 | Facet field | Field is facet. Search will automatically generate the facet query |  | |  |
 | Custom facet snippet | Select a sort order for the facet items |  |
 | Display in reversed order | Display facets items in reversed order. Useful for date-based facets |  |
@@ -229,8 +229,8 @@ These choices apply only if the field is also a filter or facet value.
 
 Advance properties
 
-| Field | Description | Example |
-| _____ | ___________ | _______ |
+| *Field* | *Description* | *Example Value* |
+| --------| ------------- | --------------- |
 | Alternate record type |  |  |
 | Default search item |  |  |
 | Default value when empty | Default value to use if the CSV field is empty. Format for this string is <python field type>|<value> | str|- |
@@ -239,16 +239,16 @@ Advance properties
 
 Rarely used legacy properties
 
-| Field | Description | Example |
-| _____ | ___________ | _______ |
+| *Field* | *Description* | *Example Value* |
+| --------| ------------- | --------------- |
 | Is default year field |  |  |
 | Is default month field |  |  |
 
 
 ### 3.3. Add New Code or Choice values to Fields ###
 
-| Field | Description | Example |
-| _____ | ___________ | _______ |
+| *Field* | *Description* | *Example Value* |
+| --------| ------------- | --------------- |
 | Unique Code ID | Unique code value as it appears in the raw data | tbs-sct |
 | Field ID | Select the specific field that uses this code value |  |
 | English Code Value/Label | Default English label |  |
@@ -258,8 +258,8 @@ Rarely used legacy properties
 
 Rarely used
 
-| Field | Description | Example |
-| _____ | ___________ | _______ |
+| *Field* | *Description* | *Example Value* |
+| --------| ------------- | --------------- |
 | Default Lookup Codes |  |  |
 | Conditional Lookup Codes |  |  |
 | Date field to evalue |  |  |
