@@ -11,7 +11,7 @@ Before developing a custom search, be sure to set up and run the OC Search appli
 These are the basic steps to create a new <a href="https://open.canada.ca/en/proactive-disclosure">proactive disclosure</a> search. Steps did not have to be
 done in exactly this order, but most are needed.
 
-- In the Django Admin interface create, create the database records that describe the Search. These
+- In the [Django Administration interface](https://docs.djangoproject.com/en/5.1/ref/contrib/admin/) create, create the database records that describe the Search. These
 objects include:
   - Search,
   - Fields, and
@@ -53,7 +53,7 @@ This is a general guide and the steps do not need to be completed exactly in thi
 
 1. Select a unique Search type ID.
 1. Create a new blank Solr core and copy in the synonym configuration files.
-1. Create a new Search model using the Django Admin web UI.
+1. Create a new Search model using the [Django Administration web UI](https://docs.djangoproject.com/en/5.1/ref/contrib/admin/).
    - Create new Fields associated with the new search instance using the Django Admin web UI
    - Create new Codes associated with the new Fields using the Django admin web UI. (_optional_)
 1. Apply the search model to the blank Solr core to create a custom schema for the search model using the `create_solr_core` command
@@ -94,11 +94,11 @@ By convention, the Solr core name uses the pattern `search_<recombinant type nam
 
 After copying the synonym text files, use the Solr Admin UI,to _reload the new core_ in order to activate the new configuration files.
 
-![Screenshot of using the Solr Admin UI to reload a Solr core.](./images/Reload-Solr-Core.png)
+<img src="./images/Reload-Solr-Core.png" alt="Screenshot of using the Solr Admin UI to reload a Solr core." style="inline-size: min-content;"></img>
 
-The core is now ready to be used by Search. In a future step, you will apply a custom search model to Solr.
+After reloading, the core is ready to be configured by Search. In a future step, you will apply a custom search model to Solr.
 
-*Note* this step may need to be repeated in the future when changes are made to the Search model. Often when changing s Solr
+__Note__ this step may need to be repeated during development when changes are made to the Search model. Often when changing s Solr
 schema it can be necessary to rebuild the Solr core from scratch.
 
 ## 3. Create a New Search model with Fields and Codes ##
@@ -108,13 +108,13 @@ The search model consists of three database components:
 - fields which always associated with a given search, and
 - codes (_optional_) which are always associated with a given field.
 
-Codes can be regular codes, or Chronologic Codes which are codes that are associated with a date range.
+_Note_ Codes can be regular codes, or Chronologic Codes which are codes that are associated with a date range.
 Regular Codes can be used in almost all cases.
 
-![Image of the 3 database components of a search definition](./images/db-model.png)
+<img alt="Image of the 3 database components of a search definition" src="./images/db-model.png"></img>
 
-Begin by creating a new search model using the Django admin UI. If you do not already have a Django admin
-account, create one using the Djagno command-line tool.
+Begin by creating a new search record using the [Django Administration UI](https://docs.djangoproject.com/en/5.1/ref/contrib/admin/). If you do not already have a Django admin
+account, create one using the [Django command-line tool](https://docs.djangoproject.com/en/5.1/ref/django-admin/#createsuperuser).
 
 ```Shell
   python .\manage.py createsuperuser --username <new account name> --email <email address>
@@ -122,16 +122,18 @@ account, create one using the Djagno command-line tool.
 
 ### 3.1 New Search Record ###
 
-First create a Search record, by clicking on the Search type in the Django Administration menu.
+Start by creating a Search record. Click on the Search type in the Django Administration menu.
 
 Then click the "*Add search*" button. Use the multi-tab interface to edit the Search record's
 fields. Complete the form as needed, then click the _Save_ button. Mandatory fields are indicated with an
 asterisk.
 
-![Screenhot of the Django Admin Search object menu item](./images/admin-ui-search-model.png)
+![Screen-shot of the Django Admin Search object menu item](./images/admin-ui-search-model.png)
 
 
-#### General Tab
+#### 3.1.1 General Tab
+
+These field describe  the main aspects of the search including its unique ID, Solr core, and aliases.
 
 | *Field* | *Description* | *Example Value* |
 | --------| ------------- | --------------- |
@@ -154,7 +156,10 @@ asterisk.
 | Search alias (Français)  | A French readable name to use in the search url | contrats |
 | Last imported on | Optional field for internal use - not required |  |
 
-#### Disabled Tab
+#### 3.1.2 Disabled Tab
+
+These fields allow the system administrator to temporarily disable a search. When disabled, the disabled message specified here
+will be displayed in place of the usual search.
 
 | Field                             | Description                                                                     |
 | --------------------------------- | ------------------------------------------------------------------------------- |
@@ -162,7 +167,9 @@ asterisk.
 | Disabled Search Message - English | Message to show on the not-available page                                       |
 | Disabled Search Message - French  | French message to show on the not-available page                                |
 
-#### Results
+#### 3.1.3 Results
+
+These fields control different aspects of how the search results are displayed.
 
 | *Field* | *Description* | *Example Value* |
 | --------| ------------- | --------------- |
@@ -176,7 +183,7 @@ asterisk.
 | Enable JSON format response | Yes or No. Allows returning Search results as a JSON objects | Default is false |
 | Enable raw Solr format response | Yes or No. _DO NOT USE_ in production. For debugging only | Default is false |
 
-#### Templates
+#### 3.1.4 Templates
 
 The Search application allows the developer to override multiple components of the Search web pages, including the Search page itself.
 
@@ -196,7 +203,9 @@ The Search application allows the developer to override multiple components of t
 | Custom Record Breadcrumb snippet | A template snippet to use for the the record page breadcrumbs. There is a generic default page, or a custom one can be used. | search_snippets/default_record_breadcrumb.html |
 | More-like-This Page Template | The More-like-this template page for this search. There is a default page, or a customized version can be used | more_like_this.html |
 
-#### More Like This ####
+#### 3.1.5 More Like This ####
+
+These fields can be used to enable [More-Like-This](https://solr.apache.org/guide/solr/latest/query-guide/morelikethis.html) functionality in the Search
 
 | *Field* | *Description* | *Example Value* |
 | --------| ------------- | --------------- |
@@ -210,22 +219,24 @@ Field components describe the individual fields that make up the records that ar
 
 Each field is associated with a specific Search model. The Field Model UI consists of five tabs.
 
-#### General ####
+#### 3.2.1 General ####
 
-| *Field* | *Description* | *Example Value* |
-| --------| ------------- | --------------- |
-| Unique Field Identifier | A code identifier that is unique to this search. |  |
-| Search ID | Select the associated Search |  |
-| English Label | Default English label |  |
-| French Label | Default French label |  |
-| Format Name | The format is used to indicate of the field belongs to the primary Search type or another format like Nothing-to-report. Normally this is the same string as the Search ID | contracts or contracts-nil |
-| Solr Field Type | Select the solr schema type |  |
-| Language | English, French, or Bilingual  |  |
-| Copy Field | Create generic Solr copy fields |  |
-| Contains Code Values | Indicate if the field has associated Code values |  |
-| Extra Solr Copy Fields | Additional copy fields for purposes other export |  |
+These fields identify and describe the field type.
 
-#### Solr Attributes ####
+| *Field* | *Description*                                                                                                                                                              | *Example Value*                                                  |
+| --------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------|
+| Unique Field Identifier | A code identifier that is unique to this search.                                                                                                                           | vendor_en                                                        |
+| Search ID | Select the associated Search                                                                                                                                               | hospitalityq                                                     |
+| English Label | Default English label                                                                                                                                                      | Name of commercial establishment or vendor involved              |
+| French Label | Default French label                                                                                                                                                       | Nom des établissements commerciaux ou des fournisseurs concernés |
+| Format Name | The format is used to indicate of the field belongs to the primary Search type or another format like Nothing-to-report. Normally this is the same string as the Search ID | contracts or contracts-nil                                       |
+| Solr Field Type | Select the solr schema type                                                                                                                                                | Search Text English                                              |
+| Language | English, French, or Bilingual                                                                                                                                              | English                                                          |
+| Copy Field | Create generic Solr copy field. Useful for creating exportable copies of the data                                                                                          | vendor_en_str                                                    |
+| Contains Code Values | Indicate if the field has associated Code values                                                                                                                           | No                                                               |
+| Extra Solr Copy Fields | Additional copy fields for purposes other then export                                                                                                                      |                                                                  |
+
+#### 3.2.2 Solr Attributes ####
 
 These choices are associated with Solr field attributes.
 
@@ -237,7 +248,7 @@ These choices are associated with Solr field attributes.
 | Multi-value Delimiter | Character used to delimit values in the CSV source file |  |
 | Monetary Field | Is a monetary field, useful for special formatting |  |
 
-#### Facets ####
+#### 3.2.3 Facets ####
 
 These choices apply only if the field is also a filter or facet value.
 
@@ -248,17 +259,17 @@ These choices apply only if the field is also a filter or facet value.
 | Display in reversed order | Display facets items in reversed order. Useful for date-based facets |  |
 | Facet order on page | An integer that is used to order facets when there is more than one facet on a page. |  |
 
-#### Advanced ####
+#### 3.2.4 Advanced ####
 
-Advance properties
+Advance properties thtat are rarely used.
 
-| *Field* | *Description* | *Example Value* |
-| --------| ------------- | --------------- |
-| Alternate record type |  |  |
-| Default search item |  |  |
-| Default value when empty | Default value to use if the CSV field is empty. Format for this string is <python field type>|<value> | str|- |
+| *Field* | *Description*                                                                                 | *Example Value* |
+| --------|-----------------------------------------------------------------------------------------------| --------------- |
+| Alternate record type | Mostly used for Nothing to Report records                                                     |  |
+| Default search item |                                                                                               |  |
+| Default value when empty | Default value to use if the CSV field is empty. Format for this string is <python field type> |<value> | str|- |
 
-#### Search Default ####
+#### 3.2.5 Search Default ####
 
 Rarely used legacy properties
 
