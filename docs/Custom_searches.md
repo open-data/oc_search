@@ -333,6 +333,22 @@ In the <a href="https://github.com/open-data/oc_search/tree/master/search/plugin
 and rename it to `<search ID>.py`. Note that the file name must exactly match the Search ID. In the plugin file there are a number of
 functions that can extended.
 
+| *Function*             | *Description* |
+|------------------------|---------------|
+| pre_search_solr_query  |               |
+| post_search_solr_query |               |
+| pre_record_solr_query  |               |
+| post_record_solr_query |               |
+| pre_export_solr_query  |               |
+| post_export_solr_query |               |
+| pre_mlt_solr_query     |               |
+| post_mlt_solr_query    |               |
+| filter_csv_record      |               |
+| load_csv_record        |               |
+| pre_render_search      |               |
+| pre_render_record      |               |
+
+
 ## 6. Load Organizational Codes ##
 
 _If you have a Government of Canada department field_ based on the organization's bilingual acronym, wse the `import_orgs_ckan_json` command
