@@ -1,29 +1,29 @@
 
 # Creating a New Proactive Disclosure Search
 
-## TL;DR - Quick Start ##
+## Introduction ##
 
 Custom Search definitions for Open Canada Search are made of number of components including
 a database definition files, python scripts, gettext portables, HTML template snippets and more.
 
 Before developing a custom search, be sure to set up and run the OC Search application: https://github.com/open-data/oc_search
 
-These are the basic steps to create a new <a href="https://open.canada.ca/en/proactive-disclosure">proactive disclosure</a> search. Steps did not have to be
+These are the basic steps to create a new <a href="https://open.canada.ca/en/proactive-disclosure">proactive disclosure</a> search. Steps do not have to be
 done in exactly this order, but most are needed.
 
-- In the [Django Administration interface](https://docs.djangoproject.com/en/5.1/ref/contrib/admin/) create, create the database records that describe the Search. These
+- In the [Django Administration interface](https://docs.djangoproject.com/en/5.1/ref/contrib/admin/) create the database records that describe the Search. These
 objects include:
   - Search,
   - Fields, and
   - Codes
-- Create a new Solr core and copy in the custom synonym files. For example, to create a new Solr core for
+- Create a new Solr core and copy in the custom synonym files to the core's configuration language folder. For example, to create a new Solr core for
   Contracts, as the Solr user run these commands
-  ```bash
+  ```Shell
   /opt/solr/bin/solr create -c search_contracts
   cd /var/solr/data
   cp oc_search/oc_search/solr/conf/*.txt search_contracts/conf/lang/
    ```
-  Reload core the Solr core using the Solr Web Admin UI. You could also restart
+  Reload the Solr core using the Solr Web Admin UI. You could also restart
   the Solr service, but this can result in lost data and service disruption.
 
 
@@ -34,25 +34,23 @@ objects include:
 - _If a list of Canadian government departments is used in the search_, load the list of government departments using the `import_org_ckan_json` command.
 - Create a code plug-in for the search that can contain python code for customizing the search.
 - Load CSV data using the `import_data_csv` command.
-- Create a snippets folder to hold Django template snippets to customize the appearance of the search results page.
+- Create a snippets folder to hold Django template snippets to customize the appearance of the search results pages.
 - Export the search definition (including all custom components) using the `export_search` command
 - Import the search definition to another instance of Open Canada search using the `import_earch` command.
 
-# Creating a New Proactive Disclosure Search
+# Developing a New Custom Proactive Disclosure Search
 
 A custom search definition consists of a collection of files and information stored in the Search application database.
-Most of the custom searches are published on GitHub in project [oc_searches project]("https://github.com/open-data/oc_searches").
+Most of the custom searches are published on GitHub in project [oc_searches](https://github.com/open-data/oc_searches).
 
-Creating a new custom search for proactive disclosure or other data requires multiple components.
-The development can be done locally in your development environment and then the custom search can be exported
-as code and imported into another instance of Open Canada Search in a staging or production environment.
-
-__Steps__:
+Creating a new custom search for proactive disclosure, or other data, requires multiple components.
+Coding can be done in your local development environment, then the entire custom search can exported
+as code and imported into another test or production instance of Open Canada Search.
 
 This is a general guide and the steps do not need to be completed exactly in this order.
 
-1. Select a unique Search type ID.
-1. Create a new blank Solr core and copy in the synonym configuration files.
+1. [Select a unique Search type ID](#1-select-a-unique-search-type-id).
+1. [Create a new blank Solr core and copy in the synonym configuration files.](#2-create-a-new-solr-core)
 1. Create a new Search model using the [Django Administration web UI](https://docs.djangoproject.com/en/5.1/ref/contrib/admin/).
    - Create new Fields associated with the new search instance using the Django Admin web UI
    - Create new Codes associated with the new Fields using the Django admin web UI. (_optional_)
