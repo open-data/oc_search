@@ -74,6 +74,9 @@ class Search(models.Model):
     record_breadcrumb_snippet = models.CharField(blank=True, default="search_snippets/default_record_breadcrumb.html", max_length=250,
                                                  verbose_name="Custom Record Breadcrumb snippet",
                                                  help_text="Optional custom breadcrumb snippet for the records page")
+    main_content_body_top_snippet = models.CharField(blank=True, default="search_snippets/default_main_content_body_top.html", max_length=250,
+                                                 verbose_name="Custom snippet above the search box",
+                                                 help_text="Optional snippet for content that appears about the search box")
     dataset_download_url_en = models.URLField(verbose_name="Download Dataset URL (English)", default="https://open.canada.ca")
     dataset_download_url_fr = models.URLField(verbose_name="Download Dataset URL (French)", default="https://ouvert.canada.ca")
     dataset_download_text_en = models.CharField(blank=True, default="Download Complete Dataset", max_length=100, verbose_name="Download Dataset Link Text (English)")

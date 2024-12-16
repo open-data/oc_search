@@ -25,7 +25,7 @@ class SearchAdmin(admin.ModelAdmin):
                                   'info_message_snippet', 'about_message_snippet', 'header_js_snippet',
                                   'header_css_snippet', 'body_js_snippet', 'search_item_snippet',
                                   'record_detail_snippet', 'record_breadcrumb_snippet',
-                                  'more_like_this_template')}),
+                                  'main_content_body_top_snippet', 'more_like_this_template')}),
         ('More-like-this', {'fields': ('mlt_enabled', 'mlt_items')})
     )
 

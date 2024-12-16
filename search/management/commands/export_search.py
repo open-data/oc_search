@@ -64,14 +64,13 @@ class Command(BaseCommand):
         if not path.exists(tests_path):
             mkdir(tests_path)
 
-        # Export Database values - this is no longer recommended, instead use the database dump command
         if options['include_db']:
             # Export Search
             ex_search = Search.objects.get(search_id=options['search'])
             searches_path = path.join(db_path, "{0}_search.json".format(options['search']))
             with open(searches_path, 'w', encoding='utf-8', errors="ignore") as search_file:
-                d = ex_search.to_json()
-                search_file.write(d)
+                d = json.loads(ex_search.to_json())
+                search_file.write(json.dumps(d, indent=2, sort_keys=True))
             logging.info("Search exported to {0}".format(searches_path))
 
             # Export Fields
@@ -79,8 +78,8 @@ class Command(BaseCommand):
             ex_fields_list = [f.to_json() for f in ex_fields]
             field_path = path.join(db_path, "{0}_fields.json".format(options['search']))
             with open(field_path, 'w', encoding='utf-8', errors="ignore") as search_file:
-                fs = f'[{",".join(ex_fields_list)}]'
-                search_file.write(fs)
+                fs = json.loads(f'[{",".join(ex_fields_list)}]')
+                search_file.write(json.dumps(fs, indent=2, sort_keys=True))
             logging.info(f"{len(ex_fields_list)} Fields exported to {field_path}")
 
             # Export Codes
@@ -92,8 +91,8 @@ class Command(BaseCommand):
                     ex_codes_list = ex_codes_list + [c.to_json() for c in ex_codes]
             if len(ex_codes_list) > 0:
                 with open(code_path, 'w', encoding='utf-8', errors="ignore") as search_file:
-                    cs = f'[{",".join(ex_codes_list)}]'
-                    search_file.write(cs)
+                    cs = json.loads(f'[{",".join(ex_codes_list)}]')
+                    search_file.write(json.dumps(cs, indent=2, sort_keys=True))
                 logging.info(f'{len(ex_codes_list)} Codes exported to {code_path}')
             else:
                 logging.info("No Codes exported")
@@ -111,8 +110,8 @@ class Command(BaseCommand):
                                 ex_ccodes_list = ex_ccodes_list + [c.to_json() for c in ex_ccodes]
             if len(ex_ccodes_list) > 0:
                 with open(code_path, 'w', encoding='utf-8', errors="ignore") as search_file:
-                    ccs = f'[{",".join(ex_ccodes_list)}]'
-                    search_file.write(ccs)
+                    ccs = json.loads(f'[{",".join(ex_ccodes_list)}]')
+                    search_file.write(json.dumps(ccs, indent=2, sort_keys=True))
                 logging.info(f'{len(ex_ccodes_list)} Chrono Codes exported to {code_path}')
             else:
                 logging.info("No Chrono Codes exported")

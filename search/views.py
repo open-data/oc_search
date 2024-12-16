@@ -355,6 +355,7 @@ class SearchView(View):
             context['about_msg'] = self.searches[search_type].about_message_fr if lang == 'fr' else self.searches[search_type].about_message_en
             context['search_toggle'] = self.reverse_search_alias_en[search_type] if lang == 'fr' else self.reverse_search_alias_fr[search_type]
             context['json_download_allowed'] = self.searches[search_type].json_response
+            context['main_content_body_top_snippet'] = self.searches[search_type].main_content_body_top_snippet
 
             # Get search drop in message:
             context["general_msg"] = ""

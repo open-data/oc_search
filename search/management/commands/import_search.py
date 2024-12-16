@@ -165,8 +165,11 @@ class Command(BaseCommand):
             # Copy custom locale PO files to the django French PO file directory
             if path.exists(locale_path):
                 locale_export = path.join(Path(__file__).resolve().parent.parent.parent.parent, 'locale', 'fr', 'LC_MESSAGES', "{0}.po".format(options['search']))
-                copyfile(path.join(locale_path,  "{0}.po".format(options['search'])), locale_export)
-                logging.info("Copying custom locale file to {0}".format(locale_export))
+                if path.exists(locale_export):
+                    copyfile(path.join(locale_path,  "{0}.po".format(options['search'])), locale_export)
+                    logging.info("Copying custom locale file to {0}".format(locale_export))
+                else:
+                    logging.info(f"Mo custom locale file found: {locale_export}")
 
             # If there are custom data files included, save these to the project
             if path.exists(data_path):
