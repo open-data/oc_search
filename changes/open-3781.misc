@@ -1,0 +1,1 @@
+Removing the javascript polyfill.min.js from the RAMP viewer due to integrity concerns

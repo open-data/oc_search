@@ -59,7 +59,7 @@
           {% if ramp_ga_resource_en %}<li><a href="{{ ramp_ga_resource_en }}" target="_blank">Web analytics data</a></li>{% endif %}
         {% endif %}
         </ul>
-    
+
         <div id="fgpSignIn" class="row">
             <div class="panel panel-default">
                 <div class="panel-body clearfix">
@@ -86,7 +86,6 @@
 <script src="{% static 'ramp/GCWeb/js/theme.min.js' %}"></script>
 
 
-<script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=default,Object.entries,Object.values,Array.prototype.find,Array.prototype.findIndex,Array.prototype.values,Array.prototype.includes,HTMLCanvasElement.prototype.toBlob,String.prototype.repeat,String.prototype.codePointAt,String.fromCodePoint,NodeList.prototype.@@iterator,Promise,Promise.prototype.finally"></script>
 <!-- Using Ramp configuration service so still need to use legacy API for now -->
 <script src="{{ legacy_api }}"></script>
 <script src="{{ rv_main_js }}"></script>
