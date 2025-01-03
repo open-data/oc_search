@@ -2,7 +2,7 @@ Babel==2.15.0
 bleach==6.1.0
 celery==5.3.6
 ckanapi==4.7
-django==4.2.13
+django==4.2.15
 django-celery-beat==2.5.0
 django-celery-results==2.5.1
 django-cors-headers==4.3.1
