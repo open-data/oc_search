@@ -197,7 +197,7 @@ class Field(models.Model):
                                                    'Note that export fields are automatically created for '
                                                    'Interger and Date fields. *Note* Add manually for multi-valued string fields.')
     solr_field_is_coded = models.BooleanField(blank=False, default=False, verbose_name="Contains Code Values",
-                                              help_text="The values in this field are code values whose values are in the Code tabke")
+                                              help_text="The values in this field are code values whose values are in the Code table")
     solr_extra_fields = models.CharField(blank=True, default="", verbose_name="Extra Solr Copyfields", max_length=132,
                                          help_text="A comma separated list of auto-generated Solr copy-fields that are populated by this field")
 
@@ -453,14 +453,25 @@ class Event(models.Model):
 
 class SearchLog(models.Model):
     id = models.AutoField(primary_key=True)
-    timestamp = models.DateTimeField()
+    timestamp = models.DateTimeField(db_index=True, verbose_name="Query Timestamp")
     hostname = models.CharField(max_length=512, verbose_name="Hostname", blank=False)
-    search_type = models.CharField(max_length=32, verbose_name="Search ID", blank=False, default="None")
+    search_type = models.CharField(max_length=32, verbose_name="Search ID", blank=False, default="None", db_index=True)
     page_type = models.CharField(max_length=32, verbose_name="Page Type", blank=False, default="search")
     search_format = models.CharField(max_length=32, verbose_name="Search Format", blank=False, default="html")
     session_id = models.CharField(max_length=128, verbose_name="Session ID", blank=False, default="None")
     page_no = models.IntegerField(verbose_name="Page Number", blank=False, default=1)
     sort_order = models.CharField(max_length=64, verbose_name="Sort Order", blank=False, default="asc")
-    search_text = models.TextField(verbose_name="Search Text", blank=False, default="None")
+    search_text = models.TextField(verbose_name="Search Text", blank=False, default="None", db_index=True)
     facets = models.TextField(verbose_name="Facets", blank=False, default="None")
     results_no = models.IntegerField(verbose_name="Results Number", blank=False, default=0)
+
+
+class SearchLogFilters(models.Model):
+    id = models.AutoField(primary_key=True)
+    searchlog_id = models.ForeignKey(SearchLog, on_delete=models.CASCADE, verbose_name="Search Log ID", blank=False, default=1,
+                                     db_index=True)
+    search_type = models.CharField(max_length=32, verbose_name="Search ID", blank=False, default="None", db_index=True)
+    facet = models.CharField(max_length=64, verbose_name="Facet Name", blank=False, default="None", db_index=True)
+    facet_en = models.CharField(max_length=256, verbose_name="English Label", blank=False, default="", db_index=True)
+    facet_fr = models.CharField(max_length=256, verbose_name="French Label", blank=False, default="", db_index=True)
+    value = models.CharField(max_length=1024, verbose_name="Facet Value", blank=False, default="")

@@ -4,7 +4,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 from django.utils import timezone as utimezone
 import os.path
-from search.models import SearchLog
+from search.models import SearchLog, SearchLogFilters
 
 
 class Command(BaseCommand):

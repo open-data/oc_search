@@ -51,10 +51,11 @@ def log_search_results(request: HttpRequest, search_logger: logging.Logger, sear
         search_text = parse.quote_plus(query_values['search_text'][0])
     if 'search_format' in query_values:
         search_format = query_values['search_format'][0]
+    fq = []
     for q in query_values:
-        if q not in ['page', 'sort', 'search_text', 'search_format']:
-            facets += f"{q}:{parse.quote_plus(query_values[q][0])},"
-    log_message = f'{hostname},{search_type},{page_type},{format},{request.session.session_key},{page},{sort},"{search_text}","{facets}",{doc_count}'
+        if q not in ['page', 'sort', 'search_text', 'search_format', '_gl', '_ga', 'wbdisable']:
+            fq.append(f"{q}:{parse.quote_plus(query_values[q][0])}")
+    log_message = f'{hostname},{search_type},{page_type},{format},{request.session.session_key},{page},{sort},"{search_text}",{",".join(fq)},{doc_count}'
     search_logger.info(log_message)
 
 
