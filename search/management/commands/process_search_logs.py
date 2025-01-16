@@ -1,7 +1,5 @@
 import csv
 from datetime import datetime
-
-from Tools.scripts.dutree import store
 from dateutil import tz
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
