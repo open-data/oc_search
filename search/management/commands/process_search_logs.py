@@ -83,7 +83,7 @@ class Command(BaseCommand):
                             bad_entry_count += 1
                         else:
                             # Validate if it is referencing a valid field or the WET wbdiable par
-                            if field_value[0] not in self.fields[log_entry.search_type] or field_value[0] == "wbdisable":
+                            if log_entry.search_type not in self.fields or field_value[0] not in self.fields[log_entry.search_type] or field_value[0] == "wbdisable":
                                 if options["verbose"]:
                                     print(f"Unknown field {field_value[0]} in {log_entry.search_type} log (ID: {log_entry.timestamp})")
                                 unknown_entry_count += 1
