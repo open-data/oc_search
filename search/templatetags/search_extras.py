@@ -12,7 +12,6 @@ from dateutil import parser
 import json
 import markdown2
 import re
-from search.query import url_part_unescape
 
 
 register = template.Library()
@@ -181,7 +180,10 @@ def strip_paragraph(text):
 
 @register.filter('url_part_unescape')
 def url_part_unescape_filter(value: str):
-    return url_part_unescape(value)
+    return ''.join(
+        bytes.fromhex(s).decode('utf-8') if i % 2 else s
+        for i, s in enumerate(value.split('_'))
+    )
 
 
 @register.filter('strip_whitespace')
