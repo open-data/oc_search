@@ -23,6 +23,11 @@ class Command(BaseCommand):
             csv_reader = csv.DictReader(csv_file, fieldnames=fieldnames, dialect='excel')
             for row in csv_reader:
                 try:
+                    # as a sanity test, verify the integer fields are valid, if not, don't try to save this record
+                    # since the log likely contains bad data
+                    int (row['page_no'])
+                    int (row['results_no'])
+
                     sll = SearchLog.objects.create(**row)
                     sll.save()
 

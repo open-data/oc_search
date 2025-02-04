@@ -1,0 +1,1 @@
+Update script that loadsthe search query logs. It was failing when attempting to load invalid queries
