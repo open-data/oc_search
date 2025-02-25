@@ -49,8 +49,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--search', type=str, help='The Search ID that is being loaded', required=True)
         parser.add_argument('--csv', type=str, help='CSV filename to import', required=True)
-        parser.add_argument('--quiet', required=False, action='store_true', default=True,
-                            help='Only display error messages')
+        parser.add_argument('--quiet', required=False, action='store_true', help='Deprecated option')
         parser.add_argument('--nothing_to_report', required=False, action='store_true', default=False,
                             help='Use this switch to indicate if the CSV files that is being loaded contains '
                                  '"Nothing To Report" data')
@@ -488,9 +487,7 @@ class Command(BaseCommand):
                             bd_file.flush()
                     finally:
                         solr.commit(self.solr_core, softCommit=True, waitSearcher=True)
-                        self.logger.level = logging.INFO
-                        self.logger.info(
-                            "\nTotal rows processed: {0}, committed to Solr: {1}".format(total, commit_count))
+                        sys.stdout.write(f"\nTotal rows processed: {total}, committed to Solr: {commit_count}")
 
         except Exception as x:
             self.logger.error('Unexpected Error "{0}"'.format(x.args))
