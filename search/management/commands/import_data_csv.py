@@ -49,9 +49,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--search', type=str, help='The Search ID that is being loaded', required=True)
         parser.add_argument('--csv', type=str, help='CSV filename to import', required=True)
-        parser.add_argument('--debug', required=False, action='store_true', default=settings.IMPORT_DATA_CSV_DEFAULT_DEBUG,
-                            help='Only display error messages')
-        parser.add_argument('--quiet', required=False, action='store_true', default=False,
+        parser.add_argument('--quiet', required=False, action='store_true', default=True,
                             help='Only display error messages')
         parser.add_argument('--nothing_to_report', required=False, action='store_true', default=False,
                             help='Use this switch to indicate if the CSV files that is being loaded contains '
@@ -62,6 +60,8 @@ class Command(BaseCommand):
                             help='Add these records, do not truncate the Solr core')
         parser.add_argument('--not_pd', required=False, action='store_true', default=False,
                             help='Not Loading GoC Proactive Disclosure data, so do not do default department data handling')
+        parser.add_argument('--verbose', required=False, action='store_true', default=False,
+                            help="Display rolling count when importing large datasets")
 
     def set_empty_fields(self, solr_record: dict):
 
@@ -103,8 +103,10 @@ class Command(BaseCommand):
                 self.search_target = Search.objects.get(search_id=options['search'])
                 self.solr_core = self.search_target.solr_core_name
                 self.all_fields = Field.objects.filter(search_id=self.search_target)
-                if options['quiet']:
-                    self.logger.level = logging.ERROR
+                if options['verbose']:
+                    self.logger.level = logging.INFO
+                else:
+                    self.logger.level = logging.WARNING
                 if options['nothing_to_report']:
                     self.search_fields = Field.objects.filter(search_id=self.search_target,
                                                               alt_format='ALL') | Field.objects.filter(
@@ -448,14 +450,16 @@ class Command(BaseCommand):
 
                             # Commit to Solr whenever the cycle threshold is reached
                             if cycle >= self.cycle_on:
-                                sys.stdout.write(f"{total} rows processed\r")
+                                if options['verbose']:
+                                    sys.stdout.write(f"{total} rows processed\r")
                                 cycle = 0
                             if error_count > 100:
-                                self.logger.info(f"{error_count} errors so far")
+                                if options['verbose']:
+                                    self.logger.info(f"{error_count} errors so far")
 
                         except Exception as x:
                             self.logger.error(f'Unexpected Error "{x}" while processing row {row_num + 1}')
-                            if options['debug'] and not options['quiet']:
+                            if options['verbose']:
                                 traceback.print_exception(type(x), x, x.__traceback__)
 
                     # Write and remaining records to Solr and commit
@@ -487,8 +491,6 @@ class Command(BaseCommand):
                         self.logger.level = logging.INFO
                         self.logger.info(
                             "\nTotal rows processed: {0}, committed to Solr: {1}".format(total, commit_count))
-
-
 
         except Exception as x:
             self.logger.error('Unexpected Error "{0}"'.format(x.args))

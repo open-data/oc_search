@@ -1,0 +1,2 @@
+Reduce the amount of default messages from the import_data_csv command. Removed the --debug option and markded
+the --quiet option as redundant.
