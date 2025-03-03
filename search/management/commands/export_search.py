@@ -68,7 +68,7 @@ class Command(BaseCommand):
             # Export Search
             ex_search = Search.objects.get(search_id=options['search'])
             searches_path = path.join(db_path, "{0}_search.json".format(options['search']))
-            with open(searches_path, 'w', encoding='utf-8', errors="ignore") as search_file:
+            with open(searches_path, 'w', encoding='utf-8', errors="ignore", newline='\n') as search_file:
                 d = json.loads(ex_search.to_json())
                 search_file.write(json.dumps(d, indent=2, sort_keys=True))
             logging.info("Search exported to {0}".format(searches_path))
@@ -77,7 +77,7 @@ class Command(BaseCommand):
             ex_fields = Field.objects.filter(search_id__search_id=options['search'])
             ex_fields_list = [f.to_json() for f in ex_fields]
             field_path = path.join(db_path, "{0}_fields.json".format(options['search']))
-            with open(field_path, 'w', encoding='utf-8', errors="ignore") as search_file:
+            with open(field_path, 'w', encoding='utf-8', errors="ignore", newline='\n') as search_file:
                 fs = json.loads(f'[{",".join(ex_fields_list)}]')
                 search_file.write(json.dumps(fs, indent=2, sort_keys=True))
             logging.info(f"{len(ex_fields_list)} Fields exported to {field_path}")
@@ -100,7 +100,7 @@ class Command(BaseCommand):
             # Export Chronologic Codes
             code_path = path.join(db_path, "{0}_chronologiccodes.json".format(options['search']))
             ex_ccodes_list = []
-            with open(code_path, 'w', encoding='utf-8', errors="ignore") as search_file:
+            with open(code_path, 'w', encoding='utf-8', errors="ignore", newline='\n') as search_file:
                 for f in ex_fields:
                     ex_codes = Code.objects.filter(field_fid__fid=f.fid)
                     if ex_codes.count() > 0:
