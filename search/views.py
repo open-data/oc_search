@@ -612,6 +612,7 @@ class RecordView(SearchView):
             context["download_ds_url_en"] = self.searches[search_type].dataset_download_url_fr if lang == 'fr' else self.searches[search_type].dataset_download_url_en
             context["search_text"] = request.GET.get("search_text", "")
             context['back_to_url'] = get_search_path(self.searches[search_type], lang)
+            context['main_content_body_top_snippet'] = "search_snippets/default_main_content_body_top.html"
             context["im_enabled"] = settings.IM_ENABLED if hasattr(settings, 'IM_ENABLED') else False,
             request.session['prev_record'] = request.build_absolute_uri()
             solr = SolrClient(settings.SOLR_SERVER_URL)
