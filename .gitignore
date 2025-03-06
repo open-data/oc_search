@@ -165,7 +165,6 @@ cython_debug/
 /search/management/commands/data_*.py
 /search/management/commands/dataprops_*.py
 /search/management/commands/contracts_*.py
-/search/management/commands/contracts_*.py
 /search/management/commands/nap5_*.py
 /search/management/commands/reclassification_*.py
 /search/management/commands/qpnotes_*.py
@@ -178,4 +177,4 @@ cython_debug/
 /search/data/
 !/search/data/Readme.md
 # Don't include custom tests
-¡/tests/test_*.py
+/tests/test_*.py
