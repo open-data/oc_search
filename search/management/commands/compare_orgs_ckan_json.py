@@ -41,14 +41,27 @@ class Command(BaseCommand):
                     if len(owner_org_titles) == 1:
                         label_fr = owner_org_titles[0].strip()
                     else:
-                        label_fr = owner_org_titles[1].strip()                    
+                        label_fr = owner_org_titles[1].strip()
+
+                    extra_01 = org_obj['id'].lower()
+                    extra_01_en = ""
+                    extra_01_fr = ""
+                    if '-' in org_obj['name']:
+                        extra_01 = org_obj['name']
+                        acronym = org_obj['name'].split('-')
+                        extra_01_en = acronym[0].strip()
+                        extra_01_fr = acronym[1].strip()
+                    else:
+                        extra_01_en = org_obj['name']
+                        extra_01_fr = org_obj['name']    
+
                     org_entry = {
                         'id': org_id, 
                         'label_en': label_en, 
                         'label_fr': label_fr,
-                        'extra_01': org_obj['name'],
-                        'extra_01_en': org_obj["shortform"]["en"],
-                        'extra_01_fr': org_obj["shortform"]["fr"]
+                        'extra_01': extra_01,
+                        'extra_01_en': extra_01_en,
+                        'extra_01_fr': extra_01_fr
                         }
                     self.ckan_orgs[org_id.lower()] = org_entry
 
