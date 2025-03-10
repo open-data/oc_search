@@ -80,6 +80,7 @@ def get_error_context(search_type: str, lang: str, error_msg=""):
         "body_js_snippet": "",
         "info_message_snippet": "search_snippets/default_info_message.html",
         "about_message_snippet": "search_snippets/default_about_message.html",
+        "main_content_body_top_snippet": "search_snippets/default_main_content_body_top.html",
         "DEBUG": settings.DEBUG,
         "exception_message": error_msg
     }
@@ -298,6 +299,7 @@ class SearchView(View):
             "body_js_snippet": self.searches[search_type].body_js_snippet,
             "info_message_snippet": self.searches[search_type].info_message_snippet,
             "about_message_snippet": self.searches[search_type].about_message_snippet,
+            "main_content_body_top_snippet": "search_snippets/default_main_content_body_top.html",
             "mlt_enabled": self.searches[search_type].mlt_enabled,
             "query_path": request.META["QUERY_STRING"],
             "path_info": request.META["PATH_INFO"],
@@ -802,7 +804,6 @@ class ExportView(SearchView):
             solr_query = create_solr_query(request, self.searches[search_type], self.fields[search_type],
                                            self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
                                            facets, 1, 0, record_id='', export=True)
-
             # Call  plugin pre-solr-query if defined
             search_type_plugin = 'search.plugins.{0}'.format(search_type)
             if search_type_plugin in self.discovered_plugins:
@@ -967,6 +968,7 @@ class DownloadSearchResultsView(View):
                 'search_title': self.searches[search_type].label_fr if lang == 'fr' else self.searches[search_type].label_en,
                 'task_id': task_id,
                 'body_js_snippet': 'search_snippets/download.js',
+                'main_content_body_top_snippet': "search_snippets/default_main_content_body_top.html",
                 'debug': settings.DEBUG,
             }
 
@@ -1019,6 +1021,7 @@ class MoreLikeThisView(SearchView):
             context["search_item_snippet"] = self.searches[search_type].search_item_snippet
             context["referer"] = request.META["HTTP_REFERER"] if "HTTP_REFERER" in request.META and (request.META["HTTP_REFERER"].startswith("http://" + request.META["HTTP_HOST"]) or request.META[
                     "HTTP_REFERER"].startswith("https://" + request.META["HTTP_HOST"])) else ""
+            context['main_content_body_top_snippet'] = "search_snippets/default_main_content_body_top.html"
             solr = SolrClient(settings.SOLR_SERVER_URL)
 
             core_name = self.searches[search_type].solr_core_name
@@ -1138,6 +1141,7 @@ class PageView(SearchView):
             "breadcrumb_snippet": "search_snippets/default_breadcrumb.html",
             "info_message_snippet": "search_snippets/default_info_message.html",
             "about_message_snippet": "search_snippets/default_about_message.html",
+            "main_content_body_top_snippet": "search_snippets/default_main_content_body_top.html"
         }
         # Validate the query string and set a back-to path
         context['back_to_url'] = ''
