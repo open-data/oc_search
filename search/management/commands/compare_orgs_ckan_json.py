@@ -35,10 +35,17 @@ class Command(BaseCommand):
                 for org in org_file:
                     org_obj = json.loads(org)
                     org_id = org_obj["name"]
+                    owner_org_titles = org_obj['title'].split('|')
+                    label_en = owner_org_titles[0].strip()
+                    label_fr = ""
+                    if len(owner_org_titles) == 1:
+                        label_fr = owner_org_titles[0].strip()
+                    else:
+                        label_fr = owner_org_titles[1].strip()                    
                     org_entry = {
                         'id': org_id, 
-                        'label_en': org_obj['title_translated']['en'], 
-                        'label_fr': org_obj['title_translated']['fr'],
+                        'label_en': label_en, 
+                        'label_fr': label_fr,
                         'extra_01': org_obj['name'],
                         'extra_01_en': org_obj["shortform"]["en"],
                         'extra_01_fr': org_obj["shortform"]["fr"]
