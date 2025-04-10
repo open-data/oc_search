@@ -514,6 +514,8 @@ class SearchView(View):
                 if len(context['pagination']) == 1:
                     context['show_pagination'] = False
                 else:
+                    
+                    # Calculate the pagination values for the bottom of the search results page
                     context['show_pagination'] = True
                     context['previous_page'] = (1 if page == 1 else page - 1)
                     last_page = (context['pagination'][len(context['pagination']) - 1] if len(context['pagination']) > 0 else 1)
@@ -523,6 +525,17 @@ class SearchView(View):
                     next_page = (last_page if next_page > last_page else next_page)
                     context['next_page'] = next_page
                     context['currentpage'] = page
+                    
+                    # Recreate the query string portion of the paging URL with the correct page and sort params
+                    get_params = request.GET.dict()
+                    get_params['page'] = "__page__"
+                    get_params['sort'] = context['sort']
+                    q_list = []
+                    for k,v in get_params.items():
+                        q_list.append(f"{k}={v}")
+                    pgntn_url_querystr = "&".join(q_list).replace(' ', '+')
+                    context['pgntn_path'] = f"{request.scheme}://{request.get_host()}{request.path}?{pgntn_url_querystr}"
+
                 if search_type_plugin in self.discovered_plugins and self.discovered_plugins[search_type_plugin].plugin_api_version() == 1.1:
                     context, template = self.discovered_plugins[search_type_plugin].pre_render_search(context,
                                                                                                       self.searches[search_type].page_template,

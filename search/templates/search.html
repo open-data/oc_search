@@ -90,22 +90,22 @@
                             {% if currentpage == 1 %}
                                 <li class="previous disabled"><a href="#" rel="prev">{% translate 'Previous' %}</a></li>
                             {% else %}
-                                <li class="previous"><a href="#" onclick="gotoPage('{{ previous_page }}')">{% translate 'Previous' %} <span class="wb-inv">Go to page {{ previous_page }}</span></a></li>
+                                <li class="previous"><a href="{{ pgntn_path | replace_pageno:previous_page }}">{% translate 'Previous' %} <span class="wb-inv">Go to page {{ previous_page }}</span></a></li>
                             {% endif %}
-                            <li{% if currentpage == 1 %} class="active" {% endif %}><a href="#" onclick="gotoPage('1')">1<span class="wb-inv">(current) {% translate 'Go to' %} 1 </span></a></li>
-                         {% elif pg == last_page %}
+                            <li{% if currentpage == 1 %} class="active" {% endif %}><a href="{{ pgntn_path | replace_pageno:1 }}">1<span class="wb-inv">(current) {% translate 'Go to' %} 1 </span></a></li>
+                        {% elif pg == last_page %}
                             <li{% if currentpage == last_page %} class="active"{% endif %}>
-                              <a href="#" onclick="gotoPage('{{ last_page }}')">{{ pg }}<span class="wb-inv">(current) {% translate 'Go to' %} 1 </span></a>
+                              <a href="{{ pgntn_path | replace_pageno:last_page }}">{{ pg }}<span class="wb-inv">(current) {% translate 'Go to' %} 1 </span></a>
                             </li>
                             {% if currentpage == last_page %}
                             <li class="next disabled"><a href="#" rel="next">{% translate 'Next' %}</a></li>
                             {% else %}
-                                <li class="next"><a href="#" onclick="gotoPage('{{ next_page }}')">{% translate 'Next' %} <span class="wb-inv">Go to page {{ next_page }}</span></a></li>
+                                <li class="next"><a href="{{ pgntn_path | replace_pageno:next_page }}">{% translate 'Next' %} <span class="wb-inv">Go to page {{ next_page }}</span></a></li>
                             {% endif %}
                         {% elif pg == 0 %}
                             <li><a href="#" onclick="">&#8230;<span class="wb-inv"></span></a></li>
                         {% else %}
-                            <li {% if currentpage == pg %}class="active" {% endif %}><a href="#" onclick="gotoPage('{{ pg }}')">{{ pg }} <span class="wb-inv">Go to page {{pg}}</span></a></li>
+                            <li {% if currentpage == pg %}class="active" {% endif %}><a href="{{ pgntn_path | replace_pageno:pg }}">{{ pg }} <span class="wb-inv">Go to page {{pg}}</span></a></li>
                         {% endif %}
                     {% endfor %}
                 </ul>
