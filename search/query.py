@@ -1,3 +1,4 @@
+import bleach
 from django.http import HttpRequest
 from math import ceil
 from nltk.tokenize.regexp import RegexpTokenizer
@@ -163,49 +164,60 @@ def create_solr_query(request: HttpRequest, search: Search, fields: dict, Codes:
     # Most search pages in the app use HTTP GET method, but the data export uses POST method with CSTF protection.
     # This impacts how user data is retrieved.
 
-    if len(request.GET) > 0:
-        for request_field in request.GET.keys():
-            if request_field == 'search_text' and not record_id:
-                solr_query['q'] = get_search_terms(request.GET.get('search_text'))
-                if request.LANGUAGE_CODE == 'fr':
-                    solr_query['q'] = solr_query['q'].replace(' OU ', ' OR ').replace(" ET ", " AND ").replace(' PAS ', ' NOT ').replace("(PAS ", "(NOT ")
-                    if solr_query['q'].startswith('PAS '):
-                        solr_query['q'] = "NOT " + solr_query['q'][4:]
-            elif request_field == 'sort' and not record_id:
-                if request.LANGUAGE_CODE == 'fr':
-                    solr_query['sort'] = request.GET.get('sort') if request.GET.get('sort') in search.results_sort_order_fr.split(',') else default_sort
-                else:
-                    solr_query['sort'] = request.GET.get('sort') if request.GET.get('sort') in search.results_sort_order_en.split(',') else default_sort
-            elif request_field in fields:
-                known_fields[request_field] = request.GET.get(request_field).split('|')
-
-    elif request.POST.get("export_query"):
-
-        # Currently only the data export uses a POST form, so export fields are hard-coded here, and default sort order is used
-
-        qurl = parse.urlsplit(request.POST.get('export_search_path'))
-        keys = parse.parse_qs(qurl.query)
-        for request_field in keys:
-            if request_field == 'search_text' and not record_id:
-                solr_query['q'] = get_search_terms(keys[request_field][0])
-            elif request_field == 'sort' and not record_id:
-                solr_query['sort'] = default_sort
-            elif request_field in fields:
-                known_fields[request_field] = keys[request_field][0].split('|')
-
-    # If sort not specified in the request, then use the default
-    if 'sort' not in solr_query:
-        solr_query['sort'] = default_sort
-
-    # Sometimes, the soft order will be forced to the default value
-    if override_sort:
-        solr_query['sort'] = default_sort
-
-    # This happens for record reviews
+    # The request is for a specific record - other fields should not be present
     if record_id:
         solr_query['q'] = 'id:"{0}"'.format(record_id)
 
-    solr_query['q.op'] = search.solr_default_op
+    # Pre-process the search request URL
+    else:
+        if len(request.GET) > 0:
+            for request_field in request.GET.keys():
+                if request_field == 'search_text' and not record_id:
+                    solr_query['q'] = get_search_terms(request.GET.get('search_text'))
+                    if request.LANGUAGE_CODE == 'fr':
+                        solr_query['q'] = solr_query['q'].replace(' OU ', ' OR ').replace(" ET ", " AND ").replace(' PAS ', ' NOT ').replace("(PAS ", "(NOT ")
+                        if solr_query['q'].startswith('PAS '):
+                            solr_query['q'] = "NOT " + solr_query['q'][4:]
+                elif request_field == 'sort' and not record_id:
+                    if request.LANGUAGE_CODE == 'fr':
+                        solr_query['sort'] = request.GET.get('sort') if request.GET.get('sort') in search.results_sort_order_fr.split(',') else default_sort
+                    else:
+                        solr_query['sort'] = request.GET.get('sort') if request.GET.get('sort') in search.results_sort_order_en.split(',') else default_sort
+                elif request_field in fields:
+                    known_fields[request_field] = request.GET.get(request_field).split('|')
+                elif request_field in ["page", "wbdisable"]:
+                    pass
+                else:
+                    if request.GET.get(request_field):
+                        solr_query = {"error": bleach.clean(f"{request_field}={request.GET.get(request_field)}")}
+                    else:
+                        solr_query = {"error": bleach.clean(f"{request_field}")}
+                    solr_query['error_search_path'] = request.path
+                    return solr_query
+
+        elif request.POST.get("export_query"):
+
+            # Currently only the data export uses a POST form, so export fields are hard-coded here, and default sort order is used
+
+            qurl = parse.urlsplit(request.POST.get('export_search_path'))
+            keys = parse.parse_qs(qurl.query)
+            for request_field in keys:
+                if request_field == 'search_text' and not record_id:
+                    solr_query['q'] = get_search_terms(keys[request_field][0])
+                elif request_field == 'sort' and not record_id:
+                    solr_query['sort'] = default_sort
+                elif request_field in fields:
+                    known_fields[request_field] = keys[request_field][0].split('|')
+
+        # If sort not specified in the request, then use the default
+        if 'sort' not in solr_query:
+            solr_query['sort'] = default_sort
+
+        # Sometimes, the sort order will be forced to the default value
+        if override_sort:
+            solr_query['sort'] = default_sort
+
+        solr_query['q.op'] = search.solr_default_op
 
     # Create a Solr query field list based on the Fields Model. Expand the field list where needed
     solr_query['qf'] = get_query_fields(request.LANGUAGE_CODE, fields)

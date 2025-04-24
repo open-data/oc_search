@@ -404,6 +404,15 @@ class SearchView(View):
                                            facets, start_row, self.searches[search_type].results_page_size,
                                            record_id='', export=False, highlighting=True,
                                            default_sort=default_sort_order, override_sort=new_text_search)
+            # If the solr_query contains an error, then there was a problem with the request and
+            # a 400 error page should be returned instead.
+
+            if "error" in solr_query:
+                
+                error_context = get_error_context(search_type, lang)
+                error_context['bad_query_msg'] = solr_query['error']
+                error_context['alt_search_link'] = solr_query['error_search_path']
+                return render(request, '400.html', error_context, status=400)  
 
             # Call  plugin pre-solr-query if defined
             search_type_plugin = 'search.plugins.{0}'.format(search_type)
@@ -607,7 +616,7 @@ class SearchView(View):
             context['message_fr'] = self.searches[search_type].disabled_message_fr
             return render(request, 'no_service.html', context)
         else:
-            return render(request, '404.html', get_error_context(search_type, lang))
+            return render(request, '404.html', get_error_context(search_type, lang), status=404)
 
 
 class RecordView(SearchView):

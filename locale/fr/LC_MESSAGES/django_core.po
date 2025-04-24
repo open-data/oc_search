@@ -302,3 +302,24 @@ msgstr "Aucune donnée similaire n'a été trouvée"
 
 msgid "Search Tips"
 msgstr "Conseils pour la recherche"
+
+msgid "We couldn't understand your request"
+msgstr "Nous ne comprenons pas votre demande"
+
+msgid "Error 400"
+msgstr "Erreur 400"
+
+msgid "We are sorry you ended up here. There are problems with the requested webpage address."
+msgstr "Nous sommes désolés que vous ayez abouti ici. Il y a des problèmes avec le lien de la page web demandée."
+
+msgid "Often this happens because an address was entered directly into your web browser."
+msgstr "Souvent, cela se produit parce qu'une adresse a été saisie directement dans votre navigateur web"
+
+msgid "Please try again searching with the appropriate"
+msgstr "Veuillez réessayer la recherche en utilisant le"
+
+msgid "Open Government form"
+msgstr "formulaire de gouvernement ouvert"
+
+msgid "Unknown search syntax:"
+msgstr "Syntaxe de recherche inconnue :"
