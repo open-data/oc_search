@@ -17,10 +17,10 @@
         <div class="col-xs-9 col-sm-10 col-md-10">
             <h2 class="mrgn-tp-md">{% translate "We couldn't understand your request" %}</h2>
             <p class="pagetag"><b>{% translate "Error 400" %}</b></p>
-            <p>{% translate "We're sorry you ended up here. There are problems with the requested webpage address." %}</p>
+            <p>{% translate "We are sorry you ended up here. There are problems with the requested webpage address." %}</p>
             <p>{% translate "Often this happens because an address was entered directly into your web browser." %}</p>
-            <p>{% translate "Please try again searching with the appropriate " %} <a href="{{ alt_search_link }}">{% translate "Open Government form" %}</a>.</p>
-            <p><div class="text-warning">{% translate "Unknown search syntax: " %}</div> <pre>{{ bad_query_msg }}</pre></p>
+            <p>{% translate "Please try again searching with the appropriate" %} <a href="{{ alt_search_link }}">{% translate "Open Government form" %}</a>.</p>
+            <p><div class="text-warning">{% translate "Unknown search syntax:" %}</div> <pre>{{ bad_query_msg }}</pre></p>
         </div>
     </div>
 {% endblock %}
