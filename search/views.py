@@ -412,6 +412,7 @@ class SearchView(View):
                 error_context = get_error_context(search_type, lang)
                 error_context['bad_query_msg'] = solr_query['error']
                 error_context['alt_search_link'] = solr_query['error_search_path']
+                self.logger.info(f"Invalid search query: {solr_query['error_search_path']}")
                 return render(request, '400.html', error_context, status=400)  
 
             # Call  plugin pre-solr-query if defined
