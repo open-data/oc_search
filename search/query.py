@@ -185,7 +185,7 @@ def create_solr_query(request: HttpRequest, search: Search, fields: dict, Codes:
                         solr_query['sort'] = request.GET.get('sort') if request.GET.get('sort') in search.results_sort_order_en.split(',') else default_sort
                 elif request_field in fields:
                     known_fields[request_field] = request.GET.get(request_field).split('|')
-                elif request_field in ["page", "wbdisable", "_ga"]:
+                elif request_field in ["page", "wbdisable", "_ga", "search_format"]:
                     pass
                 else:
                     if request.GET.get(request_field):
