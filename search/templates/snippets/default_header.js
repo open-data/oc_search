@@ -22,10 +22,6 @@ function gotoPage(page_no) {
     window.location.search = search_params.toString();
 }
 
-function resetSearch() {
-    window.location.search = "page=1";
-}
-
 function selectFacet(param, value) {
     search_params = new URLSearchParams(window.location.search)
     selected_param_values = search_params.get(param);

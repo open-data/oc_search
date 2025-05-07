@@ -379,6 +379,9 @@ class SearchView(View):
             start_row, page = calc_starting_row(request.GET.get('page', 1),
                                                 rows_per_page=self.searches[search_type].results_page_size)
 
+            # Link to Reset the search
+            context['reset_path'] = f"{request.scheme}://{request.get_host()}{request.path}"        
+
             # Compose the Solr query
             facets = self.facets_fr[search_type] if lang == 'fr' else self.facets_en[search_type]
             reversed_facets = []
