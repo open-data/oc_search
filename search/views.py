@@ -792,7 +792,15 @@ class ExportView(SearchView):
                     facets)
 
             request_url = request.POST.get('export_search_path')
-            task = export_search_results_csv.delay(request_url, solr_query, lang, core_name)
+            ## OPEN 4055 - Pass in the list if Field codes so that the readable title can be user in the exported
+            ##             csv file. We can't pass in DB objects, so build a simple dict
+            field_names = {}
+            for field in self.fields[search_type]:
+                if lang == 'fr':
+                    field_names[field] = self.fields[search_type][field].label_fr
+                else:
+                    field_names[field] = self.fields[search_type][field].label_en
+            task = export_search_results_csv.delay(request_url, solr_query, lang, core_name, field_names)
             if settings.SEARCH_LANG_USE_PATH:
                 if lang == 'fr':
                     return redirect(f'/rechercher/fr/{search_type}/telecharger/{task}')

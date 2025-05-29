@@ -13,16 +13,39 @@ from SolrClient.exceptions import ConnectionError, SolrError
 import time
 
 
-def cache_search_results_file(cached_filename: str, sr: SolrResponse, rows=0):
+def cache_search_results_file(cached_filename: str, sr: SolrResponse, rows=0, field_list={}):
     if len(sr.docs) == 0:
         return False
     if not os.path.exists(cached_filename):
         # Write out the header with the UTF8 byte-order marker for Excel first
         with open(cached_filename, 'w', newline='', encoding='utf8') as csv_file:
             cache_writer = csv.writer(csv_file, dialect='excel', quoting=csv.QUOTE_NONE)
+            #### the values from the dict docs[0] can be used to find the column headers
+            ## in the field_list dict.
+            label_header = []
             headers = list(sr.docs[0])
-            headers[0] = u'\N{BOM}' + headers[0]
-            cache_writer.writerow(headers)
+            for col in headers:
+                if col.lower() == 'id':
+                    label_header.append('ID')
+                elif col in field_list:
+                    if field_list[col]:
+                        label_header.append(field_list[col])
+                    else:
+                        label_header.append(col.capitalize())
+                elif col[-3:] in ('_fr', '_en'):
+                    if col[:-3] in field_list:
+                        label_header.append(field_list[col[:-3]])
+                    else:
+                        label_header.append(col[:-3])
+                elif col[-4:] in ('_fra', '_eng'):
+                    if col[:-4] in field_list:
+                        label_header.append(field_list[col[:-3]])
+                    else:
+                        label_header.append(col[:-4])                        
+                else:
+                    label_header.append(col.replace('_', ' ').capitalize())
+            label_header[0] = u'\N{BOM}' + label_header[0]
+            cache_writer.writerow(label_header)
 
         # Use a CSV writer with forced quoting for the body of the file
         with open(cached_filename, 'a', newline='', encoding='utf8') as csv_file:
@@ -38,11 +61,13 @@ def cache_search_results_file(cached_filename: str, sr: SolrResponse, rows=0):
                     pass
     return True
 
+## OPEN-4055: Accept a list of Fields for the exported search results
 @shared_task()
-def export_search_results_csv(request_url, query, lang, core):
+def export_search_results_csv(request_url, query, lang, core, fieldlist: dict):
     cache_dir = settings.EXPORT_FILE_CACHE_DIR
     hashed_query = hashlib.sha1(request_url.encode('utf8')).hexdigest()
-    cached_filename = os.path.join(cache_dir, f"{core}_{hashed_query}_{lang}.csv")
+    fileroot = core.replace("search_", "rechercher_") if  lang == "fr" else core
+    cached_filename = os.path.join(cache_dir, f"{fileroot}_{hashed_query}_{lang}.csv")
     static_filename = f'{settings.EXPORT_FILE_CACHE_URL}/{core}_{hashed_query}_{lang}.csv'
 
     # Check the cache. If the results already exist,then just return the filename, no need to query Solr
@@ -55,7 +80,7 @@ def export_search_results_csv(request_url, query, lang, core):
     solr = SolrClient(settings.SOLR_SERVER_URL)
     solr_response = solr.query(core, query, request_handler='export')
 
-    if cache_search_results_file(cached_filename=cached_filename, sr=solr_response):
+    if cache_search_results_file(cached_filename=cached_filename, sr=solr_response, field_list=fieldlist):
         return f"{static_filename}"
     else:
         return ""
