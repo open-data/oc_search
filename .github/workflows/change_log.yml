@@ -26,7 +26,7 @@ jobs:
 
       - name: Check Changelog Extension
         run: |
-          fullfile=$(ls ./changes/${{ github.event.number }}.*)
+          fullfile=$(ls ./changes/??${{ github.event.number }}.*)
           filename=$(basename -- "$fullfile")
           extension="${filename##*.}"
           allowed_types='[ "fix", "bugfix", "hotfix", "feature", "misc", "changes", "migration", "removal", "release" ]'
