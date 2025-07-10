@@ -19,7 +19,7 @@ def cache_search_results_file(cached_filename: str, sr: SolrResponse, rows=0, fi
     if not os.path.exists(cached_filename):
         # Write out the header with the UTF8 byte-order marker for Excel first
         with open(cached_filename, 'w', newline='', encoding='utf8') as csv_file:
-            cache_writer = csv.writer(csv_file, dialect='excel', quoting=csv.QUOTE_NONE)
+            cache_writer = csv.writer(csv_file, dialect='excel', quoting=csv.QUOTE_NONNUMERIC)
             #### the values from the dict docs[0] can be used to find the column headers
             ## in the field_list dict.
             label_header = []
@@ -28,6 +28,8 @@ def cache_search_results_file(cached_filename: str, sr: SolrResponse, rows=0, fi
                 colname = colname.strip(" _,").lower()
                 if colname.lower() == 'id':
                     label_header.append('ID')
+                elif colname == "name" and lang == "fr":
+                    label_header.append('Nom')                    
                 elif colname == "year" and lang == "fr":
                     label_header.append('Année')
                 elif colname in field_list:
@@ -60,6 +62,9 @@ def cache_search_results_file(cached_filename: str, sr: SolrResponse, rows=0, fi
                 if rows != 0 and c > rows:
                     break
                 try:
+                    for j in i.keys():
+                        if isinstance(i[j], list):
+                            i[j] = ",".join(i[j])
                     cache_writer.writerow(i.values())
                     c += 1
                 except UnicodeEncodeError:
