@@ -12,7 +12,7 @@ jobs:
 
       - name: Check Chanelog Exists
         run: |
-          if [[ $(ls ./changes/${{ github.event.number }}.*) ]]; then
+          if [[ $(ls ./changes/$??{{ github.event.number }}.*) ]]; then
             echo -e "\n"
             echo -e "\033[0;36mINFO: changelog for PR ${{ github.event.number }} exists.\033[0;0m"
             echo -e "\n"
