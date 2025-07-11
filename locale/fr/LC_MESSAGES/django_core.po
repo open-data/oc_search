@@ -323,3 +323,6 @@ msgstr "formulaire de gouvernement ouvert"
 
 msgid "Unknown search syntax:"
 msgstr "Syntaxe de recherche inconnue :"
+
+msgid "Exported files have recently changed. Column headers are now descriptive labels and fields with multiple values no longer have surrounding square brackets."
+msgstr "Les fichiers exportés ont récemment été modifiés. Les intitulés des colonnes sont désormais des noms descriptifs et les champs comportant des valeurs multiples ne sont plus entourés de crochets."
