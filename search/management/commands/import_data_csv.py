@@ -24,8 +24,7 @@ MAX_FIELD_LENGTH = 31000
 
 
 class Command(BaseCommand):
-    help = 'Django manage command that will import CSV data into a Solr search that created with the ' \
-           'import_schema_ckan_yaml command'
+    help = 'Django manage command that will import CSV data into a custom Open Canada search'
 
     logger = logging.getLogger(__name__)
 
@@ -236,13 +235,20 @@ class Command(BaseCommand):
                                     delimiter = self.csv_fields[csv_field].solr_field_multivalue_delimeter
                                     solr_record[csv_field] = list(
                                         map(lambda c: c.strip(), csv_record[csv_field].split(delimiter)))
-                                    # Copy fields fo report cannot use multi-values - so directly populate with original string
-                                    # Copy fields fo report cannot use multi-values - so directly populate with original string
-                                    if self.csv_fields[csv_field].solr_field_export:
-                                        for extra_field in self.csv_fields[csv_field].solr_field_export.split(','):
-                                            solr_record[extra_field] = csv_record[csv_field]
                                 else:
                                     solr_record[csv_field] = csv_record[csv_field]
+
+                                #  However, Solr fields used for export must be single value strings
+
+                                if self.csv_fields[csv_field].solr_field_export:
+                                    for extra_field in self.csv_fields[csv_field].solr_field_export.split(','):
+                                        # print(f"{csv_record[csv_field]}, {type(csv_record[csv_field])}")
+
+                                        if self.csv_fields[csv_field].solr_field_multivalued:
+                                            solr_record[extra_field] = csv_record[csv_field]
+                                            # Ensure these undefined fields have default values
+                                            if not solr_record[extra_field]:
+                                                solr_record[extra_field] = "-"
 
                                 # Automatically expand out dates and numbers for use with Solr export handler
 
@@ -307,15 +313,10 @@ class Command(BaseCommand):
                                     elif len(solr_record[csv_field]) > MAX_FIELD_LENGTH:
                                         solr_record[csv_field + 'g'] = str(
                                             solr_record[csv_field][:MAX_FIELD_LENGTH]).strip() + " ..."
-                                        self.logger.warning("Row {0}, Length of {1} is {2}, truncated to {3}".format(total,
-                                                                                                                     csv_field + 'g',
-                                                                                                                     len(
-                                                                                                                         solr_record[
-                                                                                                                             csv_field]),
-                                                                                                                     len(
-                                                                                                                         solr_record[
-                                                                                                                             csv_field + 'g'])))
-                                    else:
+                                        self.logger.warning(
+                                            "Row {0}, Length of {1} is {2}, truncated to {3}".format(
+                                                total, csv_field + 'g', len(solr_record[csv_field]),len(solr_record[csv_field + 'g'])))
+                                    elif csv_field + 'g' not in solr_record:
                                         solr_record[csv_field + 'g'] = solr_record[csv_field]
                                 elif self.csv_fields[csv_field].solr_field_type == 'search_text_fr':
                                     if len(solr_record[csv_field]) == 0:
@@ -324,15 +325,10 @@ class Command(BaseCommand):
                                     elif len(solr_record[csv_field]) > MAX_FIELD_LENGTH:
                                         solr_record[csv_field + 'a'] = str(
                                             solr_record[csv_field][:MAX_FIELD_LENGTH]).strip() + " ..."
-                                        self.logger.warning("Row {0}, Length of {1} is {2}, truncated to {3}".format(total,
-                                                                                                                     csv_field + 'a',
-                                                                                                                     len(
-                                                                                                                         solr_record[
-                                                                                                                             csv_field]),
-                                                                                                                     len(
-                                                                                                                         solr_record[
-                                                                                                                             csv_field + 'a'])))
-                                    else:
+                                        self.logger.warning(
+                                            "Row {0}, Length of {1} is {2}, truncated to {3}".format(
+                                                total, csv_field + 'a', len(solr_record[csv_field]), len(solr_record[csv_field + 'a'])))
+                                    elif csv_field + 'a' not in solr_record:
                                         solr_record[csv_field + 'a'] = solr_record[csv_field]
 
                                 # Lookup the expanded code value from the preloaded codes dict of values dict
