@@ -18,7 +18,8 @@ def cache_search_results_file(cached_filename: str, sr: SolrResponse, rows=0, fi
         return False
     if not os.path.exists(cached_filename):
         # Write out the header with the UTF8 byte-order marker for Excel first
-        with open(cached_filename, 'w', newline='', encoding='utf8') as csv_file:
+      
+        with open(f"{cached_filename}.tmp", 'w', newline='', encoding='utf8') as csv_file:
             cache_writer = csv.writer(csv_file, dialect='excel', quoting=csv.QUOTE_NONNUMERIC)
             #### the values from the dict docs[0] can be used to find the column headers
             ## in the field_list dict.
@@ -51,8 +52,13 @@ def cache_search_results_file(cached_filename: str, sr: SolrResponse, rows=0, fi
                         label_header.append(colname[:-4])                        
                 else:
                     label_header.append(colname.replace('_', ' ').capitalize())
-            label_header[0] = u'\N{BOM}' + label_header[0]
+            #label_header[0] = u'\N{BOM}' + label_header[0]
             cache_writer.writerow(label_header)
+
+        with open(f"{cached_filename}.tmp", 'r') as header_file:
+            data = header_file.read()
+        with open(cached_filename, 'w', newline='', encoding='utf8') as csv_file:
+            csv_file.write(u'\N{BOM}' + data)  
 
         # Use a CSV writer with forced quoting for the body of the file
         with open(cached_filename, 'a', newline='', encoding='utf8') as csv_file:

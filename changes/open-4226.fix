@@ -1,0 +1,1 @@
+The Search Results export prepends a BOM to the csv files it generates, but the BOM is no longer the first bytes thanks to recent changes to quote column headers names. This is a fix to ensure the BOM comes first.
