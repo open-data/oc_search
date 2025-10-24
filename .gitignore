@@ -113,9 +113,12 @@ celerybeat.pid
 .venv
 env/
 venv/
+dj4env/
+dj5env/
 ENV/
 env.bak/
 venv.bak/
+tstenv/
 
 # Spyder project settings
 .spyderproject
@@ -132,6 +135,9 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
+# JetBrains IDEs
+.idea/
+
 # Pyre type checker
 .pyre/
 
@@ -145,10 +151,7 @@ dmypy.json
 cython_debug/
 
 # Search Application
-/data/*.csv
-/data/*.txt
-/data/*.yaml
-/data/*.json
+/data/
 /search/migrations/*.py
 /search/plugins/*.py
 !/search/plugins/default.py
@@ -156,7 +159,6 @@ cython_debug/
 /search/templates/snippets/custom/
 /locale/fr/LC_MESSAGES/*.po
 !/locale/fr/LC_MESSAGES/django_core.po
-# Don't include file-based sessions
 /session/
 !/session/NOTE.md
 *.deprecated
@@ -168,6 +170,7 @@ cython_debug/
 /search/management/commands/nap5_*.py
 /search/management/commands/reclassification_*.py
 /search/management/commands/qpnotes_*.py
+/search/migrations_backup/
 /nltk/corpora
 /nltk/tokenizers
 /nltk/*.model
@@ -178,3 +181,6 @@ cython_debug/
 !/search/data/Readme.md
 # Don't include custom tests
 /tests/test_*.py
+/ramp/viewer/
+/cdts/
+/search/templates/snippets/im/
