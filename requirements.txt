@@ -17,3 +17,6 @@ pytz
 PyYAML
 redis
 termcolor
+Unidecode
+uWSGI==2.0.28; sys_platform == 'linux'
+#git+https://github.com/thriuin/SolrClient.git@master
