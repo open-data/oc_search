@@ -8,7 +8,6 @@ from .models import Search, Field, Code, ChronologicCode, Setting, Event
 
 class SearchAdmin(admin.ModelAdmin):
 
-    change_list_template = 'smuggler/change_list.html'
     list_display = ['search_id', 'label_en', 'solr_core_name']
     fieldsets = (
         (None, {'fields': ('search_id', 'solr_core_name', 'solr_default_op', 'solr_debugging', 'id_fields', 'alt_formats', 'label_en', 'label_fr',
@@ -69,7 +68,6 @@ make_currency_field.short_description = 'Mark selected fields as currency, float
 
 class FieldAdmin(admin.ModelAdmin):
 
-    change_list_template = 'smuggler/change_list.html'
     list_display = ('field_id', 'is_search_facet', 'is_default_display', 'search_id', 'format_name', 'solr_field_is_coded', 'solr_field_type', 'solr_field_lang')
     actions = [make_facet_field, make_default_display_field, clear_facet_field, clear_default_display_field, make_currency_field]
     search_fields = ['field_id', 'is_search_facet']
@@ -87,7 +85,6 @@ class FieldAdmin(admin.ModelAdmin):
 
 class CodeAdmin(admin.ModelAdmin):
 
-    change_list_template = 'smuggler/change_list.html'
     list_display = ['code_id', 'field_fid', 'label_en', 'label_fr']
     search_fields = ['code_id', 'label_en', 'label_fr']
     list_filter = [('field_fid', admin.RelatedOnlyFieldListFilter)]
@@ -98,7 +95,6 @@ class CodeAdmin(admin.ModelAdmin):
 
 class ChronologicCodesAdmin(admin.ModelAdmin):
 
-    change_list_template = 'smuggler/change_list.html'
     list_display = ['label', 'codes', 'label_en', 'start_date', 'end_date']
     search_fields = ['code_cid__code_id', 'label', 'label_en', 'label_fr']
     list_filter = [('code_cid', admin.RelatedOnlyFieldListFilter)]

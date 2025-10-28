@@ -31,7 +31,6 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 # Application definition
 
 INSTALLED_APPS = [
-    'corsheaders',
     'jazzmin',
     'django_celery_beat',
     'django_celery_results',
@@ -45,11 +44,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'qurl_templatetag',
     'search',
+    'ramp',
 ]
 
 ## Optional applications
 # 'ramp',
-# 'smuggler',
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
@@ -121,12 +120,6 @@ DATABASES = {
 }
 
 JSON_DOWNLOADS_ALLOWED = False
-
-# Smuggler settings
-SMUGGLER_FIXTURE_DIR = os.path.join(BASE_DIR, 'smuggler')
-SMUGGLER_EXCLUDE_LIST = ['admin.logentry', 'auth.permission', 'auth.group', 'auth.user',
-                         'contenttypes.contenttype',
-                         'django_celery_results.chordcounter', 'django_celery_results.groupresult', 'django_celery_beat.taskresult']
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -307,19 +300,6 @@ CELERY_TASK_TRACK_STARTED = True
 # Log file to hold exported search logs
 SEARCH_LOGGING_ARCHIVE_FILE = os.path.join(BASE_DIR, 'data', 'search_logs.log')
 SEARCH_LOGGING_ARCHIVE_AFTER_X_DAYS = 7
-
-# Used by the Suggested Datasets Search if enabled
-
-SD_COMMENTS_BASE_EN = "http://127.0.0.1:8000/static/sd/"
-SD_COMMENTS_BASE_FR = "http://127.0.0.1:8000/static/sd/"
-SD_SUGGEST_A_DATASET_EN = "https://o127.0.0.1:8000/en/forms/suggest-dataset"
-SD_SUGGEST_A_DATASET_FR = "https://127.0.0.1:8000/fr/formulaire/proposez-un-formulaire-densemble-de-donnees"
-SD_VOTES_BASE_EN = "http://127.0.0.1:8000/static/sd/"
-SD_VOTES_BASE_FR = "http://127.0.0.1:8000/static/sd/"
-
-SD_RECORD_URL_EN = 'http://127.0.0.1:8000/en/sd/id/'
-SD_RECORD_URL_FR = 'http://127.0.0.1:8000/fr/sd/id/'
-SD_ALERT_EMAIL_FROM = ['My Name', 'my.email', 'my.domain.org']
 
 # Used by the import_data_csv console command
 
