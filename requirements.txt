@@ -11,11 +11,12 @@ django-redis-sessions
 inflection
 markdown2
 nltk
-numpy
+pandas
 psycopg2
 pytz
 PyYAML
 redis
+SolrClient2
 termcolor
 Unidecode
 uWSGI==2.0.28; sys_platform == 'linux'

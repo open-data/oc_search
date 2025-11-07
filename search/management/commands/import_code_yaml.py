@@ -1,6 +1,5 @@
 from search.models import Field, Code
 from django.core.management.base import BaseCommand, CommandError
-import logging
 from os import path
 from termcolor import colored, cprint
 import textwrap
@@ -10,7 +9,6 @@ import yaml
 class Command(BaseCommand):
     help = 'Import code values for a custom search from a CKAN Recombinant YAML file.'
 
-    logger = logging.getLogger(__name__)
 
     def add_arguments(self, parser):
         parser.add_argument('--codes', type=str, help='YAML file that contains the code values', required=True)
@@ -43,20 +41,20 @@ class Command(BaseCommand):
                             field_obj = Field.objects.get(fid=field_fid)
                             if options['dryrun']:
                                 if Code.objects.filter(cid=code_cid, field_fid=field_obj).exists():
-                                    cprint (colored(f"    Updating an existing code {code_cid}", "yellow"))
+                                    cprint (colored(f"    Update an existing code {code_cid}", "green"))
                                 else:
-                                    cprint (colored(f"    Creating a new code {code_cid}"), "green")
+                                    cprint (colored(f"    Create a new code {code_cid}"), "yellow")
                             else:
-                                print(f"  Code: {code} EN: {textwrap.shorten(field['choices'][code]['en'], 24, placeholder='...')} FR: {textwrap.shorten(field['choices'][code]['fr'], 24, placeholder='...')}")
+                                cprint(colored(f"  Code: {code} EN: {textwrap.shorten(field['choices'][code]['en'], 24, placeholder='...')} FR: {textwrap.shorten(field['choices'][code]['fr'], 24, placeholder='...')}", "light_cyan"))
                                 new_code, created = Code.objects.get_or_create(cid=code_cid, field_fid=field_obj)
                                 new_code.code_id = code
                                 new_code.label_en = field['choices'][code]['en']
                                 new_code.label_fr = field['choices'][code]['fr']
                                 new_code.save()
                                 if created:
-                                    logging.info(f"    Imported new Code {new_code.code_id} for Field {field_obj.fid}")
+                                    cprint(colored(f"    Imported new Code {new_code.code_id} for Field {field_obj.fid}", "yellow"))
                                 else:
-                                    logging.info(f"    Updated Code model {new_code.code_id} for Field {field_obj.fid}")
+                                    cprint(colored(f"    Updated Code model {new_code.code_id} for Field {field_obj.fid}", "green"))
                         except KeyError as ke:
                             raise CommandError(f"Field {field_fid} not found in database {ke}")
                     db_codes = Code.objects.filter(field_fid_id=field_fid)

@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 from search.models import Search, Field
-from SolrClient import SolrClient
+from SolrClient2 import SolrClient
 import logging
 
 # Custom Solr schema definition for English search text

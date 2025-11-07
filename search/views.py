@@ -20,8 +20,8 @@ from .query import calc_pagination_range, calc_starting_row, create_solr_query, 
 from search.models import Search, Field, Code, Setting
 from django_celery_results.models import TaskResult
 import search.plugins
-from SolrClient import SolrClient, SolrResponse
-from SolrClient.exceptions import ConnectionError, SolrError
+from SolrClient2 import SolrClient, SolrResponse
+from SolrClient2.exceptions import ConnectionError, SolrError
 from search.tasks import export_search_results_csv
 from unidecode import unidecode
 from urllib import parse

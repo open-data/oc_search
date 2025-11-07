@@ -2,8 +2,8 @@ import sys
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from search.models import Search, Field, Code
-from SolrClient import SolrClient
-from SolrClient.exceptions import ConnectionError
+from SolrClient2 import SolrClient
+from SolrClient2.exceptions import ConnectionError
 import csv
 import logging
 import time

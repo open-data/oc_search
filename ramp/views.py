@@ -4,8 +4,8 @@ from django.http import HttpRequest
 from django.views.generic import View
 from django.shortcuts import render
 import re
-from SolrClient import SolrClient, SolrResponse
-from SolrClient.exceptions import ConnectionError, SolrError
+from SolrClient2 import SolrClient, SolrResponse
+from SolrClient2.exceptions import ConnectionError, SolrError
 
 
 class RampView(View):

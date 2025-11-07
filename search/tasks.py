@@ -8,8 +8,8 @@ import hashlib
 import logging
 import os
 from .models import Event
-from SolrClient import SolrClient, SolrResponse
-from SolrClient.exceptions import ConnectionError, SolrError
+from SolrClient2 import SolrClient, SolrResponse
+from SolrClient2.exceptions import ConnectionError, SolrError
 import time
 
 
@@ -60,6 +60,9 @@ def cache_search_results_file(cached_filename: str, sr: SolrResponse, rows=0, fi
         with open(cached_filename, 'w', newline='', encoding='utf8') as csv_file:
             csv_file.write(u'\N{BOM}' + data)  
 
+        ######  @TODO  - Need to remove header_file immediately
+
+        
         # Use a CSV writer with forced quoting for the body of the file
         with open(cached_filename, 'a', newline='', encoding='utf8') as csv_file:
             cache_writer = csv.writer(csv_file, dialect='excel', quoting=csv.QUOTE_ALL)

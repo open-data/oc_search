@@ -12,8 +12,8 @@ import pkgutil
 import re
 from search.models import Search, Field, Code, Event
 import search.plugins
-from SolrClient import SolrClient
-from SolrClient.exceptions import ConnectionError
+from SolrClient2 import SolrClient
+from SolrClient2.exceptions import ConnectionError
 import traceback
 import csv
 import logging
