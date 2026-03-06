@@ -182,5 +182,6 @@ cython_debug/
 # Don't include custom tests
 /tests/test_*.py
 /ramp/viewer/
+!/ramp/viewer/geoview
 /cdts/
 /search/templates/snippets/im/

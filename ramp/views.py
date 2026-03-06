@@ -79,7 +79,7 @@ class RampView(View):
             context['ramp_ga_resource_en'] = f"{settings.RAMP_GA_RESOURCE_EN}?filters={ga_keys}"
             context['ramp_ga_resource_fr'] = f"{settings.RAMP_GA_RESOURCE_FR}?filters={ga_keys}"
 
-        return render(request, 'ramp.html', context)
+        return render(request, 'geoviewer.html', context)
 
     def _get_toggle(self, lang, keys):
         if lang == 'fr':
@@ -87,3 +87,4 @@ class RampView(View):
         else:
             toggle_url = '/carteouverte/fr/{0}'.format(keys) if settings.SEARCH_LANG_USE_PATH else "https://{0}/carteouverte/{1}".format(settings.SEARCH_FR_HOSTNAME, keys)
         return toggle_url
+
