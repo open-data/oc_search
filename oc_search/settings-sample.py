@@ -274,6 +274,7 @@ OPEN_DATA_FR_FGP_BASE = "https://rechercher.ouvert.canada.ca/carteouverte/"
 OPEN_DATA_HOST_EN = "https://open.canada.ca"
 OPEN_DATA_HOST_FR = "https://ouvert.canada.ca"
 
+RAMP_GEOVIEWER_JS = "https://viewer-visualiseur.services.geo.ca/apps/GeoView/2.1.2/cgpv-main.js"
 RAMP_SHOW_ALERT_INFO = False
 RAMP_RANGE_SLIDER_CSS_URL = 'https://viewer-visualiseur.services.geo.ca/apps/RAMP/contributed-plugins/range-slider/range-slider.css'
 RAMP_RANGE_SLIDER_JS_URL = 'https://viewer-visualiseur.services.geo.ca/apps/RAMP/contributed-plugins/range-slider/range-slider.js'

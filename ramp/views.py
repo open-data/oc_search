@@ -62,6 +62,10 @@ class RampView(View):
             "GOOGLE_ANALYTICS_GA4_ID": settings.GOOGLE_ANALYTICS_GA4_ID,
         }
 
+        # Use the viewer Javascript file from Geo.ca. New versions are released regularly so this
+        # path is specified in the settings file (oc_search/ettings.py).
+        context['geoview_cgpv_js'] = settings.RAMP_GEOVIEWER_JS
+
         # Get the configured RAMP URLs
 
         ramp_urls = {
