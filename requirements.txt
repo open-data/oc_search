@@ -1,7 +1,7 @@
 babel
 bleach
 ckanapi
-django
+django==5.2.9
 django-celery-beat 
 django-celery-results
 django-cors-headers
