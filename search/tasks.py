@@ -82,9 +82,9 @@ def cache_search_results_file(cached_filename: str, sr: SolrResponse, rows=0, fi
 
 ## OPEN-4055: Accept a list of Fields for the exported search results
 @shared_task()
-def export_search_results_csv(request_url, query, lang, core, fieldlist: dict):
+def export_search_results_csv(query, lang, core, fieldlist: dict):
     cache_dir = settings.EXPORT_FILE_CACHE_DIR
-    hashed_query = hashlib.sha1(request_url.encode('utf8')).hexdigest()
+    hashed_query = hashlib.sha1("".join(query).encode('utf8')).hexdigest()
     fileroot = core.replace("search_", "rechercher_") if  lang == "fr" else core
     cached_filename = os.path.join(cache_dir, f"{fileroot}_{hashed_query}_{lang}.csv")
     static_filename = f'{settings.EXPORT_FILE_CACHE_URL}/{fileroot}_{hashed_query}_{lang}.csv'

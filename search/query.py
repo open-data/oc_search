@@ -76,7 +76,7 @@ def calc_pagination_range(num_found: int, pagesize, current_page, delta=2):
     return spaced_pagination
 
 
-def calc_starting_row(page_num, rows_per_page=10):
+def calc_starting_row(page_num: str, rows_per_page=10):
     """
     Calculate a starting row for the Solr search results. We only retrieve one page at a time
     :param page_num: Current page number
@@ -98,7 +98,7 @@ def calc_starting_row(page_num, rows_per_page=10):
 def get_search_terms(search_text: str):
     # Get any search terms
 
-    tr = RegexpTokenizer('[^"\s]\S*|".+?"', gaps=False)
+    tr = RegexpTokenizer(r'[^"\s]\S*|".+?"', gaps=False)
 
     # Respect quoted strings
     search_terms = tr.tokenize(search_text)
@@ -312,3 +312,160 @@ def create_solr_mlt_query(request: HttpRequest, search: Search, fields: dict, st
     }
     return solr_query
 
+def create_post_solr_query(request: HttpRequest, search: Search, fields: dict, Codes: dict, facets: list,
+                           start_row: int = 0, rows: int = 10, default_sort='score desc',  override_sort=False, is_export: bool = False):
+    
+    # Look for known fields in the POST request
+    known_fields = {}
+
+    # basic default query. 'sow' is split-on-whitespace
+
+    solr_query = {'q': '*', 'defType': 'edismax', 'sow': True}
+
+    # Extract fields from POST data. There always should be POST data.
+
+    if len(request.POST) > 0:
+        form_data = request.POST
+        form_data_dict = form_data.dict()
+        for form_field in form_data_dict:
+            if form_field == 'search_text':
+
+                # The main query is specified by the 'q' parameter. We expect to use the Extended DisMax syntax that includes boolean
+                # operators in the text. We take on the task of provided French equivalents for the standard OR and AND boolean syntax
+                # which needs to be translated back to the eDisMax syntax before being sent to Solr
+
+                solr_query['q'] = get_search_terms(form_data_dict.get('search_text'))
+                if request.LANGUAGE_CODE == 'fr':
+                    solr_query['q'] = solr_query['q'].replace(' OU ', ' OR ').replace(" ET ", " AND ").replace(' PAS ', ' NOT ').replace("(PAS ", "(NOT ")
+                    if solr_query['q'].startswith('PAS '):
+                        solr_query['q'] = "NOT " + solr_query['q'][4:]
+            
+            elif form_field == 'sort':
+
+                # Client has specified a solr value. Validate the value against the allowed user-defined values before adding it to the query
+                
+                if request.LANGUAGE_CODE == 'fr':
+                    solr_query['sort'] = form_data_dict.get('sort') if form_data_dict.get('sort') in search.results_sort_order_fr.split(',') else 'score desc'
+                else:
+                    solr_query['sort'] = form_data_dict.get('sort') if form_data_dict.get('sort') in search.results_sort_order_en.split(',') else 'score desc'
+            
+            elif form_field in ["page", "wbdisable", "_ga", "search_format", "export_query", "export_search_path", "csrfmiddlewaretoken"]:
+            
+                # Some POST fields are not relevant for the Solr query
+                pass
+            
+            else:
+
+                # make sure the facet field form value has correct format.Thr field is 
+                
+                form_field_valus_decoded = form_data_dict.get(form_field).split('|')
+                if isinstance(form_field_valus_decoded, list) and len(form_field_valus_decoded) == 2:
+
+                    field_value = form_data_dict.get(form_field).split('|')[0]
+
+                    # Assemble a list of facet fiels selections
+                    if field_value in fields:
+                        if field_value in known_fields:
+                            known_fields[field_value].append(form_field_valus_decoded[1])
+                        else:    
+                            known_fields[field_value] = [form_field_valus_decoded[1]]
+        
+        # If sort not specified in the request, then use the default
+        
+        if 'sort' not in solr_query:
+            solr_query['sort'] = default_sort
+
+        # Sometimes, the sort order will be forced to the default value - usually this is when the search page is
+        # first loaded priory to any queries
+        
+        if override_sort:
+            solr_query['sort'] = default_sort
+
+
+        solr_query['q.op'] = search.solr_default_op
+
+        # Create a Solr query field list based on the Fields Model. Expand the field list where needed
+        solr_query['qf'] = get_query_fields(request.LANGUAGE_CODE, fields)
+
+        if not is_export:
+
+            # Add highlighting parameters
+
+            hl_fields = []
+            hl_field_types = ["search_text_en", "string", 'text_general']
+            if request.LANGUAGE_CODE == 'fr':
+                hl_field_types = ["search_text_fr", "string", 'text_general']
+            for field in fields:
+                if fields[field].solr_field_type in hl_field_types:
+                    hl_fields.append(field)
+                    if fields[field].solr_extra_fields:
+                        for extra_field in fields[field].solr_extra_fields.split(","):
+                            if extra_field.endswith("_en") or extra_field.endswith("_fr"):
+                                hl_fields.append(extra_field.strip())
+            solr_query.update({
+                'hl': 'on',
+                'hl.method': 'unified',
+                'hl.simple.pre': '<mark>',
+                'hl.simple.post': '</mark>',
+                'hl.snippets': 10,
+                'hl.fl': hl_fields,
+                'hl.highlightMultiTerm': True,
+            })
+
+        # query offset parameters - data exports include all data
+
+        solr_query['start'] = start_row
+        solr_query['rows'] = rows
+
+    # Add faceting parameters  
+
+    if len(facets) > 0:
+        
+        # Turn on faceting and set default parameters. The Solr filter (facet) query is specified by the 'fq' parameter
+        
+        solr_query['facet'] = True
+        solr_query['facet.sort'] = 'index'
+        solr_query['facet.method'] = 'enum'
+        solr_query['facet.mincount'] = 1
+        fq = []
+        ff = []
+        
+        for facet in facets:
+            solr_query['f.{0}.facet.sort'.format(facet)] = fields[facet].solr_facet_sort
+            solr_query['f.{0}.facet.limit'.format(facet)] = fields[facet].solr_facet_limit
+            if facet in known_fields:
+                # Use this query syntax when facet search values are specified 
+                # @TODO Investigate if this more complicated syntax is still required with the latest Solr
+                quoted_terms = ['"{0}"'.format(item) for item in known_fields[facet]]
+                facet_text = '{{!tag=tag_{0}}}{0}:({1})'.format(facet, ' OR '.join(quoted_terms))
+                fq.append(facet_text)
+                ff.append('{{!ex=tag_{0}}}{0}'.format(facet))
+            else:
+                # Otherwise just retrieve the entire facet
+                ff.append(facet)
+        solr_query['fq'] = fq
+        solr_query['facet.field'] = ff
+
+    # If the query is for a search download, there are additional or different fields that need to be
+    # used. For the data export it necessary to only query for fiels with a DocValues type. This
+    # computed list is specified in the 'fl' parameter. The 'fl' parameter limits the information 
+    # included in a query response to a specified list of fields.
+    
+    if is_export:
+        ef = ['id']
+        for f in fields:
+            if fields[f].solr_field_lang in [request.LANGUAGE_CODE, 'bi']:
+                if fields[f].solr_field_type in ['string', 'pint', 'pfloat', 'pdate']:
+                    if not fields[f].solr_field_is_coded and f != "unique_identifier":
+                        ef.append(f)
+                    if fields[f].solr_field_is_coded and f[-2:] not in ['_en', '_fr'] and f not in ['month', 'year']:
+                        ef.append("{0}_{1}".format(f, request.LANGUAGE_CODE))
+                elif fields[f].solr_field_type in ["search_text_en", "search_text_fr", 'text_general', 'text_keyword']:
+                    if fields[f].solr_field_export:
+                        for extra_field in fields[f].solr_field_export.split(","):
+                            ef.append(extra_field.strip())
+        solr_query['fl'] = ",".join(ef)
+    else:
+        solr_query['fl'] = ",".join(solr_query['qf'])
+
+    return solr_query

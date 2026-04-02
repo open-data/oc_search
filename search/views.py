@@ -6,18 +6,18 @@ from django.core.cache import caches
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpRequest, HttpResponseRedirect, FileResponse, JsonResponse
 from django.utils import translation
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext as _, activate
 from django.views.generic import View
 from django.shortcuts import render, redirect
-from .forms import FieldForm
 import importlib
 import logging
+from nltk.tokenize.regexp import RegexpTokenizer
 import os
 import pkgutil
 import platform
 import re
-from .query import calc_pagination_range, calc_starting_row, create_solr_query, create_solr_mlt_query
-from search.models import Search, Field, Code, Setting
+from .query import calc_pagination_range, calc_starting_row, create_solr_query, create_solr_mlt_query, create_post_solr_query
+from search.models import Search, Field, Code, Setting  
 from django_celery_results.models import TaskResult
 import search.plugins
 from SolrClient2 import SolrClient, SolrResponse
@@ -101,22 +101,26 @@ def get_search_path(search_defn: Search, lang):
             return_url = parse.urljoin(settings.SEARCH_HOST_PATH, f'/{search_defn.search_alias_en}')
     return return_url
 
+def cache_search_file(cached_filename: str, sr: SolrResponse, rows=100000):
 
-class FieldFormView(View):
-    def __init__(self):
-        super().__init__()
-
-    def get(self, request, *args, **kwargs):
-        form = FieldForm()
-        return render(request, 'field_form.html', {'form': form})
-
-    def post(self, request, *args, **kwargs):
-        # create a form instance and populate it with data from the request:
-        form = FieldForm(request.POST)
-        # check whether it's valid:
-        if form.is_valid():
-            print('Valid')
-        return render(request, 'guide_form.html', {'form': form})
+    if len(sr.docs) == 0:
+        return False
+    if not os.path.exists(cached_filename):
+        with open(cached_filename, 'w', newline='', encoding='utf8') as csv_file:
+            cache_writer = csv.writer(csv_file, dialect='excel', quoting=csv.QUOTE_ALL)
+            headers = list(sr.docs[0])
+            headers[0] = u'\N{BOM}' + headers[0]
+            cache_writer.writerow(headers)
+            c = 0
+            for i in sr.docs:
+                if c > rows:
+                    break
+                try:
+                    cache_writer.writerow(i.values())
+                    c += 1
+                except UnicodeEncodeError:
+                    pass
+    return True
 
 
 class SearchView(View):
@@ -304,6 +308,7 @@ class SearchView(View):
             "query_path": request.META["QUERY_STRING"],
             "path_info": request.META["PATH_INFO"],
             "im_enabled": settings.IM_ENABLED if hasattr(settings, 'IM_ENABLED') else False,
+            "view_type": "SearchView" 
         }
         utl_fragments = request.META["PATH_INFO"].split('/')
         utl_fragments = utl_fragments if utl_fragments[-2] == search_type else utl_fragments[:-2]
@@ -325,13 +330,14 @@ class SearchView(View):
         return context
 
     def get(self, request: HttpRequest, lang='en', search_type=''):
+
         lang = request.LANGUAGE_CODE
 
         # Track if this is a new text search
 
         new_text_search = False
         if 'prev_search' in request.session:
-            if not re.search("search_text=\S+", request.session['prev_search']) and \
+            if not re.search(r'search_text=\S+', request.session['prev_search']) and \
             str(request.GET.get('search_text', '')).strip() != '':
                 new_text_search = True
         request.session['prev_search'] = request.build_absolute_uri()
@@ -737,7 +743,7 @@ class RecordView(SearchView):
 
         else:
             return render(request, '404.html', get_error_context(search_type, lang))
-
+    
 
 class ExportView(SearchView):
 
@@ -749,24 +755,8 @@ class ExportView(SearchView):
 
     def cache_search_results_file(self, cached_filename: str, sr: SolrResponse, rows=100000):
 
-        if len(sr.docs) == 0:
-            return False
-        if not os.path.exists(cached_filename):
-            with open(cached_filename, 'w', newline='', encoding='utf8') as csv_file:
-                cache_writer = csv.writer(csv_file, dialect='excel', quoting=csv.QUOTE_ALL)
-                headers = list(sr.docs[0])
-                headers[0] = u'\N{BOM}' + headers[0]
-                cache_writer.writerow(headers)
-                c = 0
-                for i in sr.docs:
-                    if c > rows:
-                        break
-                    try:
-                        cache_writer.writerow(i.values())
-                        c += 1
-                    except UnicodeEncodeError:
-                        pass
-        return True
+        return cache_search_file(cached_filename, sr, rows)
+
 
     def post(self, request, *args, **kwargs):
         # create a form instance and populate it with data from the request:
@@ -800,7 +790,7 @@ class ExportView(SearchView):
                     field_names[field] = self.fields[search_type][field].label_fr
                 else:
                     field_names[field] = self.fields[search_type][field].label_en
-            task = export_search_results_csv.delay(request_url, solr_query, lang, core_name, field_names)
+            task = export_search_results_csv.delay(solr_query, lang, core_name, field_names)
             if settings.SEARCH_LANG_USE_PATH:
                 if lang == 'fr':
                     return redirect(f'/rechercher/fr/{search_type}/telecharger/{task}')
@@ -848,26 +838,8 @@ class ExportView(SearchView):
                     self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
                     facets)
 
-            request_url = request.GET.urlencode()
-            task = export_search_results_csv.delay(request_url, solr_query, lang, core_name)
+            task = export_search_results_csv.delay(solr_query, lang, core_name)
 
-            # solr_response = solr.query(core_name, solr_query, request_handler='export')
-
-            # Call  plugin post-solr-query results export if defined
-            # if search_type_plugin in self.discovered_plugins:
-            #     solr_query = self.discovered_plugins[search_type_plugin].post_export_solr_query(
-            #         solr_response,
-            #         solr_query,
-            #         request,
-            #         self.searches[search_type], self.fields[search_type],
-            #         self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
-            #         facets)
-
-            # if self.cache_search_results_file(cached_filename=cached_filename, sr=solr_response):
-            #     if settings.EXPORT_FILE_CACHE_URL == "":
-            #         return FileResponse(open(cached_filename, 'rb'), as_attachment=True)
-            #     else:
-            #         return HttpResponseRedirect(settings.EXPORT_FILE_CACHE_URL + "{0}_{1}.csv".format(hashed_query, lang))
             if settings.SEARCH_LANG_USE_PATH:
                 if lang == 'fr':
                     return redirect(f'/rechercher/fr/{search_type}/telecharger/{task}')
@@ -1052,6 +1024,19 @@ class MoreLikeThisView(SearchView):
 
         if search_type in self.searches:
             context = self.default_context(request, search_type, lang)
+
+            # update path info to the root search type page
+            if settings.SEARCH_LANG_USE_PATH:
+                if lang == 'fr':
+                    context['path_info'] = f'/rechercher/fr/{self.reverse_search_alias_fr[search_type]}/'
+                else:
+                    context['path_info'] = f'/search/en/{self.reverse_search_alias_en[search_type]}/'
+            else:
+                if lang == 'fr':
+                    context['path_info'] = f'{settings.SEARCH_HOST_PATH}/{self.reverse_search_alias_fr[search_type]}/'
+                else:
+                    context['path_info'] = f'{settings.SEARCH_HOST_PATH}/{self.reverse_search_alias_en[search_type]}/'
+
             context["search_item_snippet"] = self.searches[search_type].search_item_snippet
             context["referer"] = request.META["HTTP_REFERER"] if "HTTP_REFERER" in request.META and (request.META["HTTP_REFERER"].startswith("http://" + request.META["HTTP_HOST"]) or request.META[
                     "HTTP_REFERER"].startswith("https://" + request.META["HTTP_HOST"])) else ""
@@ -1095,21 +1080,21 @@ class MoreLikeThisView(SearchView):
             template = "more_like_this.html"
             if search_type_plugin in self.discovered_plugins and self.discovered_plugins[search_type_plugin].plugin_api_version() == 1.1:
                 context, template = self.discovered_plugins[search_type_plugin].pre_render_search(context,
-                                                                                                  self.searches[search_type].more_like_this_template,
-                                                                                                  request,
-                                                                                                  lang,
-                                                                                                  self.searches[search_type],
-                                                                                                  self.fields[search_type],
-                                                                                                  self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type])
+                                        self.searches[search_type].more_like_this_template,
+                                        request,
+                                        lang,
+                                        self.searches[search_type],
+                                        self.fields[search_type],
+                                        self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type])
             elif search_type_plugin in self.discovered_plugins and self.discovered_plugins[search_type_plugin].plugin_api_version() >= 1.2:
                 context, template = self.discovered_plugins[search_type_plugin].pre_render_search(context,
-                                                                                                  self.searches[search_type].more_like_this_template,
-                                                                                                  request,
-                                                                                                  lang,
-                                                                                                  self.searches[search_type],
-                                                                                                  self.fields[search_type],
-                                                                                                  self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
-                                                                                                  view_type="mlt")
+                                        self.searches[search_type].more_like_this_template,
+                                        request,
+                                        lang,
+                                        self.searches[search_type],
+                                        self.fields[search_type],
+                                        self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
+                                        view_type="mlt")
 
             context['back_to_url'] = get_search_path(self.searches[search_type], lang)
             return render(request, template, context)
@@ -1226,3 +1211,366 @@ class DefaultView(View):
                     return HttpResponseRedirect(f'/{settings.SEARCH_HOST_PATH}/')
                 else:
                     return HttpResponseRedirect('/')
+
+
+class SearchFormView(SearchView):
+    
+    non_filter_fields = ['page', 'sort', 'export_search', 'export_search_path', 'csrfmiddlewaretoken', 'search']
+    non_facet_fields = ['search_text', 'page', 'sort', 'export_search', 'export_search_path', 'csrfmiddlewaretoken', 'search']
+
+    def __init__(self):
+        super().__init__()
+        self.cache_dir = settings.EXPORT_FILE_CACHE_DIR
+        if not os.path.exists(self.cache_dir):
+            os.mkdir(self.cache_dir)
+
+    def de_alias(self, lang, search_type):
+        # Replace search_type alias with actual search type
+        if lang == 'fr':
+            if search_type in self.search_alias_fr:
+                return self.search_alias_fr[search_type]
+        else:
+            if search_type in self.search_alias_en:
+                return self.search_alias_en[search_type]
+        return search_type
+
+    def to_solr_query(self, request: HttpRequest, search_type: str, lang: str, start_row: int, num_rows: int, is_export: bool):
+
+        if request.method == "GET":
+            default_sort_order = self.searches[search_type].results_sort_default_fr if self.searches[
+                    search_type].results_sort_default_fr else 'score desc'
+            
+            new_text_search = False
+            if 'prev_search' in request.session:
+                if not re.search(r'search_text=\S+', request.session['prev_search']) and \
+                str(request.GET.get('search_text', '')).strip() != '':
+                    new_text_search = True
+            
+            request.session['prev_search'] = request.build_absolute_uri()
+            solr_query = create_solr_query(request, 
+                            self.searches[search_type], 
+                            self.fields[search_type],
+                            self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
+                            facets=self.facets_fr[search_type] if lang == 'fr' else self.facets_en[search_type],
+                            start_row=start_row, 
+                            rows=self.searches[search_type].results_page_size,
+                            record_id='', 
+                            export=False, 
+                            highlighting=True,
+                            default_sort=default_sort_order, 
+                            override_sort=new_text_search)
+        elif request.method == "POST":
+            solr_query = create_post_solr_query(request=request,
+                            search=self.searches[search_type],
+                            fields=self.fields[search_type],
+                            Codes=self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
+                            facets=self.facets_fr[search_type] if lang == 'fr' else self.facets_en[search_type],
+                            start_row=start_row,
+                            rows=num_rows, is_export=is_export)
+        return solr_query
+
+    def get_search_terms(self, search_text: str):
+    # Get any search terms
+
+        tr = RegexpTokenizer(r'[^"\s]\S*|".+?"', gaps=False)
+
+        # Respect quoted strings
+        search_terms = tr.tokenize(search_text)
+        if len(search_terms) == 0:
+            solr_search_terms = "*"
+        else:
+            solr_search_terms = ' '.join(search_terms)
+        return solr_search_terms
+
+    def default_search_context(self, context: dict, lang: str, search_type: str, request: HttpRequest):
+        form_cxt = {
+            "search_item_snippet": self.searches[search_type].search_item_snippet,
+            "download_ds_url": self.searches[search_type].dataset_download_url_fr if lang == 'fr' else self.searches[search_type].dataset_download_url_en,
+            "download_ds_text": self.searches[search_type].dataset_download_text_fr if lang == 'fr' else self.searches[search_type].dataset_download_text_en,
+            "search_text": request.GET.get("search_text", "").strip(),
+            "id_fields": self.searches[search_type].id_fields.split(',') if self.searches[search_type].id_fields else [],
+            "export_path": "{0}export/".format(request.META["PATH_INFO"]),
+            'export_query': request.META["QUERY_STRING"],
+            'export_search_path': request.get_full_path(),
+            'about_msg': self.searches[search_type].about_message_fr if lang == 'fr' else self.searches[search_type].about_message_en,
+            'search_toggle': self.reverse_search_alias_en[search_type] if lang == 'fr' else self.reverse_search_alias_fr[search_type],
+            'json_download_allowed': self.searches[search_type].json_response,
+            'main_content_body_top_snippet': self.searches[search_type].main_content_body_top_snippet,
+            "breadcrumb_snippet": "search_snippets/default_form_breadcrumb.html",
+            "view_type": "SearchFormView" 
+        }
+        return  {**context, **form_cxt}
+
+    def get(self, request, *args, **kwargs):
+
+        request.session['query_type'] = "GET"
+        return self.search_page(request, *args, **kwargs)
+        
+        # lang = translation.get_language()
+        # # Replace search_type alias with actual search type
+        # search_type = self.de_alias(lang,kwargs.get('search_type'))
+
+        # context = self.default_context(request, search_type, lang)
+        # context['search_text'] = ""
+
+        # return render(request, 'search_form.html', context)
+    
+    def post(self, request, *args, **kwargs):
+
+        request.session['query_type'] = "POST"
+        return self.search_page(request, *args, **kwargs)
+    
+
+    def search_page(self, request: HttpRequest, *args, **kwargs):
+
+        # We are doing our own form handling and not using the Django foroms
+
+        # Replace search_type alias with actual search type
+        search_type = self.de_alias(request.LANGUAGE_CODE, kwargs.get('search_type'))
+        if search_type not in self.searches or self.searches[search_type].is_disabled:
+            return render(request, "404.html", super().default_context())    
+    
+        # Determine if this is a download search results request
+        export_query = False
+        if "exportsearch" in request.POST.keys():
+            export_query = True
+
+        lang = request.LANGUAGE_CODE
+        activate(lang)
+        
+        facets = self.facets_fr[search_type] if lang == 'fr' else self.facets_en[search_type]
+       
+        context = self.default_context(request, search_type, lang)
+        context = self.default_search_context(context, lang, search_type, request)
+        context["query_type"] = "POST"
+        context['search_text'] = request.POST.get('search_text', '')
+        context['search_path'] = get_search_path(self.searches[search_type], translation.get_language())
+
+        # Calculate the offset parameters for the query
+
+        form_page = 0
+        start_row = 0
+        page = 0
+        if request.method == "POST" and not export_query:
+
+            # For Get, the first page of results is always shown, for POST, it can be specified in the submitted form
+            for key in request.POST.keys():
+
+                # When users are paging through search results, they click on form buttons with the name 'pg-<page number>',
+                # 'pg_prev-<page number>', or 'pg_next-<page number>'
+                 
+                if key.startswith("pg-") and request.POST.get(key).isdigit():
+                    form_page = request.POST.get(key)
+                elif key.startswith("pg_next-") or key.startswith("pg_prev-"):
+                    form_page_slices = key.split('-')
+                    if len(form_page_slices) == 2 and form_page_slices[1].isdigit():
+                        form_page = form_page_slices[1]
+        start_row, page = calc_starting_row(form_page, rows_per_page=self.searches[search_type].results_page_size)
+
+        # Stand up the Solr client
+
+        query = self.to_solr_query(request, search_type, lang, start_row, num_rows=10, is_export=export_query)
+
+        solr = SolrClient(settings.SOLR_SERVER_URL)
+        core_name = self.searches[search_type].solr_core_name
+                
+        # A regular website search query
+
+        if not export_query:
+
+            # Call custom search plugin pre-solr-query - if 
+            
+            search_type_plugin = 'search.plugins.{0}'.format(search_type)
+            if search_type_plugin in self.discovered_plugins:
+                context, query = self.discovered_plugins[search_type_plugin].pre_search_solr_query(
+                    context,
+                    query,
+                    request,
+                    self.searches[search_type], self.fields[search_type],
+                    self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
+                    facets,
+                    '')        
+            try:
+                solr_response = solr.query(core_name, query, highlight=True)
+            except (ConnectionError, SolrError) as ce:
+                return render(request, 'error.html', get_error_context(search_type, lang, ce.args[0]))
+            
+            # Call custom search plugin post-solr-query - if it is defined
+            
+            if search_type_plugin in self.discovered_plugins:
+                context, solr_response = self.discovered_plugins[search_type_plugin].post_search_solr_query(
+                    context,
+                    solr_response,
+                    query,
+                    request,
+                    self.searches[search_type], self.fields[search_type],
+                    self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
+                    facets,
+                    '')
+
+            context["search_item_snippet"] = self.searches[search_type].search_item_snippet
+            # context['total_hits'] = solr_response.num_found
+            # context['docs'] = solr_response.get_highlighting()
+
+            # Get the search result boundaries
+
+            # Indicated if this search is filtered in any way
+
+            context['show_all_results'] = True
+            for p in request.POST.keys():
+                if p not in self.non_filter_fields:
+                    context['show_all_results'] = False
+                    break
+
+            # Set facet information
+
+            context['system_facet_fields'] = ['__label__', '__sortorder__']
+            if len(facets) > 0:
+                # Facet search results
+                context['facets'] = solr_response.get_facets()
+                # Get the selected facets from the search URL
+                selected_facets = {}
+                facets_custom_snippets = {}
+                            
+                for request_field in request.POST.keys():
+                    if request_field not in self.non_facet_fields and not request_field.startswith("pg-"):
+                        request_field_value = request.POST.get(request_field, "")
+                        if len(request_field_value.split('|')) == 2:
+                            field_name = request_field_value.split('|')[0]
+                            if field_name in self.fields[search_type] and field_name in context['facets']:
+                                # Add to new or existing selected facets list
+                                if field_name in selected_facets:
+                                    selected_facets[field_name].append(request_field_value.split('|')[1])
+                                else:
+                                    selected_facets[field_name] = [request_field_value.split('|')[1]]
+                context['selected_facets'] = selected_facets
+
+                for f in context['facets']:
+                    context['facets'][f]['__label__'] = self.fields[search_type][f].label_fr if lang == 'fr' else self.fields[search_type][f].label_en
+                    context['facets'][f]['__sortorder__'] = self.fields[search_type][f].solr_facet_sort
+                    # If the facet is a code and sorting by label, then the facet needs to be resorted
+                    if self.fields[search_type][f].solr_facet_sort == 'label':
+                        # Create an inverted index of the facet values
+                        facet_values = {}
+                        for facet_value in context['facets'][f].keys():
+                            if facet_value not in context['system_facet_fields'] and facet_value != '-' and facet_value in self.codes_en[search_type][f]:
+                                if request.LANGUAGE_CODE == 'fr':
+                                    facet_values[self.codes_fr[search_type][f][facet_value]] = facet_value
+                                else:
+                                    facet_values[self.codes_en[search_type][f][facet_value]] = facet_value
+                            elif facet_value not in context['system_facet_fields'] and facet_value != '-' and facet_value not in self.codes_en[search_type][f]:
+                                self.logger.info(f"Unknown facet_value {f}:{facet_value}")
+                        # Sort the facet values - use French locale for sorting
+                        if lang == "fr":
+                            sorted_facet_values = sorted(facet_values.keys(), key=unidecode)
+                        else:
+                            sorted_facet_values = sorted(facet_values.keys())
+                        new_facet = collections.OrderedDict()
+                        for facet_value in sorted_facet_values:
+                            new_facet[facet_values[facet_value]] = context['facets'][f][facet_values[facet_value]]
+                        new_facet['__label__'] = context['facets'][f]['__label__']
+                        new_facet['__sortorder__'] = context['facets'][f]['__sortorder__']
+                        context['facets'][f] = new_facet
+
+                reversed_facets = []
+                for facet in facets:
+                    if self.fields[search_type][facet].solr_facet_display_reversed:
+                        reversed_facets.append(facet)
+                context['reversed_facets'] = reversed_facets
+                
+                if self.fields[search_type][f].solr_facet_snippet:
+                    facets_custom_snippets[f] = self.fields[search_type][f].solr_facet_snippet
+                context['facet_snippets'] = facets_custom_snippets
+            else:
+
+                context['facets'] = []
+                context['selected_facets'] = []
+
+            context['total_hits'] = solr_response.num_found
+            context['docs'] = solr_response.get_highlighting()
+
+            #    @TODO need to set up a JSON link
+            #    json_format_url
+
+            # Prepare a dictionary of language appropriate sort options
+            sort_options = {}
+            sort_labels = self.searches[search_type].results_sort_order_display_fr.split(',') if lang == 'fr' else self.searches[search_type].results_sort_order_display_en.split(',')
+            if lang == 'fr':
+                for i, v in enumerate(self.searches[search_type].results_sort_order_fr.split(',')):
+                    sort_options[v] = str(sort_labels[i]).strip()
+            else:
+                for i, v in enumerate(self.searches[search_type].results_sort_order_en.split(',')):
+                    sort_options[v] = str(sort_labels[i]).strip()
+            context['sort_options'] = sort_options
+            context['sort'] = query['sort']
+
+            # Add code information
+            context['codes'] = self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type]
+
+            # Save display fields
+            context['default_display_fields'] = self.display_fields_fr[search_type] if lang == 'fr' else self.display_fields_en[search_type]
+            context['display_field_name'] = self.display_fields_names_fr[search_type] if lang == 'fr' else self.display_fields_names_en[search_type]
+
+            # Calculate pagination for the search page
+            context['pagination'] = calc_pagination_range(solr_response.num_found, self.searches[search_type].results_page_size, page, 3)
+            if len(context['pagination']) == 1:
+                context['show_pagination'] = False
+            else:
+                
+                # Calculate the pagination values for the bottom of the search results page
+                context['show_pagination'] = True
+                context['previous_page'] = (1 if page == 1 else page - 1)
+                last_page = (context['pagination'][len(context['pagination']) - 1] if len(context['pagination']) > 0 else 1)
+                last_page = (1 if last_page < 1 else last_page)
+                context['last_page'] = last_page
+                next_page = page + 1
+                next_page = (last_page if next_page > last_page else next_page)
+                context['next_page'] = next_page
+                context['currentpage'] = page
+                
+            # Call custom search plugin pre-render - if it is defined
+
+            if search_type_plugin in self.discovered_plugins and self.discovered_plugins[search_type_plugin].plugin_api_version() == 1.1:
+                context, template = self.discovered_plugins[search_type_plugin].pre_render_search(context,
+                    self.searches[search_type].page_template,
+                    request,
+                    lang,
+                    self.searches[search_type],
+                    self.fields[search_type],
+                    self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type])
+            elif search_type_plugin in self.discovered_plugins and self.discovered_plugins[search_type_plugin].plugin_api_version() >= 1.2:
+                context, template = self.discovered_plugins[search_type_plugin].pre_render_search(context,
+                    self.searches[search_type].page_template,
+                    request,
+                    lang,
+                    self.searches[search_type],
+                    self.fields[search_type],
+                    self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
+                    view_type='search')
+
+            return render(request, 'search_form.html', context)
+        
+        # This is a request to download search results instead of a webpage
+
+        else:
+            field_names = {}
+            for field in self.fields[search_type]:
+                if lang == 'fr':
+                    field_names[field] = self.fields[search_type][field].label_fr
+                else:
+                    field_names[field] = self.fields[search_type][field].label_en
+
+## @TODO core_name is not set
+
+            task = export_search_results_csv.delay(query, lang, core_name, field_names)
+            if settings.SEARCH_LANG_USE_PATH:
+                if lang == 'fr':
+                    return redirect(f'/rechercher/fr/{search_type}/telecharger/{task}')
+                else:
+                    return redirect(f'/search/en/{search_type}/download/{task}')
+            else:
+                if lang == 'fr':
+                    return redirect(f'{settings.SEARCH_HOST_PATH}/{search_type}/telecharger/{task}')
+                else:
+                    return redirect(f'{settings.SEARCH_HOST_PATH}/{search_type}/download/{task}')
+

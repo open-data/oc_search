@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path
 from django.conf.urls import include
 from django.views.decorators.cache import never_cache
-from search.views import SearchView, RecordView, ExportView, MoreLikeThisView, HomeView, DefaultView, ExportStatusView, DownloadSearchResultsView, PageView
+from search.views import SearchView, SearchFormView, RecordView, ExportView, MoreLikeThisView, HomeView, DefaultView, ExportStatusView, DownloadSearchResultsView, PageView
 from ramp.views import RampView
 
 
@@ -26,6 +26,11 @@ urlpatterns = [
     path('search/admin/doc/', include('django.contrib.admindocs.urls')),
     path('search/admin/', admin.site.urls),
 ]
+
+# urlpatterns += [
+#     path('searchform/<str:lang>/', include('search.urls')),
+#     path('rechercherformulaire/<str:lang>/', include('search.urls')),
+# ]
 
 if settings.SEARCH_LANG_USE_PATH:
     urlpatterns += [
@@ -35,8 +40,6 @@ if settings.SEARCH_LANG_USE_PATH:
         path('rechercher/', DefaultView.as_view(), name="HomePage"),
         path('search/<str:lang>/', HomeView.as_view(), name="HomePage"),
         path('rechercher/<str:lang>/page/<str:page_type>/', PageView.as_view(), name="StaticPage"),
-        path('search/<str:lang>/<str:search_type>/', SearchView.as_view(), name="SearchForm"),
-        path('rechercher/<str:lang>/<str:search_type>/', SearchView.as_view(), name="SearchForm"),
         path('search/<str:lang>/<str:search_type>/record/<path:record_id>', RecordView.as_view(), name='RecordForm'),
         path('rechercher/<str:lang>/<str:search_type>/record/<path:record_id>', RecordView.as_view(), name='RecordForm'),
         path('search/<str:lang>/<str:search_type>/export/', ExportView.as_view(), name='ExportForm'),
@@ -55,12 +58,22 @@ if settings.SEARCH_LANG_USE_PATH:
             path('carteouverte/<str:lang>/', RampView.as_view(), name='RampForm'),
             path('carteouverte/<str:lang>/<str:keys>', RampView.as_view(), name='RampForm'),
         ]
+    if settings.HTTP_FORM_PROTOCOL == "Get":
+        urlpatterns += [
+            path('search/<str:lang>/<str:search_type>/', SearchView.as_view(), name="SearchForm"),
+            path('rechercher/<str:lang>/<str:search_type>/', SearchView.as_view(), name="SearchForm"),
+        ]
+    elif settings.HTTP_FORM_PROTOCOL == "Post":
+        urlpatterns += [
+            path('search/<str:lang>/<str:search_type>', SearchFormView.as_view(), name="search_form"),
+            path('rechercher/<str:lang>/<str:search_type>', SearchFormView.as_view(), name="search_form"),
+        ]
 else:
     urlpatterns += [
         path('', DefaultView.as_view(), name="HomePage"),
         path(settings.SEARCH_HOST_PATH, HomeView.as_view(), name="HomePage"),
         path(settings.SEARCH_HOST_PATH + 'page/<str:page_type>/', PageView.as_view(), name="StaticPage"),
-        path(settings.SEARCH_HOST_PATH + '<str:search_type>/', SearchView.as_view(), name="SearchForm"),
+
         path(settings.SEARCH_HOST_PATH + 'record/<str:search_type>/<path:record_id>', RecordView.as_view(),
              name='RecordForm'),
         path(settings.SEARCH_HOST_PATH + '<str:search_type>/record/<path:record_id>', RecordView.as_view(),
@@ -83,5 +96,14 @@ else:
             path(settings.SEARCH_HOST_PATH + 'openmap/<str:keys>', RampView.as_view(), name='RampForm'),
             path(settings.SEARCH_HOST_PATH + 'carteouverte/', RampView.as_view(), name='RampForm'),
             path(settings.SEARCH_HOST_PATH + 'carteouverte/<str:keys>', RampView.as_view(), name='RampForm'),
+        ]
+
+    if settings.HTTP_FORM_PROTOCOL == "Get": 
+        urlpatterns += [        
+            path(settings.SEARCH_HOST_PATH + settings.SEARCH_HOST_PATH + '<str:search_type>/', SearchView.as_view(), name="SearchForm"),
+        ]
+    elif settings.HTTP_FORM_PROTOCOL == "Post":                   
+        urlpatterns += [
+            path(settings.SEARCH_HOST_PATH + '<str:search_type>/', SearchFormView.as_view(), name="search_form"),
         ]
 

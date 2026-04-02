@@ -1,6 +1,7 @@
 # coding=utf-8
 
 
+from typing import Iterable
 from babel.dates import format_date
 from babel.numbers import format_currency, format_decimal, parse_decimal
 import bleach
@@ -193,8 +194,11 @@ def strip_whitespace(text):
 
 @register.filter('get_dict_value')
 def get_dict_value(dict_data, key):
-    if key:
-        return dict_data.get(key)
+    if key and isinstance(dict_data, Iterable):
+        if key in dict_data:
+            return dict_data[key]
+    else:
+        return ''
 
 
 @register.filter('unspecified')
