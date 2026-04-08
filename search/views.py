@@ -280,10 +280,8 @@ class SearchView(View):
             "language": lang,
             "cdts_version": settings.CDTS_VERSION,
             "search_type": search_type,
-            "search_description": self.searches[search_type].desc_fr if lang == 'fr' else self.searches[
-                search_type].desc_fr,
-            "search_title": self.searches[search_type].label_fr if lang == 'fr' else self.searches[
-                search_type].label_en,
+            "search_description": self.searches[search_type].desc_fr if lang == 'fr' else self.searches[search_type].desc_en,
+            "search_title": self.searches[search_type].label_fr if lang == 'fr' else self.searches[search_type].label_en,
             "dcterms_lang": 'fra' if lang == 'fr' else 'eng',
             "ADOBE_ANALYTICS_URL": settings.ADOBE_ANALYTICS_URL,
             "GOOGLE_ANALYTICS_GTM_ID": settings.GOOGLE_ANALYTICS_GTM_ID,
@@ -310,10 +308,17 @@ class SearchView(View):
             "im_enabled": settings.IM_ENABLED if hasattr(settings, 'IM_ENABLED') else False,
             "view_type": "SearchView" 
         }
+        # @TODO DOES NOT WORK in a POST form world
+
         utl_fragments = request.META["PATH_INFO"].split('/')
         utl_fragments = utl_fragments if utl_fragments[-2] == search_type else utl_fragments[:-2]
         if utl_fragments[-1]:
             utl_fragments.append('')
+        if settings.HTTP_FORM_PROTOCOL == "get":
+            context['parent_path'] = "/".join(utl_fragments)
+        else:
+            u = "/".join(utl_fragments)
+            context['parent_path'] = u[:-1] if len(u) > 0 and u.endswith("/") else u
         if settings.SEARCH_LANG_USE_PATH:
             if lang == 'fr':
                 context['help_page'] = f'/rechercher/fr/page/aide?{self.reverse_search_alias_fr[search_type]}'
@@ -324,8 +329,6 @@ class SearchView(View):
                 context['help_page'] = f'{settings.SEARCH_HOST_PATH}/page/aide?{self.reverse_search_alias_fr[search_type]}'
             else:
                 context['help_page'] = f'{settings.SEARCH_HOST_PATH}/page/help?{self.reverse_search_alias_en[search_type]}'
-
-        context['parent_path'] = "/".join(utl_fragments)
 
         return context
 
@@ -1328,7 +1331,7 @@ class SearchFormView(SearchView):
         # Replace search_type alias with actual search type
         search_type = self.de_alias(request.LANGUAGE_CODE, kwargs.get('search_type'))
         if search_type not in self.searches or self.searches[search_type].is_disabled:
-            return render(request, "404.html", super().default_context())    
+            return render(request, "404.html", get_error_context(search_type, request.LANGUAGE_CODE, ""))
     
         # Determine if this is a download search results request
         export_query = False
