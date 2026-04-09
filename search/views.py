@@ -308,17 +308,18 @@ class SearchView(View):
             "im_enabled": settings.IM_ENABLED if hasattr(settings, 'IM_ENABLED') else False,
             "view_type": "SearchView" 
         }
-        # @TODO DOES NOT WORK in a POST form world
 
-        utl_fragments = request.META["PATH_INFO"].split('/')
-        utl_fragments = utl_fragments if utl_fragments[-2] == search_type else utl_fragments[:-2]
-        if utl_fragments[-1]:
-            utl_fragments.append('')
         if settings.HTTP_FORM_PROTOCOL == "get":
+            utl_fragments = request.META["PATH_INFO"].split('/')
+            utl_fragments = utl_fragments if utl_fragments[-2] == search_type else utl_fragments[:-2]
+            if utl_fragments[-1]:
+                utl_fragments.append('')
             context['parent_path'] = "/".join(utl_fragments)
         else:
-            u = "/".join(utl_fragments)
-            context['parent_path'] = u[:-1] if len(u) > 0 and u.endswith("/") else u
+            if settings.SEARCH_LANG_USE_PATH:
+                context['parent_path'] = f"/search/{search_type}"
+            else:
+                context['parent_path'] = f"/search/{search_type}"
         if settings.SEARCH_LANG_USE_PATH:
             if lang == 'fr':
                 context['help_page'] = f'/rechercher/fr/page/aide?{self.reverse_search_alias_fr[search_type]}'
@@ -1200,15 +1201,15 @@ class DefaultView(View):
                     return HttpResponseRedirect('/rechecher/fr/')
             else:
                 if settings.DEFAULT_SEARCH_TYPE:
-                    return HttpResponseRedirect(f'/search/{request.LANGUAGE_CODE}/{settings.DEFAULT_SEARCH_TYPE}/')
+                    return HttpResponseRedirect(f'/search/{request.LANGUAGE_CODE}/{settings.DEFAULT_SEARCH_TYPE}')
                 else:
                     return HttpResponseRedirect('/search/{0}/'.format(request.LANGUAGE_CODE) )
         else:
             if settings.DEFAULT_SEARCH_TYPE:
                 if settings.SEARCH_HOST_PATH:
-                    return HttpResponseRedirect(f'/{settings.SEARCH_HOST_PATH}/{settings.DEFAULT_SEARCH_TYPE}/')
+                    return HttpResponseRedirect(f'/{settings.SEARCH_HOST_PATH}/{settings.DEFAULT_SEARCH_TYPE}')
                 else:
-                    return HttpResponseRedirect(f'/{settings.DEFAULT_SEARCH_TYPE}/')
+                    return HttpResponseRedirect(f'/{settings.DEFAULT_SEARCH_TYPE}')
             else:
                 if settings.SEARCH_HOST_PATH:
                     return HttpResponseRedirect(f'/{settings.SEARCH_HOST_PATH}/')

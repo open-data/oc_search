@@ -9,15 +9,15 @@
                 "lang": "{{ language_code | SwapLangCode }}",
                 {% if url_uses_path %}
                   {% if view_type == 'SearchFormView' %}
-                    "href": "/{% if language_code == 'en' %}rechercher{% else %}search{% endif %}/{{ language_code | SwapLangCode }}/{% if search_type %}{{ search_toggle }}{% endif %}",
+                    "href": "/{% if language_code == 'en' %}rechercher{% else %}search{% endif %}{{ language_code | SwapLangCode }}/{% if search_type %}{{ search_toggle }}{% endif %}",
                   {% else %}
-                    "href": "/{% if language_code == 'en' %}rechercher{% else %}search{% endif %}/{{ language_code | SwapLangCode }}/{% if search_type %}{{ search_toggle }}/{% if query_path %}?{{ query_path }}{% endif %}{% endif %}",
+                    "href": "/{% if language_code == 'en' %}rechercher{% else %}search{% endif %}{{ language_code | SwapLangCode }}/{% if search_type %}{{ search_toggle }}/{% if query_path %}?{{ query_path }}{% endif %}{% endif %}",
                   {% endif %}
                 {% else %}
                   {% if language_code == 'en' %}
-                "href": "https://{{ url_host_fr }}/{{ url_host_path }}{% if search_type %}{{ search_toggle }}/{% if query_path %}?{{ query_path }}{% endif %}{% endif %}",
+                "href": "https://{{ url_host_fr }}/{{ url_host_path }}{% if search_type %}{{ search_toggle }}{% if query_path %}?{{ query_path }}{% endif %}{% endif %}",
                   {% else %}
-                "href": "https://{{ url_host_en }}/{{ url_host_path }}{% if search_type %}{{ search_toggle }}/{% if query_path %}?{{ query_path }}{% endif %}{% endif %}",
+                "href": "https://{{ url_host_en }}/{{ url_host_path }}{% if search_type %}{{ search_toggle }}{% if query_path %}?{{ query_path }}{% endif %}{% endif %}",
                   {% endif %}
                 {% endif %}
                 "text": "{{ language_code | SwapLangName}}"
