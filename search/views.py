@@ -319,7 +319,7 @@ class SearchView(View):
             if settings.SEARCH_LANG_USE_PATH:
                 context['parent_path'] = f"/search/{search_type}"
             else:
-                context['parent_path'] = f"/search/{search_type}"
+                context['parent_path'] = f"/{search_type}"
         if settings.SEARCH_LANG_USE_PATH:
             if lang == 'fr':
                 context['help_page'] = f'/rechercher/fr/page/aide?{self.reverse_search_alias_fr[search_type]}'
@@ -1301,7 +1301,8 @@ class SearchFormView(SearchView):
             'json_download_allowed': self.searches[search_type].json_response,
             'main_content_body_top_snippet': self.searches[search_type].main_content_body_top_snippet,
             "breadcrumb_snippet": "search_snippets/default_form_breadcrumb.html",
-            "view_type": "SearchFormView" 
+            "view_type": "SearchFormView",
+            "query_path": ""
         }
         return  {**context, **form_cxt}
 
