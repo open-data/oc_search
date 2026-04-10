@@ -163,6 +163,11 @@ LOCALE_PATHS = [
 EXPORT_FILE_CACHE_DIR = os.path.join(BASE_DIR, 'cache')
 EXPORT_FILE_CACHE_URL = "http://127.0.0.1:8000/static/cache"
 
+# Use HTTP POST or GET for search form submission. Choices are "Post" or "Get".
+# When usimg "Post" be sure to change the default APPEND_SLASH setting from True to False
+HTTP_FORM_PROTOCOL = "Get"
+#APPEND_SLASH = False
+
 # Solr Search Configuration
 
 SOLR_SERVER_URL = 'http://localhost:8983/solr'

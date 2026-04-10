@@ -1219,8 +1219,8 @@ class DefaultView(View):
 
 class SearchFormView(SearchView):
     
-    non_filter_fields = ['page', 'sort', 'export_search', 'export_search_path', 'csrfmiddlewaretoken', 'search']
-    non_facet_fields = ['search_text', 'page', 'sort', 'export_search', 'export_search_path', 'csrfmiddlewaretoken', 'search']
+    non_filter_fields = ['page', 'sort', 'export_search', 'export_search_path', 'csrfmiddlewaretoken', 'search', 'clearsearch']
+    non_facet_fields = ['search_text', 'page', 'sort', 'export_search', 'export_search_path', 'csrfmiddlewaretoken', 'search', 'clearsearch']
 
     def __init__(self):
         super().__init__()
@@ -1229,7 +1229,8 @@ class SearchFormView(SearchView):
             os.mkdir(self.cache_dir)
 
     def de_alias(self, lang, search_type):
-        # Replace search_type alias with actual search type
+    # Replace search_type alias with actual search type
+
         if lang == 'fr':
             if search_type in self.search_alias_fr:
                 return self.search_alias_fr[search_type]
@@ -1238,7 +1239,8 @@ class SearchFormView(SearchView):
                 return self.search_alias_en[search_type]
         return search_type
 
-    def to_solr_query(self, request: HttpRequest, search_type: str, lang: str, start_row: int, num_rows: int, is_export: bool):
+    def to_solr_query(self, request: HttpRequest, search_type: str, lang: str, start_row: int, num_rows: int, is_export: bool, reset_filters: bool):
+    # Generate the Solr query for both the first GET and subsequent POST requests
 
         if request.method == "GET":
             default_sort_order = self.searches[search_type].results_sort_default_fr if self.searches[
@@ -1263,6 +1265,7 @@ class SearchFormView(SearchView):
                             highlighting=True,
                             default_sort=default_sort_order, 
                             override_sort=new_text_search)
+            
         elif request.method == "POST":
             solr_query = create_post_solr_query(request=request,
                             search=self.searches[search_type],
@@ -1270,7 +1273,9 @@ class SearchFormView(SearchView):
                             Codes=self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
                             facets=self.facets_fr[search_type] if lang == 'fr' else self.facets_en[search_type],
                             start_row=start_row,
-                            rows=num_rows, is_export=is_export)
+                            rows=num_rows, 
+                            is_export=is_export,
+                            reset_filters=reset_filters)
         return solr_query
 
     def get_search_terms(self, search_text: str):
@@ -1287,6 +1292,8 @@ class SearchFormView(SearchView):
         return solr_search_terms
 
     def default_search_context(self, context: dict, lang: str, search_type: str, request: HttpRequest):
+    # Basic page context information for all situations
+
         form_cxt = {
             "search_item_snippet": self.searches[search_type].search_item_snippet,
             "download_ds_url": self.searches[search_type].dataset_download_url_fr if lang == 'fr' else self.searches[search_type].dataset_download_url_en,
@@ -1311,34 +1318,32 @@ class SearchFormView(SearchView):
         request.session['query_type'] = "GET"
         return self.search_page(request, *args, **kwargs)
         
-        # lang = translation.get_language()
-        # # Replace search_type alias with actual search type
-        # search_type = self.de_alias(lang,kwargs.get('search_type'))
-
-        # context = self.default_context(request, search_type, lang)
-        # context['search_text'] = ""
-
-        # return render(request, 'search_form.html', context)
-    
     def post(self, request, *args, **kwargs):
 
         request.session['query_type'] = "POST"
         return self.search_page(request, *args, **kwargs)
     
-
     def search_page(self, request: HttpRequest, *args, **kwargs):
 
-        # We are doing our own form handling and not using the Django foroms
+        # NOTE for Django developers - we are doing our own form handling and not using the Django forms
 
         # Replace search_type alias with actual search type
+
         search_type = self.de_alias(request.LANGUAGE_CODE, kwargs.get('search_type'))
         if search_type not in self.searches or self.searches[search_type].is_disabled:
             return render(request, "404.html", get_error_context(search_type, request.LANGUAGE_CODE, ""))
     
-        # Determine if this is a download search results request
+        # Determine if this is a download search results request or a clear filters request
+
         export_query = False
         if "exportsearch" in request.POST.keys():
             export_query = True
+
+        clear_filters = False
+        if "clearsearch" in request.POST.keys():
+            clear_filters = True
+
+        # Set some basic page information
 
         lang = request.LANGUAGE_CODE
         activate(lang)
@@ -1348,7 +1353,7 @@ class SearchFormView(SearchView):
         context = self.default_context(request, search_type, lang)
         context = self.default_search_context(context, lang, search_type, request)
         context["query_type"] = "POST"
-        context['search_text'] = request.POST.get('search_text', '')
+        context['search_text'] = '' if clear_filters else request.POST.get('search_text', '')
         context['search_path'] = get_search_path(self.searches[search_type], translation.get_language())
 
         # Calculate the offset parameters for the query
@@ -1374,7 +1379,7 @@ class SearchFormView(SearchView):
 
         # Stand up the Solr client
 
-        query = self.to_solr_query(request, search_type, lang, start_row, num_rows=10, is_export=export_query)
+        query = self.to_solr_query(request, search_type, lang, start_row, num_rows=10, is_export=export_query, reset_filters=clear_filters)
 
         solr = SolrClient(settings.SOLR_SERVER_URL)
         core_name = self.searches[search_type].solr_core_name
@@ -1414,48 +1419,55 @@ class SearchFormView(SearchView):
                     '')
 
             context["search_item_snippet"] = self.searches[search_type].search_item_snippet
-            # context['total_hits'] = solr_response.num_found
-            # context['docs'] = solr_response.get_highlighting()
 
-            # Get the search result boundaries
-
-            # Indicated if this search is filtered in any way
+            # Determine if this search is filtered in any way
 
             context['show_all_results'] = True
-            for p in request.POST.keys():
-                if p not in self.non_filter_fields:
-                    context['show_all_results'] = False
-                    break
+            if not clear_filters:
+                for p in request.POST.keys():
+                    if p not in self.non_filter_fields:
+                        if request.POST[p] != '':
+                            context['show_all_results'] = False
+                            break
 
-            # Set facet information
+            # Set facet information 
 
             context['system_facet_fields'] = ['__label__', '__sortorder__']
             if len(facets) > 0:
-                # Facet search results
+
+                # Solr search facet results
+
                 context['facets'] = solr_response.get_facets()
-                # Get the selected facets from the search URL
+
+                # Unless resetting the search, gather information about any filters selected by the user
+
                 selected_facets = {}
-                facets_custom_snippets = {}
-                            
-                for request_field in request.POST.keys():
-                    if request_field not in self.non_facet_fields and not request_field.startswith("pg-"):
-                        request_field_value = request.POST.get(request_field, "")
-                        if len(request_field_value.split('|')) == 2:
-                            field_name = request_field_value.split('|')[0]
-                            if field_name in self.fields[search_type] and field_name in context['facets']:
-                                # Add to new or existing selected facets list
-                                if field_name in selected_facets:
-                                    selected_facets[field_name].append(request_field_value.split('|')[1])
-                                else:
-                                    selected_facets[field_name] = [request_field_value.split('|')[1]]
+                if not clear_filters:         
+                    for request_field in request.POST.keys():
+                        if request_field not in self.non_facet_fields and not request_field.startswith("pg-"):
+                            request_field_value = request.POST.get(request_field, "")
+                            if len(request_field_value.split('|')) == 2:
+                                field_name = request_field_value.split('|')[0]
+                                if field_name in self.fields[search_type] and field_name in context['facets']:
+                                    # Add to new or existing selected facets list
+                                    if field_name in selected_facets:
+                                        selected_facets[field_name].append(request_field_value.split('|')[1])
+                                    else:
+                                        selected_facets[field_name] = [request_field_value.split('|')[1]]
                 context['selected_facets'] = selected_facets
+
+                # Gather facet display information
 
                 for f in context['facets']:
                     context['facets'][f]['__label__'] = self.fields[search_type][f].label_fr if lang == 'fr' else self.fields[search_type][f].label_en
                     context['facets'][f]['__sortorder__'] = self.fields[search_type][f].solr_facet_sort
+
                     # If the facet is a code and sorting by label, then the facet needs to be resorted
+                    
                     if self.fields[search_type][f].solr_facet_sort == 'label':
+
                         # Create an inverted index of the facet values
+                        
                         facet_values = {}
                         for facet_value in context['facets'][f].keys():
                             if facet_value not in context['system_facet_fields'] and facet_value != '-' and facet_value in self.codes_en[search_type][f]:
@@ -1465,7 +1477,9 @@ class SearchFormView(SearchView):
                                     facet_values[self.codes_en[search_type][f][facet_value]] = facet_value
                             elif facet_value not in context['system_facet_fields'] and facet_value != '-' and facet_value not in self.codes_en[search_type][f]:
                                 self.logger.info(f"Unknown facet_value {f}:{facet_value}")
+                        
                         # Sort the facet values - use French locale for sorting
+                        
                         if lang == "fr":
                             sorted_facet_values = sorted(facet_values.keys(), key=unidecode)
                         else:
@@ -1476,13 +1490,18 @@ class SearchFormView(SearchView):
                         new_facet['__label__'] = context['facets'][f]['__label__']
                         new_facet['__sortorder__'] = context['facets'][f]['__sortorder__']
                         context['facets'][f] = new_facet
-
+                
+                # Handle the specified facets that are to be displayed in reversed order
+                
                 reversed_facets = []
                 for facet in facets:
                     if self.fields[search_type][facet].solr_facet_display_reversed:
                         reversed_facets.append(facet)
                 context['reversed_facets'] = reversed_facets
-                
+
+                # Handle any custom facet template snippets for this custom search
+
+                facets_custom_snippets = {}
                 if self.fields[search_type][f].solr_facet_snippet:
                     facets_custom_snippets[f] = self.fields[search_type][f].solr_facet_snippet
                 context['facet_snippets'] = facets_custom_snippets
@@ -1498,6 +1517,7 @@ class SearchFormView(SearchView):
             #    json_format_url
 
             # Prepare a dictionary of language appropriate sort options
+
             sort_options = {}
             sort_labels = self.searches[search_type].results_sort_order_display_fr.split(',') if lang == 'fr' else self.searches[search_type].results_sort_order_display_en.split(',')
             if lang == 'fr':
@@ -1509,20 +1529,24 @@ class SearchFormView(SearchView):
             context['sort_options'] = sort_options
             context['sort'] = query['sort']
 
-            # Add code information
+            # Add code information. This is used to display readable labels instead of code values
+
             context['codes'] = self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type]
 
             # Save display fields
+
             context['default_display_fields'] = self.display_fields_fr[search_type] if lang == 'fr' else self.display_fields_en[search_type]
             context['display_field_name'] = self.display_fields_names_fr[search_type] if lang == 'fr' else self.display_fields_names_en[search_type]
 
             # Calculate pagination for the search page
+
             context['pagination'] = calc_pagination_range(solr_response.num_found, self.searches[search_type].results_page_size, page, 3)
             if len(context['pagination']) == 1:
                 context['show_pagination'] = False
             else:
                 
                 # Calculate the pagination values for the bottom of the search results page
+
                 context['show_pagination'] = True
                 context['previous_page'] = (1 if page == 1 else page - 1)
                 last_page = (context['pagination'][len(context['pagination']) - 1] if len(context['pagination']) > 0 else 1)
@@ -1555,7 +1579,8 @@ class SearchFormView(SearchView):
 
             return render(request, 'search_form.html', context)
         
-        # This is a request to download search results instead of a webpage
+        # This is a request to download search results instead of a webpage. Send the Solr 
+        # query to a task redirect to the download progress screen
 
         else:
             field_names = {}
@@ -1564,8 +1589,6 @@ class SearchFormView(SearchView):
                     field_names[field] = self.fields[search_type][field].label_fr
                 else:
                     field_names[field] = self.fields[search_type][field].label_en
-
-## @TODO core_name is not set
 
             task = export_search_results_csv.delay(query, lang, core_name, field_names)
             if settings.SEARCH_LANG_USE_PATH:

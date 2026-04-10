@@ -120,7 +120,12 @@
 
     <div class="col-md-4 col-md-pull-8">
       {% block main-content-sidebar %}
-
+      {% if not show_all_results %}
+      <aside class="mrgn-lft-md mrgn-bttm-md">
+        <button type="submit" class="btn btn-link" name="clearsearch"><span class="fa fa-ban"></span> {% translate 'Clear All Filters' %}</button>
+        <label for="clearsearch" class="wb-inv">{% translate 'Clear all the filters' %}</label>  
+      </aside>
+      {% endif %}
       <aside class="mrgn-lft-md">
 
         {% for key, value in facets.items %} 

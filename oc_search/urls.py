@@ -100,7 +100,7 @@ else:
 
     if settings.HTTP_FORM_PROTOCOL == "Get": 
         urlpatterns += [        
-            path(settings.SEARCH_HOST_PATH + settings.SEARCH_HOST_PATH + '<str:search_type>/', SearchView.as_view(), name="SearchForm"),
+            path(settings.SEARCH_HOST_PATH + '<str:search_type>/', SearchView.as_view(), name="SearchForm"),
         ]
     elif settings.HTTP_FORM_PROTOCOL == "Post":                   
         urlpatterns += [

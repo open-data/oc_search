@@ -313,7 +313,8 @@ def create_solr_mlt_query(request: HttpRequest, search: Search, fields: dict, st
     return solr_query
 
 def create_post_solr_query(request: HttpRequest, search: Search, fields: dict, Codes: dict, facets: list,
-                           start_row: int = 0, rows: int = 10, default_sort='score desc',  override_sort=False, is_export: bool = False):
+                           start_row: int = 0, rows: int = 10, default_sort='score desc',  override_sort=False, 
+                           is_export: bool = False, reset_filters: bool = False):
     
     # Look for known fields in the POST request
     known_fields = {}
@@ -334,7 +335,10 @@ def create_post_solr_query(request: HttpRequest, search: Search, fields: dict, C
                 # operators in the text. We take on the task of provided French equivalents for the standard OR and AND boolean syntax
                 # which needs to be translated back to the eDisMax syntax before being sent to Solr
 
-                solr_query['q'] = get_search_terms(form_data_dict.get('search_text'))
+                if reset_filters:
+                    solr_query['q'] = "*"
+                else:    
+                    solr_query['q'] = get_search_terms(form_data_dict.get('search_text'))
                 if request.LANGUAGE_CODE == 'fr':
                     solr_query['q'] = solr_query['q'].replace(' OU ', ' OR ').replace(" ET ", " AND ").replace(' PAS ', ' NOT ').replace("(PAS ", "(NOT ")
                     if solr_query['q'].startswith('PAS '):
@@ -353,7 +357,8 @@ def create_post_solr_query(request: HttpRequest, search: Search, fields: dict, C
             
                 # Some POST fields are not relevant for the Solr query
                 pass
-            
+            elif reset_filters:
+                pass
             else:
 
                 # make sure the facet field form value has correct format.Thr field is 
@@ -372,7 +377,7 @@ def create_post_solr_query(request: HttpRequest, search: Search, fields: dict, C
         
         # If sort not specified in the request, then use the default
         
-        if 'sort' not in solr_query:
+        if 'sort' not in solr_query or reset_filters:
             solr_query['sort'] = default_sort
 
         # Sometimes, the sort order will be forced to the default value - usually this is when the search page is

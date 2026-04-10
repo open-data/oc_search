@@ -326,3 +326,9 @@ msgstr "Syntaxe de recherche inconnue :"
 
 msgid "Exported files have recently changed. Column headers are now descriptive labels and fields with multiple values no longer have surrounding square brackets."
 msgstr "Les fichiers exportés ont changé récemment. Les en-têtes de colonnes sont maintenant des étiquettes descriptives, et les en-têtes de colonnes ayant des valeurs multiples ne sont plus entre crochets."
+
+msgid "Clear All Filters"
+msgstr "Effacer tous les filtres"
+
+msgid "Clear all the filters"
+msgstr "Effacer tous les filtres"
