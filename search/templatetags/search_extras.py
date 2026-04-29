@@ -276,3 +276,6 @@ def ds_status_label(value: str):
 def int_format(value: int, formatstr: str):
     return formatstr.format(value)
 
+@register.filter('normailize_id_value')
+def normailize_id_value(value: str):
+    return value.replace(" ", "_").replace('é', 'e').replace('à', 'a')

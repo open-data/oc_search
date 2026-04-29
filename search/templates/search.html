@@ -7,8 +7,6 @@
 {% block main-content-body %}
 <div class="row" xmlns="http://www.w3.org/1999/html">
 
-
-
     {% block main-centre-search-box %}
 
     <div class="col-md-12 mrgn-bttm-lg mrgn-tp-lg">
@@ -47,28 +45,9 @@
 
     <div class="col-md-8 col-md-push-4 mrgn-tp-md">
     {% block main-content-centre %}
-        {% block search_results_message %}
 
-          <div class="row mrgn-bttm-lg">
-              <div class="col-sm-5 col-xs-12" style="justify-content: left">
-              {% if not show_all_results %}
-                <b>{% blocktrans with result_num=total_hits|apnumber result_s=total_hits|pluralize %}Found <span data-testid="itemsfound">{{result_num}}</span> record{{result_s}}{% endblocktrans %}</b>
-              {% else %}
-                <b>{% blocktrans with result_num=total_hits|apnumber result_s=total_hits|pluralize %}<span data-testid="itemsfound">{{result_num}}</span> record{{result_s}}{% endblocktrans %}</b>
-              {% endif %}
-              </div>
-              <div class="col-sm-7 col-xs-12"><div style="display: flex; justify-content: right">
-              <label class="control-label mrgn-rght-md" for="sort"> {% translate "Order By" %}</label>
-              <select class="form-control mrgn-rght-0" id="sort" name="sort" onchange="submitForm();" value="{{ sort }}" style="flex: none">
-                  {% for option, label in sort_options.items %}
-                      <option value="{{ option }}" {% if sort == option %}selected="selected"{% endif %}>{{ label }}</option>
-                  {% endfor %}
-              </select>
-              </div>
-              </div>
-          </div>
+        {% block search_results_message %}{% include default_search_results_message %}{% endblock search_results_message %}
 
-        {% endblock search_results_message %}
         <div class="row">
             {% block main-content-centre-top %}
             {% endblock main-content-centre-top %}

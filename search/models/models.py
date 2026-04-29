@@ -77,6 +77,9 @@ class Search(models.Model):
     main_content_body_top_snippet = models.CharField(blank=True, default="search_snippets/default_main_content_body_top.html", max_length=250,
                                                  verbose_name="Custom snippet above the search box",
                                                  help_text="Optional snippet for content that appears about the search box")
+    search_results_message_snippet = models.CharField(blank=True, default="search_snippets/default_search_results_message.html", max_length=250,
+                                                      verbose_name="Custom snippet for search results message",
+                                                      help_text="Text that is displayed below search box for the number of items found")
     dataset_download_url_en = models.URLField(verbose_name="Download Dataset URL (English)", default="https://open.canada.ca")
     dataset_download_url_fr = models.URLField(verbose_name="Download Dataset URL (French)", default="https://ouvert.canada.ca")
     dataset_download_text_en = models.CharField(blank=True, default="Download Complete Dataset", max_length=100, verbose_name="Download Dataset Link Text (English)")
@@ -147,6 +150,8 @@ class Search(models.Model):
         self.search_item_snippet = data_dict["search_item_snippet"]
         self.record_detail_snippet = data_dict["record_detail_snippet"]
         self.record_breadcrumb_snippet = data_dict["record_breadcrumb_snippet"]
+        self.main_content_body_top_snippet = data_dict['main_content_body_top_snippet']
+        self.search_results_message_snippet = data_dict['search_results_message_snippet']
         self.dataset_download_url_en = data_dict["dataset_download_url_en"]
         self.dataset_download_url_fr = data_dict["dataset_download_url_fr"]
         self.dataset_download_text_en = data_dict["dataset_download_text_en"]

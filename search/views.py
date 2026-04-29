@@ -302,6 +302,7 @@ class SearchView(View):
             "info_message_snippet": self.searches[search_type].info_message_snippet,
             "about_message_snippet": self.searches[search_type].about_message_snippet,
             "main_content_body_top_snippet": "search_snippets/default_main_content_body_top.html",
+            "default_search_results_message": self.searches[search_type].search_results_message_snippet,
             "mlt_enabled": self.searches[search_type].mlt_enabled,
             "query_path": request.META["QUERY_STRING"],
             "path_info": request.META["PATH_INFO"],
@@ -1308,6 +1309,7 @@ class SearchFormView(SearchView):
             'json_download_allowed': self.searches[search_type].json_response,
             'main_content_body_top_snippet': self.searches[search_type].main_content_body_top_snippet,
             "breadcrumb_snippet": "search_snippets/default_form_breadcrumb.html",
+            "default_search_results_message": self.searches[search_type].search_results_message_snippet,
             "view_type": "SearchFormView",
             "query_path": ""
         }

@@ -46,29 +46,7 @@
     <div class="col-md-8 col-md-push-4">
       {% block main-content-centre %}
 
-        {% block search_results_message %}
-
-        <div class="row mrgn-bttm-lg">
-          <div class="col-sm-5 col-xs-12 mrgn-tp-sm" style="justify-content: left">
-            {% if not show_all_results %}
-              <b>{% blocktrans with result_num=total_hits|apnumber result_s=total_hits|pluralize %}Found <span data-testid="itemsfound">{{result_num}}</span> record{{result_s}}{% endblocktrans %}</b>
-            {% else %}
-              <b>{% blocktrans with result_num=total_hits|apnumber result_s=total_hits|pluralize %}<span data-testid="itemsfound">{{result_num}}</span> record{{result_s}}{% endblocktrans %}</b>
-            {% endif %}
-          </div>
-          <div class="col-sm-7 col-xs-12">
-            <div style="display: flex; justify-content: right">
-            <label class="control-label mrgn-rght-md mrgn-tp-sm" for="sort"> {% translate "Order By" %}</label>
-            <select class="form-control mrgn-rght-0" style="flex: none;" id="sort" name="sort" value="{{ sort }}">
-                {% for option, label in sort_options.items %}
-                    <option value="{{ option }}" {% if sort == option %}selected="selected"{% endif %}>{{ label }}</option>
-                {% endfor %}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {% endblock search_results_message %}
+      {% block search_results_message %}{% include default_search_results_message %}{% endblock search_results_message %}
 
       <div class="row">
       {% block main-content-search-items %}
@@ -81,7 +59,6 @@
         {% block main-content-pagination %}
           {% if show_pagination %}
 
-          <!--  @TODO START HERE  -->
           <ul class="pagination">
               {% for pg in pagination %}
                   {% if pg == 1 %}
@@ -147,8 +124,8 @@
                             <div class="mrgn-tp-0 col-sm-10">
                               {% if key in codes.keys %}
                                 <div class="checkbox">
-                                  <label for="cb-{{ key }}-{{ subkey }}" style="font-size: 16px;">
-                                    <input type="checkbox" id="cb-{{ key }}-{{ subkey }}" name="cb-{{ key }}-{{ subkey }}" value="{{key}}|{{subkey}}"
+                                  <label for="cb-{{ key }}-{{ subkey | normailize_id_value }}" style="font-size: 16px;">
+                                    <input type="checkbox" id="cb-{{ key }}-{{ subkey | normailize_id_value }}" name="cb-{{ key }}-{{ subkey }}" value="{{key}}|{{subkey}}"
                                     style="vertical-align:middle;position:relative;top:-1px;height: 16px;width: 16px; font-weight: normal;"
                                     {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}>
                                       &nbsp;&nbsp;{{ codes|get_dict_value:key|get_dict_value:subkey }} </div></label>
@@ -157,8 +134,8 @@
                                 <div class="col-sm-2" style="padding-left: 0px"><span class="badge">{{ subvalue }}</span></div>
                               {% else %}
                                 <div class="checkbox">
-                                  <label for="cb-{{ key }}-{{ subkey }}" style="font-size: 16px;">
-                                    <input type="checkbox" id="cb-{{ key }}-{{ subkey }}" name="cb-{{ key }}-{{ subkey }}" value="{{key}}|{{subkey}}"
+                                  <label for="cb-{{ key }}-{{ subkey | normailize_id_value }}" style="font-size: 16px;">
+                                    <input type="checkbox" id="cb-{{ key }}-{{ subkey | normailize_id_value }}" name="cb-{{ key }}-{{ subkey }}" value="{{key}}|{{subkey}}"
                                     style="vertical-align:middle;position:relative;top:-1px;height: 16px;width: 16px; font-weight: normal;" 
                                     {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}>
                                       &nbsp;&nbsp;{{ subkey }} 
@@ -181,8 +158,8 @@
                             <div class="mrgn-tp-0 mrgn-bttm-0 col-sm-10">
                                 {% if key in codes.keys %}
 
-                                  <label for="cb-{{ key }}-{{ subkey }}" style="font-size: 16px; font-weight: normal;">
-                                    <input type="checkbox" id="cb-{{ key }}-{{ subkey }}" name="cb-{{ key }}-{{ subkey }}" value="{{key}}|{{subkey}}"
+                                  <label for="cb-{{ key }}-{{ subkey | normailize_id_value }}" style="font-size: 16px; font-weight: normal;">
+                                    <input type="checkbox" id="cb-{{ key }}-{{ subkey | normailize_id_value }}" name="cb-{{ key }}-{{ subkey }}" value="{{key}}|{{subkey}}"
                                     style="vertical-align:middle;position:relative;top:-1px;height: 16px;width: 16px; font-weight: normal;"
 ;                                   aria-label="facet-{{ key }}-{{ subkey }}"
                                     {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}>
@@ -191,8 +168,8 @@
 
                                 {% else %}
 
-                                  <label for="cb-{{ key }}-{{ subkey }}" style="font-size: 16px; font-weight: normal;">
-                                    <input type="checkbox" id="cb-{{ key }}-{{ subkey }}" name="cb-{{ key }}-{{ subkey }}" value="{{key}}|{{subkey}}"
+                                  <label for="cb-{{ key }}-{{ subkey | normailize_id_value }}" style="font-size: 16px; font-weight: normal;">
+                                    <input type="checkbox" id="cb-{{ key }}-{{ subkey | normailize_id_value }}" name="cb-{{ key }}-{{ subkey }}" value="{{key}}|{{subkey}}"
                                     style="vertical-align:middle;position:relative;top:-1px;height: 16px;width: 16px; font-weight: normal;"
 ;                                   aria-label="facet-{{ key }}-{{ subkey }}"
                                     {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}>
