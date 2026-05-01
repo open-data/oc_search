@@ -305,7 +305,7 @@ class SearchView(View):
             "default_search_results_message": self.searches[search_type].search_results_message_snippet,
             "mlt_enabled": self.searches[search_type].mlt_enabled,
             "query_path": request.META["QUERY_STRING"],
-            "path_info": request.META["PATH_INFO"],
+            "path_info": f"{request.META["PATH_INFO"]}/",
             "im_enabled": settings.IM_ENABLED if hasattr(settings, 'IM_ENABLED') else False,
             "view_type": "SearchView" 
         }
