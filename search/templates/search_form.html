@@ -115,23 +115,22 @@
                   <h3 class="panel-title" style="font-size: large">{{ value|get_dict_value:'__label__' }}</h3>
               </summary>
               <ul class="list-group">
-              {% if key in reversed_facets %}
-              <li>Reversed</li>                
+              {% if key in reversed_facets %}          
                 {% for subkey, subvalue in value.items reversed %}
                     {% if subkey not in system_facet_fields and subvalue > 0 %}
                         <li class="list-group-item" style="padding-left: 0px">
                           <div class="row">
-                            <div class="mrgn-tp-0 col-sm-10">
+                            <div class="mrgn-tp-0 col-sm-10" style="text-indent: 2em hanging;">
                               {% if key in codes.keys %}
                                 <div class="checkbox">
                                   <label for="cb-{{ key }}-{{ subkey | normailize_id_value }}" style="font-size: 16px;">
                                     <input type="checkbox" id="cb-{{ key }}-{{ subkey | normailize_id_value }}" name="cb-{{ key }}-{{ subkey }}" value="{{key}}|{{subkey}}"
                                     style="vertical-align:middle;position:relative;top:-1px;height: 16px;width: 16px; font-weight: normal;"
                                     {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}>
-                                      &nbsp;&nbsp;{{ codes|get_dict_value:key|get_dict_value:subkey }} </div></label>
+                                      &nbsp;&nbsp;{{ codes|get_dict_value:key|get_dict_value:subkey }}
                                   </label>
                                 </div>
-                                <div class="col-sm-2" style="padding-left: 0px"><span class="badge">{{ subvalue }}</span></div>
+
                               {% else %}
                                 <div class="checkbox">
                                   <label for="cb-{{ key }}-{{ subkey | normailize_id_value }}" style="font-size: 16px;">
@@ -144,26 +143,28 @@
 
                               {% endif %}
                             </div>
-                              <div class="col-sm-2" style="padding-left: 0px"><span class="badge">{{ subvalue }}</span></div>
+                            <div class="col-sm-2" style="padding-left: 0px"><span class="badge">{{ subvalue }}</span></div>
 
-                            </div>
+                          </div>
                         </li>
                     {% endif %}
                 {% endfor %}
               {% else %}
                 {% for subkey, subvalue in value.items %}
                     {% if subkey not in system_facet_fields and subvalue > 0 %}
-                        <li class="list-group-item" style="padding-left: 0px">
+                        <li class="list-group-item" style="padding-left: 0px;">
                           <div class="row">
-                            <div class="mrgn-tp-0 mrgn-bttm-0 col-sm-10">
+                            <div class="mrgn-tp-0 mrgn-bttm-0 col-sm-10" style="text-indent: 2em hanging;">
                                 {% if key in codes.keys %}
 
                                   <label for="cb-{{ key }}-{{ subkey | normailize_id_value }}" style="font-size: 16px; font-weight: normal;">
+                                    
                                     <input type="checkbox" id="cb-{{ key }}-{{ subkey | normailize_id_value }}" name="cb-{{ key }}-{{ subkey }}" value="{{key}}|{{subkey}}"
                                     style="vertical-align:middle;position:relative;top:-1px;height: 16px;width: 16px; font-weight: normal;"
 ;                                   aria-label="facet-{{ key }}-{{ subkey }}"
                                     {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}>
-                                      &nbsp;&nbsp;{{ codes|get_dict_value:key|get_dict_value:subkey }}
+                                    &nbsp;&nbsp;
+                                      {{ codes|get_dict_value:key|get_dict_value:subkey }}
                                   </label>
 
                                 {% else %}
