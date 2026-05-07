@@ -56,9 +56,10 @@
       {% endblock main-content-search-items %}
       </div>
 
-        {% block main-content-pagination %}
-          {% if show_pagination %}
-
+    {% block main-content-pagination %}
+      {% if show_pagination %}
+      <div class="row">
+        <div class="col-md-12">
           <ul class="pagination">
               {% for pg in pagination %}
                   {% if pg == 1 %}
@@ -66,33 +67,36 @@
                         <li class="previous disabled"><input type="submit" value="{% translate 'Previous' %}" name="prev_page" disabled><label class="wb-inv" for="prev_page">{% translate 'Previous' %}</label></li>
                     {% else %}
                         <li class="previous">
-                          <input type="submit" value="{% translate 'Previous' %}" name="pg_prev-{{previous_page}}">
+                          <input type="submit" value="{% translate 'Previous' %}" name="pg_prev-{{previous_page}}" id="pg_prev-{{previous_page}}">
                           <label class="wb-inv" for="pg_prev-{{previous_page}}">Go to page {{ previous_page }}</label></li>
                     {% endif %}
                     <li{% if currentpage == 1 %} class="active" {% endif %}>
-                      <input type="submit" value="1" name="pg-1">
+                      <input type="submit" value="1" name="pg-1" aria-invalid="pg-1">
                       <label for="pg-1" class="wb-inv">{% translate 'Go to' %} 1 </label></li>
                   {% elif pg == last_page %}
                     <li{% if currentpage == last_page %} class="active"{% endif %}>
-                      <input type="submit" value="{{ pg }}" name="pg-{{pg}}">
+                      <input type="submit" value="{{ pg }}" name="pg-{{pg}}" id="pg-{{pg}}">
                       <label for="pg-{{pg}}" class="wb-inv">{% translate 'Go to' %} 1 </label>
                     </li>
                     {% if currentpage == last_page %}
                       <li class="next disabled"><input type="submit" value="{% translate 'Next' %}" disabled></li>
                     {% else %}
-                      <li class="next"><input type="submit" value="{% translate 'Next' %}" name="pg_next-{{ next_page }}">
+                      <li class="next"><input type="submit" value="{% translate 'Next' %}" name="pg_next-{{ next_page }}" id="pg_next-{{ next_page }}">
                       <label for="pg_next-{{next_page}}" class="wb-inv">Go to page {{ next_page }}</label></li>
                     {% endif %}
                 {% elif pg == 0 %}
                     <li><input type="submit" value="&#8230;" disabled><label class="wb-inv">More pages</label></li>
                   {% else %}
-                    <li{% if currentpage == pg %} class="active"{% endif %}><input type="submit" value="{{ pg }}" name="pg-{{pg}}"><label class="wb-inv" for="pg-{{pg}}">Go to page {{pg}}</label></li>
+                    <li{% if currentpage == pg %} class="active"{% endif %}><input type="submit" value="{{ pg }}" name="pg-{{pg}}" id="pg-{{pg}}">
+                    <label class="wb-inv" for="pg-{{pg}}">Go to page {{pg}}</label></li>
                   {% endif %}
               {% endfor %}
           </ul>
-          {% endif %}
-        {% endblock main-content-pagination %}
-      {% endblock main-content-centre %}
+        </div>
+      </div>
+      {% endif %}
+    {% endblock main-content-pagination %}
+    {% endblock main-content-centre %}
     </div>
 
     <div class="col-md-4 col-md-pull-8">

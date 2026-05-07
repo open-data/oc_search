@@ -1381,7 +1381,7 @@ class SearchFormView(SearchView):
 
         # Stand up the Solr client
 
-        query = self.to_solr_query(request, search_type, lang, start_row, num_rows=10, is_export=export_query, reset_filters=clear_filters)
+        query = self.to_solr_query(request, search_type, lang, start_row, num_rows=self.searches[search_type].results_page_size, is_export=export_query, reset_filters=clear_filters)
 
         solr = SolrClient(settings.SOLR_SERVER_URL)
         core_name = self.searches[search_type].solr_core_name
