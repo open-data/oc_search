@@ -305,7 +305,7 @@ class SearchView(View):
             "default_search_results_message": self.searches[search_type].search_results_message_snippet,
             "mlt_enabled": self.searches[search_type].mlt_enabled,
             "query_path": request.META["QUERY_STRING"],
-            "path_info": f"{request.META["PATH_INFO"]}/",
+            "path_info": f"{request.META["PATH_INFO"]}",
             "im_enabled": settings.IM_ENABLED if hasattr(settings, 'IM_ENABLED') else False,
             "view_type": "SearchView" 
         }
@@ -370,6 +370,7 @@ class SearchView(View):
             context['search_toggle'] = self.reverse_search_alias_en[search_type] if lang == 'fr' else self.reverse_search_alias_fr[search_type]
             context['json_download_allowed'] = self.searches[search_type].json_response
             context['main_content_body_top_snippet'] = self.searches[search_type].main_content_body_top_snippet
+            context["query_type"] = "GET"
 
             # Get search drop in message:
             context["general_msg"] = ""
@@ -619,7 +620,8 @@ class SearchView(View):
                     else:
                         json_link = json_link + "&search_format=json"
                     context["json_format_url"] = json_link
-                    log_search_results(request, self.search_logger, search_type=search_type, format=search_format, page_type='search', doc_count=solr_response.num_found, hostname=self.hostname)
+                    if settings.SEARCH_LOGGING_ON:
+                        log_search_results(request, self.search_logger, search_type=search_type, format=search_format, page_type='search', doc_count=solr_response.num_found, hostname=self.hostname)
                     return render(request, self.searches[search_type].page_template, context)
             except (ConnectionError, SolrError) as ce:
                 return render(request, 'error.html', get_error_context(search_type, lang, ce.args[0]))
@@ -743,7 +745,8 @@ class RecordView(SearchView):
                                                                                                   self.searches[search_type],
                                                                                                   self.fields[search_type],
                                                                                                   self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type])
-            log_search_results(request, self.search_logger, search_type=search_type, format='html', page_type='record', search_text=record_id, doc_count=solr_response.num_found, hostname=self.hostname)
+            if settings.SEARCH_LOGGING_ON:
+                log_search_results(request, self.search_logger, search_type=search_type, format='html', page_type='record', search_text=record_id, doc_count=solr_response.num_found, hostname=self.hostname)
             return render(request, self.searches[search_type].record_template, context)
 
         else:
