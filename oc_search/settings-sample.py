@@ -305,7 +305,10 @@ CELERYD_CONCURRENCY = 2
 # the task will report its status as ‘started’ when the task is executed by a worker.
 CELERY_TASK_TRACK_STARTED = True
 
-## Optional query logging
+## Optional query logging. This feature will save query information to json file which can then
+## by imported into the Search database. This can result in an exceptional amount of logging and is
+## not recommended to be left on by default.
+
 SEARCH_LOGGING_ON = False
 
 # Log file to hold exported search logs
