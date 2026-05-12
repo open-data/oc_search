@@ -28,23 +28,23 @@ Django is built with Python. Version 3.9+ is recommended. For more information, 
 
 It is highly recommended that users have some basic familiarity with Django before installing OCS.
 
-#### - Postgresql
+#### 1. Postgresql
 
 OCS requires a Django supported database backend such as PostgreSQL 16. Initial development can be done with the SQLite3 engine that is included with Python. OCS uses the Django ORM model and is installed using standard Django database commands.
 
-#### - Solr
+#### 2. Solr
 
 OCS also requires Solr v9.x text search engine. For information on installing Solr, please see the
 [Apache Solr Reference Guide](https://lucene.apache.org/solr/guide/).
 
-#### - Celery and Redis
+#### 3. Celery
 
 Background data processing is required for downloading search results. OCS uses [Celery](https://docs.celeryq.dev/en/stable/getting-started/introduction.html) and Django extenion [Celery for Django](https://docs.celeryq.dev/en/stable/django/first-steps-with-django.html). Both [Celery](https://docs.celeryq.dev/en/stable/getting-started/introduction.html#get-started) and [Celery-for-Django](https://docs.celeryq.dev/en/latest/django/first-steps-with-django.html#django-celery-results-using-the-django-orm-cache-as-a-result-backend) need to be set up prior to downloading search results.
 
-##### Redis
+#### 4. Redis
 
-When settng up Celery, it is likely you will need to install [Redis](https://redis.io/) as well, to use as the broker for Celery.
-OCS has been tested with Redis version 5.x. 
+Redis is used to maintain user sessions in OCS. As well, when settng up Celery, it is likely you will need to 
+install [Redis](https://redis.io/) as well, to use as the broker for Celery. OCS has been tested with Redis version 5.x. 
 
 
 #### - Django Extensions
@@ -76,6 +76,7 @@ Before installing OCS, install the prerequisites in [Getting Started](https://gi
 - Python 3.9+ (3.12 or higher is recommended)
 - PostgreSQL 16 (recommended) or other Django supported database
 - Apache Solr Search Server 9.x
+- Redis 5.x
 
 
 ### Steps
