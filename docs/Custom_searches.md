@@ -1,53 +1,37 @@
 
-# Creating a New Proactive Disclosure Search
+# Creating a New OCS Search
 
-## Introduction ##
+## Overview ##
 
-Custom Search definitions for Open Canada Search are made of number of components including
-a database definition files, python scripts, gettext portables, HTML template snippets and more.
+[Open Canada Search 2](../README.md) (OCS) provides a framework for building highly customized
+web searches of the metadata and structured data published on Canada's Open Government Portal. Data
+searches are consist of tailored code modules that extend the functionality provided by the 
+core application. 
 
-Before developing a custom search, be sure to set up and run the OC Search application: https://github.com/open-data/oc_search
-
-These are the basic steps to create a new <a href="https://open.canada.ca/en/proactive-disclosure">proactive disclosure</a> search. Steps do not have to be
-done in exactly this order, but most are needed.
-
-- In the [Django Administration interface](https://docs.djangoproject.com/en/5.1/ref/contrib/admin/) create the database records that describe the Search. These
-objects include:
-  - Search,
-  - Fields, and
-  - Codes
-- Create a new Solr core and copy in the custom synonym files to the core's configuration language folder. For example, to create a new Solr core for
-  Contracts, as the Solr user run these commands
-  ```Shell
-  /opt/solr/bin/solr create -c search_contracts
-  cd /var/solr/data
-  cp oc_search/oc_search/solr/conf/*.txt search_contracts/conf/lang/
-   ```
-  Reload the Solr core using the Solr Web Admin UI. You could also restart
-  the Solr service, but this can result in lost data and service disruption.
+Custom search modules are made of number of components including:
+ - automatically generated JSON database definition files, 
+ - plugins that are python scripts that can modify and extend the web applicatoin, 
+ - gettext portables, 
+ - Djago HTML template snippets and,
+ - other static files.
 
 
-- Customize the blank Solr core based on the search model using the `create_solr_core` command:
+## Before Starting
 
-  ` python .\manage.py create_solr_core --search contracts`
+Before developing a custom search, set up and run the core OC Search application. You will be using
+the Django Administration UI to define the data fields of the new search, so you will need an
+adminstrative user as outlined in Step 11 of [the installion notes](../README.md#steps). The Solr, 
+Redis, and Postgresql servers will need to be connected properly before development can start.
 
-- _If a list of Canadian government departments is used in the search_, load the list of government departments using the `import_org_ckan_json` command.
-- Create a code plug-in for the search that can contain python code for customizing the search.
-- Load CSV data using the `import_data_csv` command.
-- Create a snippets folder to hold Django template snippets to customize the appearance of the search results pages.
-- Export the search definition (including all custom components) using the `export_search` command
-- Import the search definition to another instance of Open Canada search using the `import_earch` command.
 
-# Developing a New Custom Proactive Disclosure Search
-
-A custom search definition consists of a collection of files and information stored in the Search application database.
-Most of the custom searches are published on GitHub in project [oc_searches](https://github.com/open-data/oc_searches).
+# Steps to Create a New Custom Search
 
 Creating a new custom search for proactive disclosure, or other data, requires multiple components.
 Coding can be done in your local development environment, then the entire custom search can exported
 as code and imported into another test or production instance of Open Canada Search.
 
-This is a general guide and the steps do not need to be completed exactly in this order.
+This is a general guide and the steps do not need to be completed exactly in this order. Not every
+tep is always required, but most are needed.
 
 1. [Select a unique Search type ID](#1-select-a-unique-search-type-id).
 1. [Create a new blank Solr core and copy in the synonym configuration files.](#2-create-a-new-solr-core)
@@ -63,6 +47,7 @@ This is a general guide and the steps do not need to be completed exactly in thi
 1. (_Optional_) [Provide translations using Django's gettext library](#10-create-a-custom-po-file-for-gettext)
 1. [Export and Import the new search](#11-deploying-the-new-search) between instance of the Open Canada Search application
 
+
 ## 1. Select a unique Search type ID ##
 
 Select a unique Search type ID to use. This is a single unique identifier name. Typically, this name should be identical
@@ -73,9 +58,19 @@ For example: `contracts`, `qpnotes`, or `briefingt`.
 
 ## 2. Create a new Solr core ##
 
-Using Solr 9.x, log onto your Solr VM or service, and as the `solr` user, create a new Solr core from the command line using the `solr` command.
+Using Solr 9.x, log onto your Solr VM or service, and as the Solr administrator (on Linux this is typically the`solr` user), 
+create a new Solr core from the command line using the `solr` command.
 
-Then copy the custom synonyms files to the `lang` folder in the new Solr core's configuration folder. The synonyms files can be
+*Example:*
+
+  ```Shell
+  /opt/solr/bin/solr create -c search_contracts
+  cd /var/solr/data
+  cp oc_search/oc_search/solr/conf/*txt search_contracts/conf/lang/
+   ```
+
+OCS Solr cores [use customized language definitions files](../oc_search/solr/conf) in its Solr cores.
+Copy the custom synonyms files to the `lang` folder in the new Solr core's configuration folder. The synonyms files can be
 found in the `oc_search/solr/conf` folder of this project, on [GitHub](https://github.com/open-data/oc_search/tree/master/oc_search/solr/conf). They can also be copied from an existing Solr search core.
 
 Please note that the default `solrconfig.xml` file generated by the solr create command _does not_ need to be modified. By default,
@@ -85,7 +80,7 @@ API will apply these changes to the `managed-schema.xml` file when running the [
 By convention, the Solr core name uses the pattern `search_<recombinant type name>`. For example,
 `search_contracts`, `search_qpnotes`, or `search_briefingt`.
 
-*Example of creating new core from command line*:
+*Example of creating new core from command line in Linux*:
 
 ```Shell
   sudo -u solr /opt/solr/bin/solr create -c search_qpnotes
@@ -105,18 +100,17 @@ When just adding new fields or codes, it may be possible to simply re-run the `c
 ## 3. Create a New Search model with Fields and Codes ##
 
 The search model consists of three types of database records:
-- One [search](#31-new-search-record) records,
-- One or more [field](#32-add-new-fields-to-the-search) records which always associated with (i.e. have a foreign key) the new search record, and
-- Zero or more [codes](#33-add-new-code-or-choice-values-to-fields) which are always associated with one and one only of the new fields. Codes represent
-  a single choice in predetermined set of options or picklist.
+- One [search](#31-new-search-record) record,
+- One or more [field](#32-add-new-fields-to-the-search) records which always associated with the new search record, and
+- Zero or more [codes](#33-add-new-code-or-choice-values-to-fields) which are always associated with one and one only of the new fields. Codes represent a single choice in a predetermined set of options or picklist.
 
-_Note_ Codes are in most cases just regular codes. There are also Chronologic Codes which are codes that are associated with a date range.
-Regular Codes can be used in almost all cases.
+_Note_ Codes are in most cases just baisc code values. There are also Chronologic Codes which are codes that are associated 
+with a date range. Regular Codes can be used in almost all cases.
 
 <img alt="Image of the 3 database components of a search definition" src="./images/db-model.png"></img>
 
-The Search model records are created using the [Django Administration UI](https://docs.djangoproject.com/en/5.1/ref/contrib/admin/). If you do not already have a Django admin
-account, create one using the [Django command-line tool](https://docs.djangoproject.com/en/5.1/ref/django-admin/#createsuperuser).
+The Search model records are created using the [Django Administration UI](https://docs.djangoproject.com/en/5.1/ref/contrib/admin/). 
+If you do not already have a Django admin account, create one using the [Django command-line tool](https://docs.djangoproject.com/en/5.1/ref/django-admin/#createsuperuser).
 
 ```Shell
   python .\manage.py createsuperuser --username <new account name> --email <email address>
@@ -218,9 +212,10 @@ The More Like This function is not appropriate for most search types that do not
 
 ### 3.2. Add New Fields to the Search ###
 
-Field components describe the individual fields that make up the records that are being loaded into Search.
+After creating a Search record, the next step is to add Fields to the Search. Field components describe 
+the individual fields that make up the records that are being loaded into Search.
 
-Each field is associated with a specific Search instance. The Field Record UI groups all of its composing fields into five tabs.
+Each field is associated with a single specific Search instance. The Field Record UI groups all of its composing fields into five tabs.
 
 #### 3.2.1 General Tab ####
 
@@ -287,7 +282,11 @@ Rarely used legacy properties, mostly used with Proactive Disclosures that inclu
 
 ### 3.3. Add New Code or Choice values to Fields ###
 
-Codes are associated with individual Fields, and are used to represent choice lists. In most cases, only the first 4 attributes need to be specified.
+Not every field uses codes - most do not. But many structured datasets constrain certain fields to a list of pre-determined values. For
+example, a day field may be constrained to values from a list of the days of the week. 
+
+Codes are associated with specific individual Fields, and are used to represent choice lists. Each Code represents a single 
+value from the list. In most cases, only the first 4 attributes of the Code need to be specified.
 
 | *Field*                  | *Description*                                                                                              | *Example Value*                             |
 |--------------------------|------------------------------------------------------------------------------------------------------------|---------------------------------------------|
@@ -317,9 +316,11 @@ Rarely used Code attributes, mostly used special fields when loading data in the
 
 To take advantage of the language features of Solr, the Open Canada Search (OCS) application requires
 the search core to have a defined schema. OCS uses Solr's dynamic schema functionality to create a custom schema based on the
-search definition created in Step 3. Once you have finalized the search definition, and created the associated blank Solr core as described in Step 2,
+search definition created in Step 3. 
+
+Once you have finalized the search definition, and created the associated blank Solr core as described in Step 2,
 use the provided Django custom management command
-<a href="https://github.com/open-data/oc_search/blob/master/search/management/commands/create_solr_core.py"> `create_solr_core`</a> to dynamically apply the schema.
+<a href="https://github.com/open-data/oc_search/blob/master/search/management/commands/create_solr_core.py">`create_solr_core`</a> to dynamically apply the schema.
 
 Example:
 ```Shell
@@ -329,7 +330,9 @@ python .\manage.py create_solr_core --search hospitalityq
 
 ## 5. Create a code plug-in
 
-In the <a href="https://github.com/open-data/oc_search/tree/master/search/plugins">plugins directory</a> copy the `default.py` file
+The code plug-in allows you to write custom code to inject additional functionality into certain steps of the search. The plug-in
+is a Python code file where developers can write specific functions to override default behaviour. To do this,
+in the <a href="https://github.com/open-data/oc_search/tree/master/search/plugins">plugins directory</a> copy the `default.py` file
 and rename it to `<search ID>.py`. Note that the file name must exactly match the Search ID. In the plugin file there are a number of
 functions that can extended.
 
@@ -352,15 +355,14 @@ functions that can extended.
 ## 6. Load Organizational Codes ##
 
 _If you have a Government of Canada department field_ based on the organization's bilingual acronym, wse the `import_orgs_ckan_json` command
-to import all of the the government departments into codes. There are over 100 departments and they occasionally change, so manually entering
-these codes is not practical.
+to import all of the the government departments into Codes. There are over 200 departments and they occasionally change, so manually entering these codes is not practical.
 
-The input for this command is the JSON object returned by the CKAN API `organization_list`. For example, using the `ckanapi` utiliy:
+The input for this command is the JSON object returned by the [CKAN API](https://docs.ckan.org/en/2.11/api/index.html#ckan.logic.action.get.organization_list) `organization_list`. For example, using the `ckanapi` utiliy:
 
 ```Shell
  ckanapi action organization_list all_fields=True -r https://open.canada.ca/data > orgs.json
  python .\manage.py import_orgs_ckan_json --search hospitalityq --field owner_org --org_file .\orgs.json
-````
+```
 
 
 ## 7. Load Search Data ##
@@ -382,8 +384,9 @@ Use an existing search for examples of custom snippets for search items, or deta
 
 ## 9. Create any extra commands ##
 
-If you require additional logic, for example for data transformation of the CSV files, sometime is will make sense to
-implement this in custom Django management commands that can be run from the command line. This Django commands go into
+If you require additional logic, for example for data transformation of the CSV files, sometime it will make sense to
+implement this in [custom Django management commands](https://docs.djangoproject.com/en/5.2/howto/custom-management-commands/) 
+that can be run from the command line. These Django commands go into
 the folder `oc_search/search/management/commands/` and the files must be names `<search ID>_<command name>.py`
 
 
@@ -422,10 +425,3 @@ Custom searches, including all their code and database components, can be export
 Please note that the actual __search data is not included__ in the data import and export. Data must be loaded in a separate step.
 The import and export process is described in detail in [Importing Custom Searches](https://github.com/open-data/oc_search/blob/master/docs/import_custom_search.md)
 
-## Advanced Topics ##
-
-Documentation for these advanced topics will be forthcoming.
-
-- Custom models
-- Chronologic Codes
-- Custom models

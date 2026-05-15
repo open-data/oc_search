@@ -354,6 +354,19 @@ To run: `python .\manage.py export_search --search <Unique search ID> --export_d
 
 </div>
 
+
+<div id="import_orgs_ckan_json">
+
+### import_orgs_ckan_json
+
+The command is used to update a search field that contains the list of organizations that contribute to Canada's Open Government Portal.
+
+To run: `python .\manage.py import_orgs_ckan_json --search <Unique search ID> --field <Unique field id> --org_file <JSON file with organizations>`
+
+Note: the JSON file that contains the organiation data is the output from the `ckanapi` command
+
+</div>
+
 ---
 
 # Plugin API Changes
