@@ -12,6 +12,7 @@ inflection==0.5.1
 markdown2==2.5.5
 nltk==3.9.4
 numpy==2.4.4
+pandas==3.0.3
 psycopg2==2.9.12
 pytz==2026.2
 PyYAML==6.0.3
