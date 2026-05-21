@@ -193,7 +193,7 @@ APPEND_SLASH = False
 HTTP_FORM_PROTOCOL = "Post"
 ```
 
-### Next Steps
+### Next Steps and Custom Searches
 
 The Search application is a blank framework. The next steps include making custom search plug-ins to
 create a custom interactive search application. See the [Custom Search developer documentation](./docs/Custom_searches.md).
@@ -202,6 +202,8 @@ For information on importing an existing custom search, see [Import Custom Searc
 
 For production, Django should be installed as [a WSGI application](https://docs.djangoproject.com/en/5.2/howto/deployment/) 
 like uWSGI or Gunicorn. For instructions on doing this with uWSGI, see the [Django Documentation](https://docs.djangoproject.com/en/5.2/howto/deployment/wsgi/uwsgi/)
+
+The custom searches developed for Canada's Open Government Portal are available on [GitHub](https://github.com/open-data/oc_searches).
 
 
 ### Note on Logging
@@ -313,7 +315,7 @@ through the Django admin UI.
 
 <div id="import_schema_ckan_yaml">
 
-### (Unsupported) import_schema_ckan_yaml
+### import_schema_ckan_yaml (_Unsupported_) 
 
 __Please note that this commond no longer works with newer versions of CKAN or Search__
 
@@ -367,30 +369,7 @@ Note: the JSON file that contains the organiation data is the output from the `c
 
 </div>
 
----
+### Building new commands
 
-# Plugin API Changes
-
-OCS provides a custom plug-in system that allows developers to highly customize Search actions. It does this by
-allowing developers to write custom code that is used in various OCS functions like displaying search results or
-loading CSV files. The functionality available to plug-ins has expended over time. Every plug-in must indicate what
-version of the plug-in API it supports.
-
-## Version 1.1
-
-Added two new API functions that are called just before the search page is rendered and just before the record page is rendered:
-
-```python
-def pre_render_search(context: dict, template: str, request: HttpRequest, lang: str, search: Search, fields: dict, codes: dict):
-
-def pre_render_record(context: dict, template: str, request: HttpRequest, lang: str, search: Search, fields: dict, codes: dict):
-```
-
-## Version 1.2
-
-`pre_render_search()` function updated to include a view-type parameter, that allows rendering to differentiate between views like
-Search and More-Like-This
-```python
-def pre_render_search(context: dict, template: str, request: HttpRequest, lang: str, search: Search, fields: dict, codes: dict, view_type='search'):
-```
+In addition to the regular Django management commands functionality, custom commands can also hook into the [Plug-in API](./docs/plug_in_api.md).
 

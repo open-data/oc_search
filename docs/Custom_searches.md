@@ -5,30 +5,30 @@
 
 [Open Canada Search 2](../README.md) (OCS) provides a framework for building highly customized
 web searches of the metadata and structured data published on Canada's Open Government Portal. Data
-searches are consist of tailored code modules that extend the functionality provided by the 
+searches are tailored code modules that extend the functionality provided by the 
 core application. 
 
-Custom search modules are made of number of components including:
+Custom search modules are made of a number of components including:
  - automatically generated JSON database definition files, 
  - plugins that are python scripts that can modify and extend the web applicatoin, 
- - gettext portables, 
- - Djago HTML template snippets and,
+ - [gettext](https://docs.python.org/3/library/gettext.html) portables, 
+ - Django HTML template snippets and,
  - other static files.
 
 
 ## Before Starting
 
-Before developing a custom search, set up and run the core OC Search application. You will be using
+Before developing a custom search, set up the core Open Canada Search application. You will be using
 the Django Administration UI to define the data fields of the new search, so you will need an
 adminstrative user as outlined in Step 11 of [the installion notes](../README.md#steps). The Solr, 
-Redis, and Postgresql servers will need to be connected properly before development can start.
+Redis, and Postgresql servers need to be connected properly before development can start.
 
 
 # Steps to Create a New Custom Search
 
 Creating a new custom search for proactive disclosure, or other data, requires multiple components.
 Coding can be done in your local development environment, then the entire custom search can exported
-as code and imported into another test or production instance of Open Canada Search.
+as a code module and imported into another test or production instance of Open Canada Search.
 
 This is a general guide and the steps do not need to be completed exactly in this order. Not every
 tep is always required, but most are needed.
@@ -50,11 +50,12 @@ tep is always required, but most are needed.
 
 ## 1. Select a unique Search type ID ##
 
-Select a unique Search type ID to use. This is a single unique identifier name. Typically, this name should be identical
+Select a unique Search type ID to use. This is a single unique identifier name. Typically, this is identical
 to the [CKAN recombinant type code](https://github.com/open-data/ckanext-canada/tree/master/ckanext/canada/tables). This
-unique ID will be used throughout the custom search code.
+unique ID will be used throughout the custom search code. The ID should be a single alphanumberic term without spaces or 
+special characters.
 
-For example: `contracts`, `qpnotes`, or `briefingt`.
+Examples of searches used at Open Canada: `contracts`, `qpnotes`, or `briefingt`.
 
 ## 2. Create a new Solr core ##
 
@@ -132,82 +133,83 @@ asterisk.
 These field describe  the main aspects of the search including its unique ID, Solr core, and aliases.
 
 | *Field*                               | *Description*                                                                                                      | *Example Value*                                                               |
-|---------------------------------------|--------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
-| Search ID                             | Unique Search object identifier                                                                                    | contracts                                                                     |
-| Solr Core Name                        | Name of the core on the Solr service                                                                               | search_contracts                                                              |
-| Solr debugging                        | Enabled Solr debugging in response. Normally should be disabled                                                    | False                                                                         |
-| Unique ID Identifier                  | The field(s) that form the primary key. For compound keys, separate fields with commands                           | owner_org,ref_number                                                          |
-| Alternate Record Format               | Searches may contain a secondary data format, like Nothing-To-Report. Provide an identifier. Leave blank otherwise | contracts-nil                                                                 |
-| Search Title (English)                | English Page Title                                                                                                 | "Search Government Contracts over $10,000"                                    |
-| Search Title (French)                 | French Page Title                                                                                                  | "Recherche des contrats gouvernementaux de plus de 10 000 $"                  |
-| Download Dataset Link Text (English)  | Text for the link to the CKAN dataset page                                                                         | "Dataset Page"                                                                |
-| Download Dataset URL (English)        | The link to the CKAN dataset page                                                                                  | "https://open.canada.ca/data/en/dataset/c4c5c7f1-bfa6-4ff6-b4a0-c164cb2060f7" |
-| Download Dataset Link Text (Français) | French text for the link to the CKAN dataset page                                                                  | "Ensemble de données"                                                         |
-| Download Dataset URL (French)         | The link to the French CKAN dataset page                                                                           | "https://open.canada.ca/data/en/dataset/c4c5c7f1-bfa6-4ff6-b4a0-c164cb2060f7" |
-| Description (English)                 | Optional brief description of the Search                                                                           |                                                                               |
-| Description (Français)                | Optional brief French description of the Search                                                                    | "Search for stuff"                                                            |
-| About the search message (English)    | Text for the "About this Information" section on the Search page                                                   | "This search..."                                                              |
-| About the search message (Français)   | French text for the "About this Information" section on the Search page                                            | "À propos de cette recherche..."                                              |
-| Search alias (English)                | A readable English  name to use in the search url instead of the Search ID.                                        | contracts                                                                     |
-| Search alias (Français)               | A readable French to use in the search url instead of the Search ID.                                               | contrats                                                                      |
-| Last imported on                      | Optional field for internal use - not required                                                                     |                                                                               |
+|-----------------------------------------|--------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
+| *Search ID*                             | Unique Search object identifier                                                                                    | contracts                                                                     |
+| *Solr Core Name*                        | Name of the core on the Solr service                                                                               | search_contracts                                                              |
+| *Solr debugging*                        | Enabled Solr debugging in response. Normally should be disabled                                                    | False                                                                         |
+| *Unique ID Identifier*                  | The field(s) that form the primary key. For compound keys, separate fields with commas                           | owner_org,ref_number                                                          |
+| *Alternate Record Format*               | Searches may contain a secondary data format, like Nothing-To-Report. Provide an identifier. Leave blank otherwise | contracts-nil                                                                 |
+| *Search Title (English)*                | English Page Title                                                                                                 | "Search Government Contracts over $10,000"                                    |
+| *Search Title (French)*                 | French Page Title                                                                                                  | "Recherche des contrats gouvernementaux de plus de 10 000 $"                  |
+| *Download Dataset Link Text (English)*  | Text for the link to the CKAN dataset page                                                                         | "Dataset Page"                                                                |
+| *Download Dataset URL (English)*        | The link to the CKAN dataset page                                                                                  | "https://open.canada.ca/data/en/dataset/c4c5c7f1-bfa6-4ff6-b4a0-c164cb2060f7" |
+| *Download Dataset Link Text (Français)* | French text for the link to the CKAN dataset page                                                                  | "Ensemble de données"                                                         |
+| *Download Dataset URL (French)*         | The link to the French CKAN dataset page                                                                           | "https://open.canada.ca/data/en/dataset/c4c5c7f1-bfa6-4ff6-b4a0-c164cb2060f7" |
+| *Description (English)*                 | _Optional_ brief description of the Search                                                                           |                                                                           | "Government of Canada Contracts Proactive Disclosures"
+| *Description (Français)*                | _Optional_ brief French description of the Search                                                                  | "Divulgations proactives relatives aux marchés publics du gouvernement du Canada"                                                            |
+| *About the search message (English)*    | Text for the "About this Information" section on the Search page                                                   | "This search..."                                                              |
+| *About the search message (Français)*   | French text for the "About this Information" section on the Search page                                            | "À propos de cette recherche..."                                              |
+| *Search alias (English)*                | A readable English  name to use in the search url instead of the Search ID.                                        | contracts                                                                     |
+| *Search alias (Français)*               | A readable French to use in the search url instead of the Search ID.                                               | contrats                                                                      |
+| *Last imported on*                      | Optional field for internal use - not required                                                                     |                                                                               |
 
 #### 3.1.2 Disabled Tab
 
-These fields allow the system administrator to temporarily disable a search. When disabled, the disabled message specified here
+These fields allow the system administrator to temporarily disable a search. When disabled, the message specified here
 will be displayed in place of the usual search.
 
-| *Field*                           | *Description*                                                                   |
-|-----------------------------------|---------------------------------------------------------------------------------|
-| Search is disabled                | Yes/No field. Select to replace the Search page with a plain not-available pate |
-| Disabled Search Message - English | English message to show on the not-available page                               |
-| Disabled Search Message - French  | French message to show on the not-available page                                |
+| *Field*                             | *Description*                                                                      |
+|-------------------------------------|------------------------------------------------------------------------------------|
+| *Search is disabled*                | Yes/No field. Select to replace the Search page with a plain not-available message |
+| *Disabled Search Message - English* | English message to show on the not-available page                                  |
+| *Disabled Search Message - French*  | French message to show on the not-available page                                   |
 
 #### 3.1.3 Results
 
-These fields control different aspects of how the search results are displayed.
+These fields control different aspects of how the search results are displayed. Note that for the sort-by fields, 
+multiple entries are separated by commas. _Do not_ include spaces around the commas.
 
 | *Field*                                                                | *Description*                                                                                                                                           | *Example Value*                             |
 |------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------|
-| No. of Search Results Per Page                                         | Provide a number                                                                                                                                        | 10                                          |
-| Sort-by Categories (English)                                           | The Solr sort options used on the drop-down page. Separate options with a comma. _DO NOT_ include extra spaces except for the sort order                | score desc,start_date desc,owner_org_en asc |
-| Sort-by Categories (Français)                                          | The French Solr sort options used on the drop-down page. The English and French fields do not need to match.                                            | score desc,start_date desc,owner_org_fr asc |
-| Sort-by Category Labels (English)                                      | The readable labels to show in the drop-down list. _DO NOT_ include extra spaces next to comma                                                          | Best Match,Date,Organization                |
-| Sort-by Category Labels (Français)                                     | The readable French labels to show in the drop-down list                                                                                                | Pertinence,Date,Organisation                |
-| Default Sort-by Category used when no search terms provided (English)  | Indicate which category to sort by when just browsing the Search results. This should be an exact match for one of the sort categories indicated above. | start_date desc                             |
-| Default Sort-by Category used when no search terms provided (Français) | Indicate which category to sort by when just browsing the Search results. English and French default categories can te tailored to different fields     | start_date desc                             |
-| Enable JSON format response                                            | Yes or No. Allows returning Search results as a JSON objects                                                                                            | Default is false                            |
-| Enable raw Solr format response                                        | Yes or No. For debugging only.                                                                                                                          | Default is false                            |
+| *No. of Search Results Per Page*                                         | Provide a number                                                                                                                                        | 10                                          |
+| *Sort-by Categories (English)*                                           | The Solr sort options used on the drop-down page. Separate options with a comma. _DO NOT_ include extra spaces except for the sort order                | score desc,start_date desc,owner_org_en asc |
+| *Sort-by Categories (Français)*                                          | The French Solr sort options used on the drop-down page. The English and French fields do not need to match.                                            | score desc,start_date desc,owner_org_fr asc |
+| *Sort-by Category Labels (English)*                                      | The readable labels to show in the drop-down list. _DO NOT_ include extra spaces next to comma                                                          | Best Match,Date,Organization                |
+| *Sort-by Category Labels (Français)*                                     | The readable French labels to show in the drop-down list                                                                                                | Pertinence,Date,Organisation                |
+| *Default Sort-by Category used when no search terms provided (English)*  | Indicate which category to sort by when just browsing the Search results. This should be an exact match for one of the sort categories indicated above. | start_date desc                             |
+| *Default Sort-by Category used when no search terms provided (Français)* | Indicate which category to sort by when just browsing the Search results. English and French default categories can te tailored to different fields     | start_date desc                             |
+| *Enable JSON format response*                                            | Yes or No. Allows returning Search results as a JSON objects                                                                                            | Default is false                            |
+| *Enable raw Solr format response*                                        | Yes or No. For debugging only.                                                                                                                          | Default is false                            |
 
 #### 3.1.4 Templates
 
 The Search application allows the developer to override multiple components of the Search web pages, including the Search page itself.
 
-| *Field*                                 | *Description*                                                                                                                                                                                                                           | *Example Value*                                                   |
-|-----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------|
-| Search Page Template                    | Django template file to use on the Search page. Can use the default template page or a custom page.                                                                                                                                     | search.html                                                       |
-| Record Page Template                    | Django template file to use on the individual Record page. There is a generic default page, but in most cases a custom page is needed.                                                                                                  | search_snippets/custom/contracts/contracts_record.html            |
-| Breadcrumb Snippet Path                 | Django template snippet to use for the the page breadcrumbs. There is a generic default page, or a custom one can be used.                                                                                                              | search_snippets/default_breadcrumb.html                           |
-| Footer Snippet Path                     | Django template snippet to use for the the page footer. There is generic default snippet or a custom one can be used.                                                                                                                   | search_snippets/default_footer.html                               |
-| Search Information Message Snippet Path | A template snippet for an message located at the top of every page. Currently not used.                                                                                                                                                 | search_snippets/default_info_message.html                         |
-| About Search Message Snippet Path       | A template snippet for the "About this information" message. Template is only displayed if an "About..." message is set in the first tab. There is a default template.                                                                  | search_snippets/default_about_message.html                        |
-| Custom Javascript for Header file path  | A JavaScript file that can be loaded for the custom search page                                                                                                                                                                         | search_snippets/default_header.js                                 |
-| Custom CSS file path                    | A CSS file that can be loaded for the custom search page                                                                                                                                                                                | search_snippets/default_header.css                                |
-| Custom Javascript for Body file path    | Rarely, used, this is a custom JavaScript file that can be loaded into the body of the file. Field can be left blank.                                                                                                                   | search_snippets/custom/data/fgp_viewer.js                         |
-| Custom Search Item snippet              | A template snippet for the individual search records on the search page. Although there is a default template, almost certainly a custom template will be needed.                                                                       | search_snippets/custom/contracts/contracts_search_item.html       |
-| Custom Record snippet                   | A template snippet for a whole record on the record page. Although there is a default template, almost certainly a custom template will be needed. Alternatively, the entire individual record page can be replaced with a custom page. | search_snippets/custom/hospitalityq/hospitalityq_record_item.html |
-| Custom Record Breadcrumb snippet        | A template snippet to use for the the record page breadcrumbs. There is a generic default page, or a custom one can be used.                                                                                                            | search_snippets/default_record_breadcrumb.html                    |
-| More-like-This Page Template            | The More-like-this template page for this search. There is a default page, or a customized version can be used                                                                                                                          | more_like_this.html                                               |
+| *Field*   | *Description*   | *Example Value*    |
+|-----------|-----------------|--------------------|
+| *Search Page Templat*e                    |  The Django template file to use for the Search page. Typically the default template page is used, but it can be replaced with a custom page. __Note that this only works when the Search is using "Get" mode.__ The Search page cannot be overridden when in "Post" mode.  |  search.html |
+| *Record Page Template*                    | The Django template file to use on the individual Record page. There is a generic default page, but in most cases a custom page is needed.  |  search_snippets/custom/contracts/contracts_record.html  |
+| *Breadcrumb Snippet Path*                 | The Django template snippet to use for the the page breadcrumbs. There is a generic default page for the Open Canada Proactive Disclosure landing page, or a custom breadcrumb can be used. |  search_snippets/default_breadcrumb.html  |
+| *Footer Snippet Path*                     | The Django template snippet to use for the the page footer. There is generic default snippet or a custom one can be specified.  |  search_snippets/default_footer.html  |
+| *Search Information Message Snippet Path* | A template snippet for an message located at the top of every page. Currently left blank, but can be used for a global site notice. |  search_snippets/default_info_message.html  |
+| *About Search Message Snippet Path*       | A template snippet for the "About this information" message. This template is only displayed if an "About..." message is set in the first tab. There is a default template.  |  search_snippets/default_about_message.html  |
+| *Custom Javascript for Header file path*  | A JavaScript file that can be loaded for the custom search page functionality.  |  search_snippets/default_header.js  |
+| *Custom CSS file path*                    | A CSS file that can be included on the default or custom search page  |  search_snippets/default_header.css  |
+| *Custom Javascript for Body file path*    | Rarely used, this is a custom JavaScript file that can be loaded into the body of the file. This field can be left blank.  | search_snippets/custom/data/fgp_viewer.js  |
+| *Custom Search Item snippet*              | A template snippet for the individual search records on the search page. Although there is a default template, a custom template is recommended.  |  search_snippets/custom/contracts/contracts_search_item.html  |
+| *Custom Record snippet*                   | A template snippet for a whole record on the record page. Although there is a default template, almost certainly a custom template will be preferred. _This only applies if the default Record Page Template, or a derivative, is used._ | search_snippets/custom/hospitalityq/hospitalityq_record_item.html |
+| *Custom Record Breadcrumb snippet*        | A template snippet to use for the the record page breadcrumbs. There is a generic default breadcrumb, or a custom one can be used.  |  search_snippets/default_record_breadcrumb.html  |
+| *More-like-This Page Template*            | The More-like-this template page for this search. There is a default page, or a customized version can be used.  |  more_like_this.html                                               |
 
 #### 3.1.5 More Like This ####
 
 These fields can be used to provide [More-Like-This](https://solr.apache.org/guide/solr/latest/query-guide/morelikethis.html) functionality in the Search.
 The More Like This function is not appropriate for most search types that do not have a lot of text.
 
-| *Field*                               | *Description*                                          | *Example Value* |
-|---------------------------------------|--------------------------------------------------------|-----------------|
-| Enable More-Like-This                 | By default, most searches disable this functionality   | False           |
-| No. Items returned for More-Like-This | Number of items to show on the page                    | 10              |
+| *Field*                                 | *Description*                                          | *Example Value* |
+|-----------------------------------------|--------------------------------------------------------|-----------------|
+| *Enable More-Like-This*                 | By default, most searches disable this functionality   | False           |
+| *No. Items returned for More-Like-This* | Number of items to show on the page                    | 10              |
 
 
 ### 3.2. Add New Fields to the Search ###
@@ -215,24 +217,26 @@ The More Like This function is not appropriate for most search types that do not
 After creating a Search record, the next step is to add Fields to the Search. Field components describe 
 the individual fields that make up the records that are being loaded into Search.
 
-Each field is associated with a single specific Search instance. The Field Record UI groups all of its composing fields into five tabs.
+Each field is associated with a single specific Search instance. The Field Record UI groups all of its fields into five tabs.
+
 
 #### 3.2.1 General Tab ####
 
 These fields specify the unique Field identifier, links the Field to a Search instance, and describe the field.
 
-| *Field*                   | *Description*                                                                                                                                                              | *Example Value*                                                           |
-|---------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|
-| Unique Field Identifier   | A code sytle identifier that is unique to this search and the database. Spaces and special characters should be avoided.                                                   | vendor_en                                                                 |
-| Search ID                 | Select the associated Search                                                                                                                                               | hospitalityq                                                              |
-| English Label             | Desciptive fault English label                                                                                                                                             | Name of commercial establishment or vendor involved                       |
-| French Label              | Descriptive default French label                                                                                                                                           | Nom des établissements commerciaux ou des fournisseurs concernés          |
-| Format Name               | The format is used to indicate of the field belongs to the primary Search type or another format like Nothing-to-report. Normally this is the same string as the Search ID | contracts or contracts-nil (matches search ID ot alternate search format) |
-| Solr Field Type           | Select the solr schema type from the predefinted list                                                                                                                      | Search Text English                                                       |
-| Language                  | English, French, or Bilingual                                                                                                                                              | English                                                                   |
-| Copy Field                | Create generic Solr copy field. Useful for creating exportable copies of the data for searchable text fields                                                               | vendor_en_str                                                             |
-| Contains Code Values      | Indicate if the field has associated Code values                                                                                                                           | No                                                                        |
-| Extra Solr Copy Fields    | Additional copy fields for purposes other then export                                                                                                                      |                                                                           |
+| *Field*  | *Description*  | *Example Value*  |
+|----------|----------------|------------------|
+| *Unique Field Identifier*   | A code sytle identifier that is unique to this search and the database. Spaces and special characters should be avoided.    | vendor_en   |
+| *Search ID*                 | Select the associated Search   |  hospitalityq  |
+| *English Label*             | Desciptive fault English label  | Name of commercial establishment or vendor involved  |
+| *French Label*              | Descriptive default French label  | Nom des établissements commerciaux ou des fournisseurs concernés   |
+| *Format Name*               | The format is used to indicate of the field belongs to the primary Search type or another format like Nothing-to-report. Normally this is the same string as the Search ID | contracts or contracts-nil (matches search ID ot alternate search format) |
+| *Solr Field Type*           | Select the solr schema type from the predefinted list    | Search Text English  |
+| *Language*                  | English, French, or Bilingual | English  |
+| *Copy Field*                | Create generic Solr copy field. Useful for creating exportable copies of the data for searchable text fields  | vendor_en_str  |
+| *Contains Code Values*      | Indicate if the field has associated Code values | No |
+| *Extra Solr Copy Fields*    | Additional copy fields for purposes other then export  |  |
+
 
 #### 3.2.2 Solr Attributes ####
 
@@ -240,101 +244,108 @@ These choices can be used to directly set Solr field attributes in the Solr sche
 *Note* this is where multi-value fields are set. Search will automatically handle multi-value fields. The Multi-valued attribute __cannot__ be applied to an
 exiting Solr schema. If the Solr schema has already been created, it may be necessary to drop and recreate the Solr core.
 
-| *Field*               | *Description*                                                                                                    | *Example Value* |
-|-----------------------|------------------------------------------------------------------------------------------------------------------|-----------------|
-| Stored in Solr        | Save value to Solr                                                                                               | Yes             |
-| Indexed in Solr       | Field is searchable                                                                                              | Yes             |
-| Multiple Values       | Field has multiple values                                                                                        | No              |
-| Multi-value Delimiter | Character used to delimit values in the CSV source file. Typically this is a comma, semi-colon, or vertical bar. | ,               |
-| Monetary Field        | Is a monetary field, useful for identifying if this value needs special formatting in the template.              | No              |
+| *Field*                 | *Description*                                                                                                    | *Example Value* |
+|-------------------------|------------------------------------------------------------------------------------------------------------------|-----------------|
+| *Stored in Solr*        | The value is saved to Solr                                                                                       | Yes             |
+| *Indexed in Solr*       | The field is searchable                                                                                          | Yes             |
+| *Multiple Values*       | The field has multiple values                                                                                    | No              |
+| *Multi-value Delimiter* | Character used to delimit values in the CSV source file. Typically this is a comma, semi-colon, or vertical bar. | ,               |
+| *Monetary Field*        | This is a monetary field, useful for identifying if this value needs special formatting in the template.         | No              |
+
 
 #### 3.2.3 Facets ####
 
 These choices apply only if the field is also a filter or facet value.
 
-| *Field*                   | *Description*                                                                                               | *Example Value* |
-|---------------------------|-------------------------------------------------------------------------------------------------------------|-----------------|
-| Facet field               | Flag to indicate that the Field is facet. Search will automatically generate the facet query for this field | Yes             |
-| Sort order                | Select a sort order for the facet items. Select from one of the 3 choices                                   | By Value A-Z    |
-| Custom facet snippet      | Rarely used, but it is possible to provide a custom snippet for a specific facet.                           |                 |
-| Display in reversed order | Display facets items in reversed order. Useful for date-based facets                                        | No              |
-| Facet order on page       | An integer that is used to order facets when there is more than one facet on a page.                        | 2               |
+| *Field*                     | *Description*                                                                                               | *Example Value* |
+|-----------------------------|-------------------------------------------------------------------------------------------------------------|-----------------|
+| *Facet field*               | Flag to indicate that the Field is facet. Search will automatically generate the facet query for this field | Yes             |
+| *Sort order*                | Select a sort order for the facet items. Select from one of the 3 choices                                   | By Value A-Z    |
+| *Custom facet snippet*      | Rarely used, but it is possible to provide a custom snippet for a specific facet.                           |                 |
+| *Display in reversed order* | Display facets items in reversed order. Useful for date-based facets                                        | No              |
+| *Facet order on page*       | An integer that is used to order facets when there is more than one facet on a page.                        | 2               |
+
 
 #### 3.2.4 Advanced ####
 
 Advanced properties, including the default value for the field.
 
-| *Field*                  | *Description*                                                                                                               | *Example Value* |
-|--------------------------|-----------------------------------------------------------------------------------------------------------------------------|-----------------|
-| Alternate record type    | Mostly used for Nothing to Report records                                                                                   | NTR             |
-| Default search item      | Flag to indicate if the field is included on the search item page by default. Has no effect when custom templates are used. |                 |
-| Default value when empty | Default value to use if the CSV field is empty. Format for this string is <python field type>\|<value>                      | str\|-          |
+| *Field*                    | *Description*  | *Example Value* |
+|----------------------------|----------------|-----------------|
+| *Alternate record type*    | Some proactive disclosure records contain two types of records, the regular data records and alternative form like the "Nothing to Report"  records used in [Government Travel Expenses](https://search.open.canada.ca/travel/). The alternate format can be used in a template to determine how to display the contents of the alternate record format. |  NTR  |
+| *Default search item*      | This flag to indicate if the field is included on the search item page by default. Has no effect when custom templates are used. |    |
+| *Default value when empty* | Default value to use if the CSV field is empty. Format for this string is <python field type>\|<value>   | str\|-          |
+ 
 
 #### 3.2.5 Search Default ####
 
 Rarely used legacy properties, mostly used with Proactive Disclosures that include Nothing To Report records.
 
-| *Field*                | *Description*                                                                                                                                                                            | *Example Value* |
-|------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------|
-| Is default year field  | Used with date fields, indicates that the year from this date can be assumed to be the year associated with the record. Useful for creating year facets for Nothing-To-Report records    | False           |
-| Is default month field | Used with date fields, indicates that the month from this date can be assumed to be the month associated with the record. Useful for creating month facets for Nothing-To-Report records | False           |
+| *Field*                  | *Description*    | *Example Value* |
+|--------------------------|------------------|-----------------|
+| *Is default year field*  | Used with date fields, indicates that the year from this date can be assumed to be the year associated with the record. Useful for creating year facets for Nothing-To-Report records  | False  |
+| *Is default month field* | Used with date fields, indicates that the month from this date can be assumed to be the month associated with the record. Useful for creating month facets for Nothing-To-Report records | False  |
 
 
 ### 3.3. Add New Code or Choice values to Fields ###
 
-Not every field uses codes - most do not. But many structured datasets constrain certain fields to a list of pre-determined values. For
+Not every field uses codes - most do not. But many structured datasets constrain specifi fields to a list of pre-determined values. For
 example, a day field may be constrained to values from a list of the days of the week. 
 
 Codes are associated with specific individual Fields, and are used to represent choice lists. Each Code represents a single 
 value from the list. In most cases, only the first 4 attributes of the Code need to be specified.
 
-| *Field*                  | *Description*                                                                                              | *Example Value*                             |
-|--------------------------|------------------------------------------------------------------------------------------------------------|---------------------------------------------|
-| Unique Code ID           | Unique code value as it appears in the raw data. This is the raw choice value that appears in the CSV file | tbs-sct                                     |
-| Field ID                 | Select the specific field that this code value is associated with                                          | owner_org                                   |
-| English Code Value/Label | Default readable English label or text for this choice value                                               | Treasury Board Secretariat                  |
-| French Code Value/Label  | Default readable French label or text for this choice value                                                | Secrétariat du Conseil du Trésor du Canada  |
+| *Field*                    | *Description*  | *Example Value*   |
+|----------------------------|----------------|-------------------|
+| *Unique Code ID*           | Unique code value as it appears in the raw data. This is the raw choice value that appears in the CSV file  |  tbs-sct |
+| *Field ID*                 | Select the specific field that this code value is associated with  |  owner_org |
+| *English Code Value/Label* | Default readable English label or text for this choice value  |  Treasury Board Secretariat |
+| *French Code Value/Label*  | Default readable French label or text for this choice value  |  Secrétariat du Conseil du Trésor du Canada  |
+
 
 #### 3.3.1 Advanced Code settings ####
 
 Rarely used Code attributes, mostly used special fields when loading data in the Contracts search.
 
-| *Field*                        | *Description*                                                                    |
-|--------------------------------|----------------------------------------------------------------------------------|
-| Default Lookup Codes           | This code expands to other values                                                |
-| Conditional Lookup Codes       | The code expands to different values depending on certain conditions like a date |
-| Date field to evaluate         | Used with conditional lookup codes                                               |
-| Lookup Date                    | Date to evaluate                                                                 |
-| Lookup Test                    | Choice of logical tests, like less than                                          |
-| Choice lookup code flag        | Flag to indicate if lookup logic should be applied to this field                 |
-| Optional Code value 01 - 05    | Extra values available for programming.                                          |
-| Optional English Label 01 - 05 | Extra values available for programming.                                          |
-| Optional French Label 01 - 05  | Extra values available for programming.                                          |
+| *Field*                          | *Description*                                                                    |
+|----------------------------------|----------------------------------------------------------------------------------|
+| *Default Lookup Codes*           | This code expands to other values                                                |
+| *Conditional Lookup Codes*       | The code expands to different values depending on certain conditions like a date |
+| *Date field to evaluate*         | Used with conditional lookup codes                                               |
+| *Lookup Date*                    | Date to evaluate                                                                 |
+| *Lookup Test*                    | Choice of logical tests, like less than                                          |
+| *Choice lookup code flag*        | Flag to indicate if lookup logic should be applied to this field                 |
+| *Optional Code value 01 - 05*    | Extra values available for programming.                                          |
+| *Optional English Label 01 - 05* | Extra values available for programming.                                          |
+| *Optional French Label 01 - 05*  | Extra values available for programming.                                          |
 
 
 ## 4. Set up Solr Core schema using the model
 
-To take advantage of the language features of Solr, the Open Canada Search (OCS) application requires
-the search core to have a defined schema. OCS uses Solr's dynamic schema functionality to create a custom schema based on the
+To take advantage of the language specific features of Solr, the OCS application requires
+the search core to have a pre-defined schema. OCS uses Solr's dynamic schema functionality to create a custom schema based on the
 search definition created in Step 3. 
 
 Once you have finalized the search definition, and created the associated blank Solr core as described in Step 2,
 use the provided Django custom management command
-<a href="https://github.com/open-data/oc_search/blob/master/search/management/commands/create_solr_core.py">`create_solr_core`</a> to dynamically apply the schema.
+[`create_solr_core`](../README.md#create_solr_core) to dynamically apply the schema.
 
 Example:
 ```Shell
 python .\manage.py create_solr_core --search hospitalityq
 ```
 
+This will use the Solr dynamic schema API to create fields in the Solr core specified in the Search record. After running this command
+the fields can be verified using teh Solr web admininstration UI.
+
 
 ## 5. Create a code plug-in
 
 The code plug-in allows you to write custom code to inject additional functionality into certain steps of the search. The plug-in
 is a Python code file where developers can write specific functions to override default behaviour. To do this,
-in the <a href="https://github.com/open-data/oc_search/tree/master/search/plugins">plugins directory</a> copy the `default.py` file
-and rename it to `<search ID>.py`. Note that the file name must exactly match the Search ID. In the plugin file there are a number of
-functions that can extended.
+in the [plugins directory](../search/plugins/) copy the `default.py` file
+and rename it to `<search ID>.py`. Note that the file name must __exactly match__ the Search ID. In the plugin file there are a number of
+functions that can be extended.
 
 | *Function*             | *Description*                                                                                                                                                                              |
 |------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -367,7 +378,7 @@ The input for this command is the JSON object returned by the [CKAN API](https:/
 
 ## 7. Load Search Data ##
 
-Load CSV data into the search core using the <a href="#import_data_csv">import_data_csv</a> command. For example:
+Load CSV data into the search core using the [`import_data_csv`](../README.md#import_data_csv) command. For example:
 
 ```Shell
 python .\manage.py import_data_csv --search travela --csv .\travela.csv
@@ -376,18 +387,22 @@ python .\manage.py import_data_csv --search travela --csv .\travela.csv
 Custom data transformation logic for the specific CSV file can implemented in the code plugin from Step 5 by extending the
 `filter_csv_record` and `load_csv_record` functions.
 
+
 ## 8. Create custom templates ##
 
-In the `oc_search/search/templates/snippets/custom` folder, create a new folder the exact same name as your new Search ID.
-For example. 'contracts', or 'travelq'. In this folder you will create custom snippets using the Django template language.
+In the [`oc_search/search/templates/snippets/custom`](../search/templates/snippets/custom/) folder, create a new folder 
+with the exact same name as your new Search ID. For example. 'contracts', or 'travelq'. 
+
+In this folder you will create custom snippets using the Django template language.
 Use an existing search for examples of custom snippets for search items, or detailed records.
+
 
 ## 9. Create any extra commands ##
 
 If you require additional logic, for example for data transformation of the CSV files, sometime it will make sense to
 implement this in [custom Django management commands](https://docs.djangoproject.com/en/5.2/howto/custom-management-commands/) 
 that can be run from the command line. These Django commands go into
-the folder `oc_search/search/management/commands/` and the files must be names `<search ID>_<command name>.py`
+the folder [`oc_search/search/management/commands/`](../search/management/commands/) and the files must be names `<search ID>_<command name>.py`
 
 
 ## 10. Create a custom .po file for gettext ##
@@ -395,11 +410,11 @@ the folder `oc_search/search/management/commands/` and the files must be names `
 Django uses the Linux Gettext library to provide multi-lingual translations.
 Translations are [saved in .po files](https://www.gnu.org/software/gettext/manual/html_node/PO-Files.html).
 
-To add translations for the custom search, in the project's locale folder, `oc_search/locale/fr/LC_MESSAGES` add a new
-.po file with the name `<Unique Search ID>.pl`.
-For example: `contracts/po`, `hospitalityq`, or `travelq`.
+To add translations for the custom search, in the project's locale folder, [`oc_search/locale/fr/LC_MESSAGES`](../locale/fr/LC_MESSAGES/) add a new
+.po file with the name `<Unique Search ID>.po`.
+For example: `contracts.po`, `hospitalityq.po`, or `travelq.po`.
 
-The .po file must have a standard header. See [sample of a header](po_header_example.md).
+The .po file must have a standard header. See [sample of a header](./po_header_example.md).
 
 For each string to translate add two lines:
 - `msgid:` *String to translate*
@@ -411,17 +426,19 @@ msgid "Reference Number:"
 msgstr "Numéro de référence :"
 ```
 
-To include the translation in the application, run two Django commands. The first command combines all custom .po files into
-the single `django.po` file. The second one is a core Django command for compiling the .po file.
+To include the translation in the application, it is necessary to run two Django commands. The first command combines all 
+if custom .po files in the locale directory into a single file [`django.po`](../locale/fr/LC_MESSAGES/django.po). 
+The second command is a core Django command for compiling the .po file in the binary `.mo` file.
 
 ```shell
   python .\manage.py combine_messages
   python .\manage.py compilemessages -l fr
 ```
 
+
 ## 11. Deploying the New Search ##
 
 Custom searches, including all their code and database components, can be exported using a custom Django command.
 Please note that the actual __search data is not included__ in the data import and export. Data must be loaded in a separate step.
-The import and export process is described in detail in [Importing Custom Searches](https://github.com/open-data/oc_search/blob/master/docs/import_custom_search.md)
+The import and export process is described in detail in [Importing Custom Searches](import_custom_search.md)
 
