@@ -114,8 +114,8 @@
           {% if key in facet_snippets.keys %}
             {% include facet_snippets|get_dict_value:key %}
           {% else %}        
-            <details class="panel panel-default mrgn-bttm-0 provisional gc-chckbxrdio"{% if  selected_facets|get_dict_value:key|length > 0 %}open{% endif %}>
-              <summary class="panel-heading">
+            <details class="panel panel-default mrgn-bttm-0 provisional gc-chckbxrdio" style="border-style: none;"{% if  selected_facets|get_dict_value:key|length > 0 %}open{% endif %}>
+              <summary class="panel-heading" style="border-style: none;">
                   <h3 class="panel-title" style="font-size: large">{{ value|get_dict_value:'__label__' }}</h3>
               </summary>
               <ul class="list-group">
@@ -129,7 +129,7 @@
                                 <div class="checkbox">
                                   <label for="cb-{{ key }}-{{ subkey | normailize_id_value }}" style="font-size: 16px;">
                                     <input type="checkbox" id="cb-{{ key }}-{{ subkey | normailize_id_value }}" name="cb-{{ key }}-{{ subkey }}" value="{{key}}|{{subkey}}"
-                                    style="vertical-align:middle;position:relative;top:-1px;height: 16px;width: 16px; font-weight: normal;"
+                                    style="vertical-align:middle;position:relative;top:-1px;height: 16px;width: 16px; font-weight: normal;opacity: 1;"
                                     {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}>
                                       &nbsp;&nbsp;{{ codes|get_dict_value:key|get_dict_value:subkey }}
                                   </label>
@@ -139,7 +139,7 @@
                                 <div class="checkbox">
                                   <label for="cb-{{ key }}-{{ subkey | normailize_id_value }}" style="font-size: 16px;">
                                     <input type="checkbox" id="cb-{{ key }}-{{ subkey | normailize_id_value }}" name="cb-{{ key }}-{{ subkey }}" value="{{key}}|{{subkey}}"
-                                    style="vertical-align:middle;position:relative;top:-1px;height: 16px;width: 16px; font-weight: normal;" 
+                                    style="vertical-align:middle;position:relative;top:-1px;height: 16px;width: 16px; font-weight: normal;opacity: 1;" 
                                     {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}>
                                       &nbsp;&nbsp;{{ subkey }} 
                                   </label>
@@ -164,7 +164,7 @@
                                   <label for="cb-{{ key }}-{{ subkey | normailize_id_value }}" style="font-size: 16px; font-weight: normal;">
                                     
                                     <input type="checkbox" id="cb-{{ key }}-{{ subkey | normailize_id_value }}" name="cb-{{ key }}-{{ subkey }}" value="{{key}}|{{subkey}}"
-                                    style="vertical-align:middle;position:relative;top:-1px;height: 16px;width: 16px; font-weight: normal;"
+                                    style="vertical-align:middle;position:relative;top:-1px;height: 16px;width: 16px; font-weight: normal;opacity: 1;"
 ;                                   aria-label="facet-{{ key }}-{{ subkey }}"
                                     {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}>
                                     &nbsp;&nbsp;
@@ -175,7 +175,7 @@
 
                                   <label for="cb-{{ key }}-{{ subkey | normailize_id_value }}" style="font-size: 16px; font-weight: normal;">
                                     <input type="checkbox" id="cb-{{ key }}-{{ subkey | normailize_id_value }}" name="cb-{{ key }}-{{ subkey }}" value="{{key}}|{{subkey}}"
-                                    style="vertical-align:middle;position:relative;top:-1px;height: 16px;width: 16px; font-weight: normal;"
+                                    style="vertical-align:middle;position:relative;top:-1px;height: 16px;width: 16px; font-weight: normal;opacity: 1;"
 ;                                   aria-label="facet-{{ key }}-{{ subkey }}"
                                     {% if subkey in selected_facets|get_dict_value:key %}checked="checked"{% endif %}>
                                       &nbsp;&nbsp;{{ subkey }}

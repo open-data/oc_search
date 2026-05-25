@@ -249,7 +249,7 @@ DEFAULT_SEARCH_TYPE = 'data'
 
 # Active CDTS Version
 
-CDTS_VERSION = 'v4_1_0'
+CDTS_VERSION = 'v5_1_0'
 
 # Limit what can be included in Markdown formatted fields
 
