@@ -45,11 +45,16 @@ class Command(BaseCommand):
                                 else:
                                     cprint (colored(f"    Create a new code {code_cid}"), "yellow")
                             else:
-                                cprint(colored(f"  Code: {code} EN: {textwrap.shorten(field['choices'][code]['en'], 24, placeholder='...')} FR: {textwrap.shorten(field['choices'][code]['fr'], 24, placeholder='...')}", "light_cyan"))
+                                if isinstance(field['choices'][code], dict):
+                                    en = field['choices'][code]['en']
+                                    fr = field['choices'][code]['fr']
+                                else:
+                                    en = fr = code
+                                cprint(colored(f"  Code: {code} EN: {textwrap.shorten(en, 24, placeholder='...')} FR: {textwrap.shorten(fr, 24, placeholder='...')}", "light_cyan"))
                                 new_code, created = Code.objects.get_or_create(cid=code_cid, field_fid=field_obj)
                                 new_code.code_id = code
-                                new_code.label_en = field['choices'][code]['en']
-                                new_code.label_fr = field['choices'][code]['fr']
+                                new_code.label_en = en
+                                new_code.label_fr = fr
                                 new_code.save()
                                 if created:
                                     cprint(colored(f"    Imported new Code {new_code.code_id} for Field {field_obj.fid}", "yellow"))
