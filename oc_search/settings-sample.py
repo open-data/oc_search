@@ -42,8 +42,9 @@ INSTALLED_APPS = [
     'search',
 ]
 
-## Optional applications
+## Optional applications - this will be removed from search soon
 # 'ramp',
+
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
@@ -59,6 +60,8 @@ MIDDLEWARE = [
     'oc_search.middleware.CanadaBilingualMiddleware'
 ]
 
+# General web app settings
+
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_REPLACE_HTTPS_REFERER = True
 SECURE_REFERRER_POLICY = 'unsafe-url'
@@ -66,6 +69,10 @@ SECURE_REFERRER_POLICY = 'unsafe-url'
 ROOT_URLCONF = 'oc_search.urls'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+WSGI_APPLICATION = 'oc_search.wsgi.application'
+
+JSON_DOWNLOADS_ALLOWED = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
@@ -76,7 +83,6 @@ STATICFILES_DIRS = [
     ('search_snippets', os.path.join(BASE_DIR, 'search', 'templates', 'snippets')),
     ('cache', os.path.join(BASE_DIR, 'cache')),
 ]
-# ('ramp', os.path.join(BASE_DIR, 'ramp', 'viewer')),
 
 TEMPLATES = [
     {
@@ -95,8 +101,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'oc_search.wsgi.application'
-
+# Optional templates for Geoviewer - should be deprecated soon
+# ('ramp', os.path.join(BASE_DIR, 'ramp', 'viewer')),
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
@@ -124,8 +130,6 @@ DATABASES = {
 #         'USER': 'search'
 #     }
 # }
-
-JSON_DOWNLOADS_ALLOWED = False
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -188,6 +192,7 @@ LOGGING = {
         'level': 'INFO',
     },
 }
+
 # Django Cache settings
 
 CACHES = {
@@ -270,17 +275,20 @@ MARKDOWN_FILTER_WHITELIST_TAGS = [
     'table', 'thead', 'th', 'tr', 'tbody', 'td'
 ]
 MARKDOWN_FILTER_EXTRAS = ["tables", "break-on-newline"]
+
 # These are IN ADDITION to the attributes defined in leach.sanitizer.ALLOWED_ATTRIBUTES
+
 MARKDOWN_FILTER_ALLOWED_ATTRIBUTES = {'span': ['title', 'class'], "a": ["href", "title", "rel"]}
+
+# Analytics options used by the open canada site
 
 ADOBE_ANALYTICS_URL = ''
 GOOGLE_ANALYTICS_GTM_ID = ''
 GOOGLE_ANALYTICS_PROPERTY_ID = ''
 GOOGLE_ANALYTICS_GA4_ID = ''
 
-IMPORT_EXPORT_USE_TRANSACTIONS = False
+# Geoviewer Settings specifically for the Open Data Custom search - still required after RAMP app is removed
 
-# Geoviewer Settings specifically for the Open Data Custom search
 OPEN_DATA_SOLR_SERVER_URL = "http://localhost:8983/solr"
 OPEN_DATA_CORE = "search_opendata"
 OPEN_DATA_BASE_URL_EN = "https://open.canada.ca/data/en/dataset/"
@@ -289,7 +297,6 @@ OPEN_DATA_EN_FGP_BASE = "https://search.open.canada.ca/openmap/"
 OPEN_DATA_FR_FGP_BASE = "https://rechercher.ouvert.canada.ca/carteouverte/"
 OPEN_DATA_HOST_EN = "https://open.canada.ca"
 OPEN_DATA_HOST_FR = "https://ouvert.canada.ca"
-
 
 # Celery Congifuration
 

@@ -5,7 +5,6 @@ from .models import Search, Field, Code, ChronologicCode, Setting, Event
 
 # -- Searches ---
 
-
 class SearchAdmin(admin.ModelAdmin):
 
     list_display = ['search_id', 'label_en', 'solr_core_name']
@@ -28,8 +27,7 @@ class SearchAdmin(admin.ModelAdmin):
         ('More-like-this', {'fields': ('mlt_enabled', 'mlt_items')})
     )
 
-    # -- Fields ---
-
+# -- Fields ---
 
 def make_facet_field(modeladmn, request, queryset):
     queryset.update(is_search_facet=True)
