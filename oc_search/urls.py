@@ -27,11 +27,7 @@ urlpatterns = [
     path('search/admin/', admin.site.urls),
 ]
 
-# urlpatterns += [
-#     path('searchform/<str:lang>/', include('search.urls')),
-#     path('rechercherformulaire/<str:lang>/', include('search.urls')),
-# ]
-
+# URLs for when Search is configured to use the URL path to determine language of web page 
 if settings.SEARCH_LANG_USE_PATH:
     urlpatterns += [
         path('', DefaultView.as_view(), name="HomePage"),
@@ -68,6 +64,8 @@ if settings.SEARCH_LANG_USE_PATH:
             path('search/<str:lang>/<str:search_type>', SearchFormView.as_view(), name="search_form"),
             path('rechercher/<str:lang>/<str:search_type>', SearchFormView.as_view(), name="search_form"),
         ]
+
+# URLs to use when Search is configured to use the hostname to determine the language of the webpage IE open.canada.ca vs ouvert.canada.ca
 else:
     urlpatterns += [
         path('', DefaultView.as_view(), name="HomePage"),

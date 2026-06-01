@@ -252,7 +252,6 @@ def add_str(value: str, arg1: str):
     return value + arg1
 
 
-
 @register.filter('replace_pageno')
 def trim_left(value: str, arg: int):
     return value.replace("__page__", str(arg))
@@ -275,6 +274,7 @@ def ds_status_label(value: str):
 @register.filter('intformat')
 def int_format(value: int, formatstr: str):
     return formatstr.format(value)
+
 
 @register.filter('normailize_id_value')
 def normailize_id_value(value: str):

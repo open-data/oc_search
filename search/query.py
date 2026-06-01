@@ -48,7 +48,8 @@ def uuid_pattern(version):
 
 
 def calc_pagination_range(num_found: int, pagesize, current_page, delta=2):
-    # @TODO This is not very efficient - could be refactored
+    """ Calculate pagination values based on provided values """
+
     pages = int(ceil(num_found / pagesize))
     if current_page > pages:
         current_page = pages
@@ -96,7 +97,7 @@ def calc_starting_row(page_num: str, rows_per_page=10):
 
 
 def get_search_terms(search_text: str):
-    # Get any search terms
+    """ Tokenize search terms"""
 
     tr = RegexpTokenizer(r'[^"\s]\S*|".+?"', gaps=False)
 
@@ -110,6 +111,8 @@ def get_search_terms(search_text: str):
 
 
 def get_query_fields(query_lang: str, fields: dict):
+    """ Return a language specific list of query fields for a search """
+
     qf = ['id']
     for f in fields:
         if fields[f].solr_field_lang in [query_lang, 'bi']:
@@ -130,6 +133,7 @@ def get_query_fields(query_lang: str, fields: dict):
 
 
 def get_mlt_fields(request: HttpRequest, fields: dict):
+    """ Return a language specific list of query fields for a more-like-this search """
     qf = ['id']
     for f in fields:
         if fields[f].solr_field_lang in [request.LANGUAGE_CODE, 'bi']:
@@ -210,16 +214,19 @@ def create_solr_query(request: HttpRequest, search: Search, fields: dict, Codes:
                     known_fields[request_field] = keys[request_field][0].split('|')
 
         # If sort not specified in the request, then use the default
+
         if 'sort' not in solr_query:
             solr_query['sort'] = default_sort
 
         # Sometimes, the sort order will be forced to the default value
+
         if override_sort:
             solr_query['sort'] = default_sort
 
         solr_query['q.op'] = search.solr_default_op
 
     # Create a Solr query field list based on the Fields Model. Expand the field list where needed
+
     solr_query['qf'] = get_query_fields(request.LANGUAGE_CODE, fields)
 
     if export:
@@ -238,6 +245,7 @@ def create_solr_query(request: HttpRequest, search: Search, fields: dict, Codes:
         solr_query['fl'] = ",".join(ef)
     else:
         solr_query['fl'] = ",".join(solr_query['qf'])
+
     if not export:
         solr_query['start'] = start_row
         solr_query['rows'] = rows
@@ -263,7 +271,8 @@ def create_solr_query(request: HttpRequest, search: Search, fields: dict, Codes:
             'hl.highlightMultiTerm': True,
         })
 
-    # Set a default sort order
+    # Set a default sort order if one not included in the query
+
     if 'sort' not in solr_query:
         solr_query['sort'] = 'score desc'
 
@@ -288,14 +297,19 @@ def create_solr_query(request: HttpRequest, search: Search, fields: dict, Codes:
                 ff.append(facet)
         solr_query['fq'] = fq
         solr_query['facet.field'] = ff
+
     if export and solr_query['sort'] == "score desc":
         solr_query['sort'] = "id asc"
+    
     if search.solr_debugging:
         solr_query['debugQuery'] = True
+    
     return solr_query
 
 
 def create_solr_mlt_query(request: HttpRequest, search: Search, fields: dict, start_row: int, record_id: str):
+    """ Create a Solr More-like-this query """
+
     solr_query = {
         'q': 'id:"{0}"'.format(record_id),
         'mlt': True,
@@ -312,10 +326,12 @@ def create_solr_mlt_query(request: HttpRequest, search: Search, fields: dict, st
     }
     return solr_query
 
+
 def create_post_solr_query(request: HttpRequest, search: Search, fields: dict, Codes: dict, facets: list,
                            start_row: int = 0, rows: int = 10, default_sort='score desc',  override_sort=False, 
                            is_export: bool = False, reset_filters: bool = False):
-    
+    """ Create a Solr query based an an HTTP POST form request """
+
     # Look for known fields in the POST request
     known_fields = {}
 
@@ -390,6 +406,7 @@ def create_post_solr_query(request: HttpRequest, search: Search, fields: dict, C
         solr_query['q.op'] = search.solr_default_op
 
         # Create a Solr query field list based on the Fields Model. Expand the field list where needed
+        
         solr_query['qf'] = get_query_fields(request.LANGUAGE_CODE, fields)
 
         if not is_export:
