@@ -90,10 +90,10 @@ else:
     ]
     if 'ramp' in settings.INSTALLED_APPS:
         urlpatterns += [
-            path(settings.SEARCH_HOST_PATH + 'openmap/', RampView.as_view(), name='RampForm'),
-            path(settings.SEARCH_HOST_PATH + 'openmap/<str:keys>', RampView.as_view(), name='RampForm'),
-            path(settings.SEARCH_HOST_PATH + 'carteouverte/', RampView.as_view(), name='RampForm'),
-            path(settings.SEARCH_HOST_PATH + 'carteouverte/<str:keys>', RampView.as_view(), name='RampForm'),
+            path(settings.OPEN_DATA_HOST_EN + 'openmap/en.html#', RampView.as_view(), name='RampForm'),
+            path(settings.OPEN_DATA_HOST_EN + 'openmap/en.html#<str:keys>', RampView.as_view(), name='RampForm'),
+            path(settings.OPEN_DATA_HOST_FR + 'carteouverte/fr.html#', RampView.as_view(), name='RampForm'),
+            path(settings.OPEN_DATA_HOST_FR + 'carteouverte/fr.html#<str:keys>', RampView.as_view(), name='RampForm'),
         ]
 
     if settings.HTTP_FORM_PROTOCOL == "Get": 
