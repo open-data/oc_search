@@ -1,5 +1,5 @@
 babel==2.18.0
-bleach==6.3.0
+bleach==6.4.0
 ckanapi==4.11
 django==5.2.14
 django-celery-beat==2.9.0
