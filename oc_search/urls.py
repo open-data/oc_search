@@ -19,7 +19,6 @@ from django.urls import path
 from django.conf.urls import include
 from django.views.decorators.cache import never_cache
 from search.views import SearchView, SearchFormView, RecordView, ExportView, MoreLikeThisView, HomeView, DefaultView, ExportStatusView, DownloadSearchResultsView, PageView
-from ramp.views import RampView
 
 
 urlpatterns = [
@@ -47,13 +46,6 @@ if settings.SEARCH_LANG_USE_PATH:
         path('search/search-results/<str:lang>/<str:search_type>/<str:task_id>', never_cache(ExportStatusView.as_view()), name='SearchResultsForm'),
         path('rechercher/rapport-de-recherche/<str:lang>/<str:search_type>/<str:task_id>', never_cache(ExportStatusView.as_view()), name='SearchResultsForm'),
     ]
-    if 'ramp' in settings.INSTALLED_APPS:
-        urlpatterns += [
-            path('openmap/<str:lang>/', RampView.as_view(), name='RampForm'),
-            path('openmap/<str:lang>/<str:keys>', RampView.as_view(), name='RampForm'),
-            path('carteouverte/<str:lang>/', RampView.as_view(), name='RampForm'),
-            path('carteouverte/<str:lang>/<str:keys>', RampView.as_view(), name='RampForm'),
-        ]
     if settings.HTTP_FORM_PROTOCOL == "Get":
         urlpatterns += [
             path('search/<str:lang>/<str:search_type>/', SearchView.as_view(), name="SearchForm"),
@@ -88,13 +80,6 @@ else:
         path(settings.SEARCH_HOST_PATH + 'rapport-de-recherche/<str:lang>/<str:search_type>/<str:task_id>', never_cache(ExportStatusView.as_view()),
              name='SearchResultsForm'),
     ]
-    if 'ramp' in settings.INSTALLED_APPS:
-        urlpatterns += [
-            path(settings.SEARCH_HOST_PATH + 'openmap/', RampView.as_view(), name='RampForm'),
-            path(settings.SEARCH_HOST_PATH + 'openmap/<str:keys>', RampView.as_view(), name='RampForm'),
-            path(settings.SEARCH_HOST_PATH + 'carteouverte/', RampView.as_view(), name='RampForm'),
-            path(settings.SEARCH_HOST_PATH + 'carteouverte/<str:keys>', RampView.as_view(), name='RampForm'),
-        ]
 
     if settings.HTTP_FORM_PROTOCOL == "Get": 
         urlpatterns += [        
@@ -104,4 +89,3 @@ else:
         urlpatterns += [
             path(settings.SEARCH_HOST_PATH + '<str:search_type>', SearchFormView.as_view(), name="search_form"),
         ]
-
