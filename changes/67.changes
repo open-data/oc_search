@@ -1,0 +1,11 @@
+Replace the following server-side session storage for navigation state with client-side cookies:
+
+- `request.session["prev_search"]`  →  prev_search cookie
+- `request.session["prev_record"]`  →  prev_record cookie
+
+As identified during the investigation in OPEN-4585, writing these navigation values to `request.session` caused Django to create and persist sessions for anonymous users. Since crawlers and bots typically do not reuse session cookies, this resulted in unnecessary Redis session creation and write activity.
+
+Moving to client-side cookies eliminates unnecessary Redis session creation for navigation state. 
+Expected outcome is reduced Redis write activity and CPU utilization.
+
+Jira ticket: OPEN-4633
