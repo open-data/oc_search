@@ -112,6 +112,18 @@ def get_search_path(search_defn: Search, lang):
             return_url = parse.urljoin(settings.SEARCH_HOST_PATH, f'/{search_defn.search_alias_en}')
     return return_url
 
+
+def set_navigation_cookie(response, key, value):
+    response.set_cookie(
+        key,
+        value,
+        max_age=3600,
+        samesite="Lax",
+        secure=settings.SESSION_COOKIE_SECURE,
+        httponly=False,
+    )
+
+
 class SearchView(View):
     """ Default Django View controller object for HTTP GET based searches. Also parent object for most other search views. """
 
@@ -344,14 +356,19 @@ class SearchView(View):
 
         lang = request.LANGUAGE_CODE
 
-        # Track if this is a new text search
+        # Track if this is a new text search using client side cookie instead of Redis session
 
         new_text_search = False
-        if 'prev_search' in request.session:
-            if not re.search(r'search_text=\S+', request.session['prev_search']) and \
-            str(request.GET.get('search_text', '')).strip() != '':
-                new_text_search = True
-        request.session['prev_search'] = request.build_absolute_uri()
+        prev_search = request.COOKIES.get("prev_search", "")
+
+        if (
+            prev_search
+            and not re.search(r"search_text=\S+", prev_search)
+            and request.GET.get("search_text", "").strip()
+        ):
+            new_text_search = True
+
+        current_search = request.build_absolute_uri()
 
         # Replace search_type alias with actual search type
 
@@ -660,7 +677,9 @@ class SearchView(View):
                     context["json_format_url"] = json_link
                     if settings.SEARCH_LOGGING_ON:
                         log_search_results(request, self.search_logger, search_type=search_type, format=search_format, page_type='search', doc_count=solr_response.num_found, hostname=self.hostname)
-                    return render(request, self.searches[search_type].page_template, context)
+                    response = render(request, self.searches[search_type].page_template, context)
+                    set_navigation_cookie(response, "prev_search", current_search)
+                    return response
             except (ConnectionError, SolrError) as ce:
                 return render(request, 'error.html', get_error_context(search_type, lang, ce.args[0]))
     
@@ -699,8 +718,8 @@ class RecordView(SearchView):
             context["search_text"] = request.GET.get("search_text", "")
             context['back_to_url'] = get_search_path(self.searches[search_type], lang)
             context['main_content_body_top_snippet'] = "search_snippets/default_main_content_body_top.html"
-            context["im_enabled"] = settings.IM_ENABLED if hasattr(settings, 'IM_ENABLED') else False,
-            request.session['prev_record'] = request.build_absolute_uri()
+            context["im_enabled"] = settings.IM_ENABLED if hasattr(settings, 'IM_ENABLED') else False
+            current_record = request.build_absolute_uri()
             solr = SolrClient(settings.SOLR_SERVER_URL)
 
             core_name = self.searches[search_type].solr_core_name
@@ -796,8 +815,9 @@ class RecordView(SearchView):
                     self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type])
             if settings.SEARCH_LOGGING_ON:
                 log_search_results(request, self.search_logger, search_type=search_type, format='html', page_type='record', search_text=record_id, doc_count=solr_response.num_found, hostname=self.hostname)
-            
-            return render(request, self.searches[search_type].record_template, context)
+            response = render(request, self.searches[search_type].record_template, context)
+            set_navigation_cookie(response, "prev_record", current_record)
+            return response
 
         else:
             return render(request, '404.html', get_error_context(search_type, lang))
