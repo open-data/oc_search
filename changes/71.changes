@@ -1,0 +1,1 @@
+Reverted [09f33bf8](https://github.com/open-data/oc_search/commit/09f33bf84baf2483463de091bbc2a8bef7d386e1), favouring signed cookies for the Django session engine.

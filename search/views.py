@@ -17,7 +17,7 @@ import pkgutil
 import platform
 import re
 from .query import calc_pagination_range, calc_starting_row, create_solr_query, create_solr_mlt_query, create_post_solr_query
-from search.models import Search, Field, Code, Setting  
+from search.models import Search, Field, Code, Setting
 from django_celery_results.models import TaskResult
 import search.plugins
 from SolrClient2 import SolrClient, SolrResponse
@@ -38,7 +38,7 @@ def iter_namespace(ns_pkg):
 
 def log_search_results(request: HttpRequest, search_logger: logging.Logger, search_type: str = "", format: str = "html", page_type: str = "search", search_text: str = '', doc_count: int = 0, hostname = "None"):
     """ When enabled, Search can write a log entry for every query. Should only be for SHORT-TERM use due to high volume. """
-    
+
     qurl = parse.urlparse(request.get_full_path())
 
     query_values = parse.parse_qs(request.META["QUERY_STRING"])
@@ -111,17 +111,6 @@ def get_search_path(search_defn: Search, lang):
         else:
             return_url = parse.urljoin(settings.SEARCH_HOST_PATH, f'/{search_defn.search_alias_en}')
     return return_url
-
-
-def set_navigation_cookie(response, key, value):
-    response.set_cookie(
-        key,
-        value,
-        max_age=3600,
-        samesite="Lax",
-        secure=settings.SESSION_COOKIE_SECURE,
-        httponly=False,
-    )
 
 
 class SearchView(View):
@@ -321,7 +310,7 @@ class SearchView(View):
             "query_path": request.META["QUERY_STRING"],
             "path_info": f"{request.META["PATH_INFO"]}",
             "im_enabled": settings.IM_ENABLED if hasattr(settings, 'IM_ENABLED') else False,
-            "view_type": "SearchView" 
+            "view_type": "SearchView"
         }
 
         # these values vary depending on how I18N is done - with host names or by path
@@ -356,19 +345,14 @@ class SearchView(View):
 
         lang = request.LANGUAGE_CODE
 
-        # Track if this is a new text search using client side cookie instead of Redis session
+        # Track if this is a new text search
 
         new_text_search = False
-        prev_search = request.COOKIES.get("prev_search", "")
-
-        if (
-            prev_search
-            and not re.search(r"search_text=\S+", prev_search)
-            and request.GET.get("search_text", "").strip()
-        ):
-            new_text_search = True
-
-        current_search = request.build_absolute_uri()
+        if 'prev_search' in request.session:
+            if not re.search(r'search_text=\S+', request.session['prev_search']) and \
+            str(request.GET.get('search_text', '')).strip() != '':
+                new_text_search = True
+        request.session['prev_search'] = request.build_absolute_uri()
 
         # Replace search_type alias with actual search type
 
@@ -415,16 +399,16 @@ class SearchView(View):
             core_name = self.searches[search_type].solr_core_name
 
             # Get the search result boundaries
-            
+
             start_row, page = calc_starting_row(request.GET.get('page', 1),
                                                 rows_per_page=self.searches[search_type].results_page_size)
 
             # Link to Reset the search
-            
-            context['reset_path'] = f"{request.scheme}://{request.get_host()}{request.path}"        
+
+            context['reset_path'] = f"{request.scheme}://{request.get_host()}{request.path}"
 
             # Compose the Solr query based on the user's search request
-            
+
             facets = self.facets_fr[search_type] if lang == 'fr' else self.facets_en[search_type]
             reversed_facets = []
             for facet in facets:
@@ -449,17 +433,17 @@ class SearchView(View):
                                            facets, start_row, self.searches[search_type].results_page_size,
                                            record_id='', export=False, highlighting=True,
                                            default_sort=default_sort_order, override_sort=new_text_search)
-            
+
             # If the solr_query contains an error, then there was a problem with the request and
             # a 400 error page should be returned instead.
 
             if "error" in solr_query:
-                
+
                 error_context = get_error_context(search_type, lang)
                 error_context['bad_query_msg'] = solr_query['error']
                 error_context['alt_search_link'] = solr_query['error_search_path']
                 self.logger.info(f"Invalid search query: {solr_query['error_search_path']}")
-                return render(request, '400.html', error_context, status=400)  
+                return render(request, '400.html', error_context, status=400)
 
             # Call plugin pre-solr-query extension
 
@@ -510,16 +494,16 @@ class SearchView(View):
                         if request_field in self.fields[search_type] and request_field in context['facets']:
                             selected_facets[request_field] = request.GET.get(request_field, "").split('|')
                     context['selected_facets'] = selected_facets
-                    
+
                     # Provide human friendly facet labels to the web page and any custom snippets
                     facets_custom_snippets = {}
                     for f in context['facets']:
                         context['facets'][f]['__label__'] = self.fields[search_type][f].label_fr if lang == 'fr' else self.fields[search_type][f].label_en
                         context['facets'][f]['__sortorder__'] = self.fields[search_type][f].solr_facet_sort
-                    
+
                         # If the facet is a code and sorting by label, then the facet needs to be resorted
                         if self.fields[search_type][f].solr_facet_sort == 'label':
-                    
+
                             # Create an inverted index of the facet values
                             facet_values = {}
                             for facet_value in context['facets'][f].keys():
@@ -530,7 +514,7 @@ class SearchView(View):
                                         facet_values[self.codes_en[search_type][f][facet_value]] = facet_value
                                 elif facet_value not in context['system_facet_fields'] and facet_value != '-' and facet_value not in self.codes_en[search_type][f]:
                                     self.logger.info(f"Unknown facet_value {f}:{facet_value}")
-                    
+
                             # Sort the facet values - use French locale for sorting
                             if lang == "fr":
                                 sorted_facet_values = sorted(facet_values.keys(), key=unidecode)
@@ -557,7 +541,7 @@ class SearchView(View):
                 context['docs'] = solr_response.get_highlighting()
 
                 # Prepare a dictionary of language appropriate sort options
-                
+
                 sort_options = {}
                 sort_labels = self.searches[search_type].results_sort_order_display_fr.split(',') if lang == 'fr' else self.searches[search_type].results_sort_order_display_en.split(',')
                 if lang == 'fr':
@@ -581,9 +565,9 @@ class SearchView(View):
                 if len(context['pagination']) == 1:
                     context['show_pagination'] = False
                 else:
-                    
+
                     # Calculate the pagination values for the bottom of the search results page
-                
+
                     context['show_pagination'] = True
                     context['previous_page'] = (1 if page == 1 else page - 1)
                     last_page = (context['pagination'][len(context['pagination']) - 1] if len(context['pagination']) > 0 else 1)
@@ -593,10 +577,10 @@ class SearchView(View):
                     next_page = (last_page if next_page > last_page else next_page)
                     context['next_page'] = next_page
                     context['currentpage'] = page
-                    
+
                     # Recreate the query string portion of the paging URL with the correct page and sort params.
                     # Used by the pagintation links on the search page
-                
+
                     get_params = request.GET.dict()
                     get_params['page'] = "__page__"
                     get_params['sort'] = context['sort']
@@ -607,7 +591,7 @@ class SearchView(View):
                     context['pgntn_path'] = f"{request.scheme}://{request.get_host()}{request.path}?{pgntn_url_querystr}"
 
                 # Call  plugin pre_render_search() function (Note API version differenes in the function calls)
-                
+
                 if search_type_plugin in self.discovered_plugins and self.discovered_plugins[search_type_plugin].plugin_api_version() == 1.1:
                     context, template = self.discovered_plugins[search_type_plugin].pre_render_search(context,
                         self.searches[search_type].page_template,
@@ -625,9 +609,9 @@ class SearchView(View):
                         self.fields[search_type],
                         self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
                         view_type='search')
-                    
+
                 # Users can optionally get the search results as a JSON object instead of the normal HTML page
-                
+
                 search_format = request.GET.get("search_format", "html")
                 if search_format == 'json' and self.searches[search_type].json_response:
                     full_facet_dict = {}
@@ -658,14 +642,14 @@ class SearchView(View):
                                 'facets': full_facet_dict,
                                 'selected_facets': context['selected_facets'] if context['selected_facets'] else []}
                     return JsonResponse(doc_dict)
-                
+
                 # Results can be returned as raw Solr results as well
 
                 elif search_format == 'solr' and self.searches[search_type].raw_solr_response:
                     return JsonResponse(solr_response.data)
-                
+
                 # Render and return search results page
-      
+
                 else:
                     json_link = str(request.get_full_path())
                     if json_link.endswith("/"):
@@ -677,12 +661,10 @@ class SearchView(View):
                     context["json_format_url"] = json_link
                     if settings.SEARCH_LOGGING_ON:
                         log_search_results(request, self.search_logger, search_type=search_type, format=search_format, page_type='search', doc_count=solr_response.num_found, hostname=self.hostname)
-                    response = render(request, self.searches[search_type].page_template, context)
-                    set_navigation_cookie(response, "prev_search", current_search)
-                    return response
+                    return render(request, self.searches[search_type].page_template, context)
             except (ConnectionError, SolrError) as ce:
                 return render(request, 'error.html', get_error_context(search_type, lang, ce.args[0]))
-    
+
         # If the search is disabled, display a message instead
 
         elif search_type in self.searches and self.searches[search_type].is_disabled:
@@ -700,8 +682,8 @@ class RecordView(SearchView):
     """ Extend the search view to render individual records """
 
     def get(self, request: HttpRequest, lang='en', search_type='', record_id=''):
-        lang = request.LANGUAGE_CODE        
-        
+        lang = request.LANGUAGE_CODE
+
         # Replace search_type alias with actual search type. The alias allows for readable URLs
 
         if lang == 'fr':
@@ -719,7 +701,7 @@ class RecordView(SearchView):
             context['back_to_url'] = get_search_path(self.searches[search_type], lang)
             context['main_content_body_top_snippet'] = "search_snippets/default_main_content_body_top.html"
             context["im_enabled"] = settings.IM_ENABLED if hasattr(settings, 'IM_ENABLED') else False
-            current_record = request.build_absolute_uri()
+            request.session['prev_record'] = request.build_absolute_uri()
             solr = SolrClient(settings.SOLR_SERVER_URL)
 
             core_name = self.searches[search_type].solr_core_name
@@ -815,13 +797,11 @@ class RecordView(SearchView):
                     self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type])
             if settings.SEARCH_LOGGING_ON:
                 log_search_results(request, self.search_logger, search_type=search_type, format='html', page_type='record', search_text=record_id, doc_count=solr_response.num_found, hostname=self.hostname)
-            response = render(request, self.searches[search_type].record_template, context)
-            set_navigation_cookie(response, "prev_record", current_record)
-            return response
+            return render(request, self.searches[search_type].record_template, context)
 
         else:
             return render(request, '404.html', get_error_context(search_type, lang))
-    
+
 
 class ExportView(SearchView):
     """ Extend the SearchView for the Download Search Results function. This page only used for submittig the request and redirects to the results page """
@@ -889,8 +869,8 @@ class ExportView(SearchView):
 
 
     def get(self, request: HttpRequest, lang='en', search_type=''):
-        """ Not recommended for Production. Performs the same task as the post() function. 
-        Accept a form submission with the user's search query, start the Celery task, and redirect to the export status page 
+        """ Not recommended for Production. Performs the same task as the post() function.
+        Accept a form submission with the user's search query, start the Celery task, and redirect to the export status page
         """
 
         lang = request.LANGUAGE_CODE
@@ -903,7 +883,7 @@ class ExportView(SearchView):
             solr_query = create_solr_query(request, self.searches[search_type], self.fields[search_type],
                                            self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
                                            facets, 1, 0, record_id='', export=True)
-            
+
             # Call the plugin pre_export_solr_query() function
 
             search_type_plugin = 'search.plugins.{0}'.format(search_type)
@@ -914,9 +894,9 @@ class ExportView(SearchView):
                     self.searches[search_type], self.fields[search_type],
                     self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
                     facets)
-                
+
             # Start the Celery background task that does the does the export work
-            
+
             task = export_search_results_csv.delay(solr_query, lang, core_name)
 
             if settings.SEARCH_LANG_USE_PATH:
@@ -935,7 +915,7 @@ class ExportView(SearchView):
 
 
 class ExportStatusView(View):
-    """ Extend the SearchView object to return a the Celery task progress status for a given export. 
+    """ Extend the SearchView object to return a the Celery task progress status for a given export.
         For use with AJAX calls. Does not render a page unless there is an erroy, otherwise return a JSON status object. """
 
     def __init__(self):
@@ -1078,7 +1058,7 @@ class DownloadSearchResultsView(View):
                     context['download_status_url'] = f"{settings.SEARCH_HOST_PATH}/search-results/en/{search_type}/{task_id}"
             context['back_to_url'] = get_search_path(self.searches[search_type], lang)
             return render(request, 'download.html',  context)
-        
+
         # Do not make available if the search is disabled
         elif search_type in self.searches and self.searches[search_type].is_disabled:
             context = {"language": lang,}
@@ -1134,7 +1114,7 @@ class MoreLikeThisView(SearchView):
             core_name = self.searches[search_type].solr_core_name
 
             # Get the search result boundaries
-             
+
             start_row, page = calc_starting_row(request.GET.get('page', 1), rows_per_page=self.searches[search_type].mlt_items)
 
             # Compose the Solr query
@@ -1157,7 +1137,7 @@ class MoreLikeThisView(SearchView):
             solr_response = solr.query(core_name, solr_query)
 
             # Call the plugin post_mlt_solr_query() function
-            
+
             if search_type_plugin in self.discovered_plugins:
                 context, solr_query = self.discovered_plugins[search_type_plugin].post_mlt_solr_query(
                     context,
@@ -1173,7 +1153,7 @@ class MoreLikeThisView(SearchView):
             template = "more_like_this.html"
 
             # Call the plugin pre_render_search() function. Note there are changes to this in version 1.2 API
-                        
+
             if search_type_plugin in self.discovered_plugins and self.discovered_plugins[search_type_plugin].plugin_api_version() == 1.1:
                 context, template = self.discovered_plugins[search_type_plugin].pre_render_search(context,
                                         self.searches[search_type].more_like_this_template,
@@ -1286,7 +1266,7 @@ class PageView(SearchView):
 
 
 class DefaultView(View):
-    """ When no search ID is specified, the search application will redirect the user to a 
+    """ When no search ID is specified, the search application will redirect the user to a
         search specified in the settings file. """
 
     def get(self, request: HttpRequest):
@@ -1316,7 +1296,7 @@ class DefaultView(View):
 
 class SearchFormView(SearchView):
     """ Default Django View controller object for HTTP POST based searches. """
-    
+
     non_filter_fields = ['page', 'sort', 'export_search', 'export_search_path', 'csrfmiddlewaretoken', 'search', 'clearsearch']
     non_facet_fields = ['search_text', 'page', 'sort', 'export_search', 'export_search_path', 'csrfmiddlewaretoken', 'search', 'clearsearch']
 
@@ -1347,27 +1327,27 @@ class SearchFormView(SearchView):
         if request.method == "GET":
             default_sort_order = self.searches[search_type].results_sort_default_fr if self.searches[
                     search_type].results_sort_default_fr else 'score desc'
-            
+
             new_text_search = False
             if 'prev_search' in request.session:
                 if not re.search(r'search_text=\S+', request.session['prev_search']) and \
                 str(request.GET.get('search_text', '')).strip() != '':
                     new_text_search = True
-            
+
             request.session['prev_search'] = request.build_absolute_uri()
-            solr_query = create_solr_query(request, 
-                            self.searches[search_type], 
+            solr_query = create_solr_query(request,
+                            self.searches[search_type],
                             self.fields[search_type],
                             self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
                             facets=self.facets_fr[search_type] if lang == 'fr' else self.facets_en[search_type],
-                            start_row=start_row, 
+                            start_row=start_row,
                             rows=self.searches[search_type].results_page_size,
-                            record_id='', 
-                            export=False, 
+                            record_id='',
+                            export=False,
                             highlighting=True,
-                            default_sort=default_sort_order, 
+                            default_sort=default_sort_order,
                             override_sort=new_text_search)
-            
+
         elif request.method == "POST":
             solr_query = create_post_solr_query(request=request,
                             search=self.searches[search_type],
@@ -1375,7 +1355,7 @@ class SearchFormView(SearchView):
                             Codes=self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
                             facets=self.facets_fr[search_type] if lang == 'fr' else self.facets_en[search_type],
                             start_row=start_row,
-                            rows=num_rows, 
+                            rows=num_rows,
                             is_export=is_export,
                             reset_filters=reset_filters)
         return solr_query
@@ -1424,14 +1404,14 @@ class SearchFormView(SearchView):
 
         request.session['query_type'] = "GET"
         return self.search_page(request, *args, **kwargs)
-        
-        
+
+
     def post(self, request, *args, **kwargs):
         """ Django hook for POST style page request.  """
 
         request.session['query_type'] = "POST"
         return self.search_page(request, *args, **kwargs)
-    
+
 
     def search_page(self, request: HttpRequest, *args, **kwargs):
         """ Handle search queries by querying Solr and rendering the results """
@@ -1442,7 +1422,7 @@ class SearchFormView(SearchView):
         search_type = self.de_alias(request.LANGUAGE_CODE, kwargs.get('search_type'))
         if search_type not in self.searches or self.searches[search_type].is_disabled:
             return render(request, "404.html", get_error_context(search_type, request.LANGUAGE_CODE, ""))
-    
+
         # Determine if this is a download search results request or a clear filters request
 
         export_query = False
@@ -1457,9 +1437,9 @@ class SearchFormView(SearchView):
 
         lang = request.LANGUAGE_CODE
         activate(lang)
-        
+
         facets = self.facets_fr[search_type] if lang == 'fr' else self.facets_en[search_type]
-       
+
         context = self.default_context(request, search_type, lang)
         context = self.default_search_context(context, lang, search_type, request)
         context["query_type"] = "POST"
@@ -1478,7 +1458,7 @@ class SearchFormView(SearchView):
 
                 # When users are paging through search results, they click on form buttons with the name 'pg-<page number>',
                 # 'pg_prev-<page number>', or 'pg_next-<page number>'
-                 
+
                 if key.startswith("pg-") and request.POST.get(key).isdigit():
                     form_page = request.POST.get(key)
                 elif key.startswith("pg_next-") or key.startswith("pg_prev-"):
@@ -1493,13 +1473,13 @@ class SearchFormView(SearchView):
 
         solr = SolrClient(settings.SOLR_SERVER_URL)
         core_name = self.searches[search_type].solr_core_name
-                
+
         # A regular website search query
 
         if not export_query:
 
-            # Call custom search plugin pre-solr-query - if 
-            
+            # Call custom search plugin pre-solr-query - if
+
             search_type_plugin = 'search.plugins.{0}'.format(search_type)
             if search_type_plugin in self.discovered_plugins:
                 context, query = self.discovered_plugins[search_type_plugin].pre_search_solr_query(
@@ -1509,14 +1489,14 @@ class SearchFormView(SearchView):
                     self.searches[search_type], self.fields[search_type],
                     self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
                     facets,
-                    '')        
+                    '')
             try:
                 solr_response = solr.query(core_name, query, highlight=True)
             except (ConnectionError, SolrError) as ce:
                 return render(request, 'error.html', get_error_context(search_type, lang, ce.args[0]))
-            
+
             # Call custom search plugin post-solr-query - if it is defined
-            
+
             if search_type_plugin in self.discovered_plugins:
                 context, solr_response = self.discovered_plugins[search_type_plugin].post_search_solr_query(
                     context,
@@ -1540,7 +1520,7 @@ class SearchFormView(SearchView):
                             context['show_all_results'] = False
                             break
 
-            # Set facet information 
+            # Set facet information
 
             context['system_facet_fields'] = ['__label__', '__sortorder__']
             if len(facets) > 0:
@@ -1552,7 +1532,7 @@ class SearchFormView(SearchView):
                 # Unless resetting the search, gather information about any filters selected by the user
 
                 selected_facets = {}
-                if not clear_filters:         
+                if not clear_filters:
                     for request_field in request.POST.keys():
                         if request_field not in self.non_facet_fields and not request_field.startswith("pg-"):
                             request_field_value = request.POST.get(request_field, "")
@@ -1573,11 +1553,11 @@ class SearchFormView(SearchView):
                     context['facets'][f]['__sortorder__'] = self.fields[search_type][f].solr_facet_sort
 
                     # If the facet is a code and sorting by label, then the facet needs to be resorted
-                    
+
                     if self.fields[search_type][f].solr_facet_sort == 'label':
 
                         # Create an inverted index of the facet values
-                        
+
                         facet_values = {}
                         for facet_value in context['facets'][f].keys():
                             if facet_value not in context['system_facet_fields'] and facet_value != '-' and facet_value in self.codes_en[search_type][f]:
@@ -1587,9 +1567,9 @@ class SearchFormView(SearchView):
                                     facet_values[self.codes_en[search_type][f][facet_value]] = facet_value
                             elif facet_value not in context['system_facet_fields'] and facet_value != '-' and facet_value not in self.codes_en[search_type][f]:
                                 self.logger.info(f"Unknown facet_value {f}:{facet_value}")
-                        
+
                         # Sort the facet values - use French locale for sorting
-                        
+
                         if lang == "fr":
                             sorted_facet_values = sorted(facet_values.keys(), key=unidecode)
                         else:
@@ -1600,9 +1580,9 @@ class SearchFormView(SearchView):
                         new_facet['__label__'] = context['facets'][f]['__label__']
                         new_facet['__sortorder__'] = context['facets'][f]['__sortorder__']
                         context['facets'][f] = new_facet
-                
+
                 # Handle the specified facets that are to be displayed in reversed order
-                
+
                 reversed_facets = []
                 for facet in facets:
                     if self.fields[search_type][facet].solr_facet_display_reversed:
@@ -1651,7 +1631,7 @@ class SearchFormView(SearchView):
             if len(context['pagination']) == 1:
                 context['show_pagination'] = False
             else:
-                
+
                 # Calculate the pagination values for the bottom of the search results page
 
                 context['show_pagination'] = True
@@ -1663,7 +1643,7 @@ class SearchFormView(SearchView):
                 next_page = (last_page if next_page > last_page else next_page)
                 context['next_page'] = next_page
                 context['currentpage'] = page
-                
+
             # Call custom search plugin pre-render - if it is defined
 
             if search_type_plugin in self.discovered_plugins and self.discovered_plugins[search_type_plugin].plugin_api_version() == 1.1:
@@ -1685,8 +1665,8 @@ class SearchFormView(SearchView):
                     view_type='search')
 
             return render(request, 'search_form.html', context)
-        
-        # This is a request to download search results instead of a webpage. Send the Solr 
+
+        # This is a request to download search results instead of a webpage. Send the Solr
         # query to a task redirect to the download progress screen
 
         else:
