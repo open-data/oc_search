@@ -25,7 +25,11 @@
     {% endblock %}
 
     <!-- Site Exit Warning -->
-    <script src="{{- site_host_fr if LANGUAGE_CODE == 'fr' else site_host_en -}}/data/static/js/alert_exit.js"></script>
+    {% if LANGUAGE_CODE == 'fr' %}
+      <script src="{{ site_host_fr }}/data/static/js/alert_exit.js"></script>
+    {% else %}
+      <script src="{{ site_host_en }}/data/static/js/alert_exit.js"></script>
+    {% endif %}
 
     <!-- Analytics -->
     {% include 'search_snippets/site_analytics_head.html' %}
