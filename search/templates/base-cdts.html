@@ -24,6 +24,13 @@
     <meta name="dcterms:title" content="{% translate 'Open Government Portal' %}"/>
     {% endblock %}
 
+    <!-- Site Exit Warning -->
+    {% if LANGUAGE_CODE == 'fr' %}
+      <script src="{{ site_host_fr }}/data/static/js/alert_exit.js"></script>
+    {% else %}
+      <script src="{{ site_host_en }}/data/static/js/alert_exit.js"></script>
+    {% endif %}
+
     <!-- Analytics -->
     {% include 'search_snippets/site_analytics_head.html' %}
 
@@ -47,9 +54,9 @@
     {% if im_enabled %}
       <!--InvitationManager Files -->
       <link rel="stylesheet" href="{% static 'search_snippets/im/Overlay.css' %}">
-      <!-- End InvitationManager Files -->  
+      <!-- End InvitationManager Files -->
     {% endif %}
-  
+
     <style>
         mark {
             background-color: yellow;
@@ -86,7 +93,7 @@
     {% block info-message-block %}{% include info_message_snippet %}{% endblock info-message-block %}
     {% block about-message-block %}{% include about_message_snippet %}{% endblock about-message-block %}
     {% block main-content-body-top %}{% include main_content_body_top_snippet %}{% endblock main-content-body-top %}
-    
+
     </section>
 
     {% block main-content-body %}{% endblock main-content-body %}
