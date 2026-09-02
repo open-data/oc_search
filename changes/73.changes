@@ -1,0 +1,1 @@
+Optimize query performance by disabling Solr search highlighting parameters where search_text is either empty or wildcard.

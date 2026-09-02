@@ -428,10 +428,12 @@ class SearchView(View):
             else:
                 default_sort_order = self.searches[search_type].results_sort_default_en if self.searches[search_type].results_sort_default_en else 'score desc'
 
+            highlighting = bool(context.get("search_text", False)) and context.get("search_text", "") not in ["*", "*:*"]
+
             solr_query = create_solr_query(request, self.searches[search_type], self.fields[search_type],
                                            self.codes_fr[search_type] if lang == 'fr' else self.codes_en[search_type],
                                            facets, start_row, self.searches[search_type].results_page_size,
-                                           record_id='', export=False, highlighting=True,
+                                           record_id='', export=False, highlighting=highlighting,
                                            default_sort=default_sort_order, override_sort=new_text_search)
 
             # If the solr_query contains an error, then there was a problem with the request and
@@ -461,7 +463,7 @@ class SearchView(View):
             # Query Solr
 
             try:
-                solr_response = solr.query(core_name, solr_query, highlight=True)
+                solr_response = solr.query(core_name, solr_query, highlight=highlighting)
 
                 # Call  plugin post-solr-query function
 
@@ -1320,7 +1322,7 @@ class SearchFormView(SearchView):
         return search_type
 
 
-    def to_solr_query(self, request: HttpRequest, search_type: str, lang: str, start_row: int, num_rows: int, is_export: bool, reset_filters: bool):
+    def to_solr_query(self, request: HttpRequest, search_type: str, lang: str, start_row: int, num_rows: int, is_export: bool, reset_filters: bool, highlighting: bool):
         """ Generate the Solr query for both the first GET and subsequent POST requests """
 
         # First view of a search page is always a GET request, not a form request, so if GET, assume a generic query
@@ -1344,7 +1346,7 @@ class SearchFormView(SearchView):
                             rows=self.searches[search_type].results_page_size,
                             record_id='',
                             export=False,
-                            highlighting=True,
+                            highlighting=highlighting,
                             default_sort=default_sort_order,
                             override_sort=new_text_search)
 
@@ -1467,9 +1469,11 @@ class SearchFormView(SearchView):
                         form_page = form_page_slices[1]
         start_row, page = calc_starting_row(form_page, rows_per_page=self.searches[search_type].results_page_size)
 
+        highlighting = bool(context.get("search_text", False)) and context.get("search_text", "") not in ["*", "*:*"]
+
         # Stand up the Solr client
 
-        query = self.to_solr_query(request, search_type, lang, start_row, num_rows=self.searches[search_type].results_page_size, is_export=export_query, reset_filters=clear_filters)
+        query = self.to_solr_query(request, search_type, lang, start_row, num_rows=self.searches[search_type].results_page_size, is_export=export_query, reset_filters=clear_filters, highlighting=highlighting)
 
         solr = SolrClient(settings.SOLR_SERVER_URL)
         core_name = self.searches[search_type].solr_core_name
@@ -1491,7 +1495,7 @@ class SearchFormView(SearchView):
                     facets,
                     '')
             try:
-                solr_response = solr.query(core_name, query, highlight=True)
+                solr_response = solr.query(core_name, query, highlight=highlighting)
             except (ConnectionError, SolrError) as ce:
                 return render(request, 'error.html', get_error_context(search_type, lang, ce.args[0]))
 
