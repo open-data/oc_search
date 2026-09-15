@@ -23,8 +23,8 @@
     <meta name="dcterms:language" content="{{ dcterms_lang }}"/>
     <meta name="dcterms:title" content="{% translate 'Open Government Portal' %}"/>
 
-    {% if currentpage > 1 %}
-        <meta name="robots" content="noindex, nofollow">
+    {% if currentpage and currentpage > 1 %}
+        <meta name="robots" content="noindex, nofollow, noarchive">
     {% endif %}
     {% endblock %}
 
