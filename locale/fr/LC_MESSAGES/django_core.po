@@ -192,7 +192,7 @@ msgstr "Téléchargez le jeu de données complet"
 
 #: .\search\templates\snippets\data\travelq_search_item.html:6
 msgid "Nothing to report this period"
-msgstr "Rien à signaler pour cette périod"
+msgstr "Rien à signaler pour cette période"
 
 #: .\search\templates\snippets\data\travelq_search_item.html:8
 msgid "Year"
