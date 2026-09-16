@@ -1,0 +1,11 @@
+User-agent: *
+
+# Block deep paging and sorting
+Disallow: /*?*page=
+Disallow: /*?*sort=
+
+# Prevent administrative and system paths
+Disallow: /admin/*
+
+# Allow bots to access static files
+Allow: /static/*
