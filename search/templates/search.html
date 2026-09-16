@@ -63,23 +63,30 @@
             <div class="col-md-12">
             {% block main-content-pagination %}
                 {% if show_pagination %}
-                <ul id="search-pagination-list" class="btn-toolbar list-inline" role="navigation">
-                    <li class="btn-group">
-                        {% if currentpage|add:0 != 1 %}
-                            <button type="button" class="btn btn-default" data-url="{{ pgntn_path | replace_pageno:previous_page }}">{% translate 'Previous' %}<span class="wb-inv">Go to page {{ previous_page }}</span></button>
+                <nav id="search-pagination-list" class="btn-toolbar btn-group" role="navigation" aria-label="Pagination">
+                    {% if currentpage|add:0 == 1 %}
+                        <button type="button" class="btn btn-default" disabled="disabled">{% translate 'Previous' %}</button>
+                    {% else %}
+                        <button type="button" class="btn btn-default" data-page="{{ previous_page }}">{% translate 'Previous' %}<span class="wb-inv">Go to page {{ previous_page }}</span></button>
+                    {% endif %}
+                    {% for pg in pagination %}
+                        {% if pg == 0 %}
+                            <span class="btn btn-default ellipsis" aria-hidden="true">&#8230;</span>
+                        {% else %}
+                            <button type="button"
+                                    class="btn {% if pg == currentpage|add:0 %}btn-primary active{% else %}btn-default{% endif %}"
+                                    data-page="{{ pg }}"
+                                    {% if pg == currentpage|add:0 %}aria-current="page"{% endif %}>
+                                    {{ pg }}<span class="wb-inv">Go to page {{ pg }}</span>
+                            </button>
                         {% endif %}
-                        {% for pg in pagination %}
-                            {% if pg == 0 %}
-                                <button type="button" class="btn btn-default">…<span class="wb-inv"></span></button>
-                            {% else %}
-                                <button type="button" class="btn {% if pg == currentpage|add:0 %}btn-primary active{% else %}btn-default{% endif %}" data-url="{{ pgntn_path | replace_pageno:pg }}">{{ pg }}<span class="wb-inv">Go to page {{ pg }}</span></button>
-                            {% endif %}
-                        {% endfor %}
-                        {% if currentpage|add:0 != last_page|add:0 %}
-                            <button type="button" class="btn btn-default" data-url="{{ pgntn_path | replace_pageno:next_page }}">{% translate 'Next' %} <span class="wb-inv">Go to page {{ next_page }}</span></button>
-                        {% endif %}
-                    </li>
-                </ul>
+                    {% endfor %}
+                    {% if currentpage|add:0 == last_page|add:0 %}
+                        <button type="button" class="btn btn-default" disabled="disabled">{% translate 'Next' %}</button>
+                    {% else %}
+                        <button type="button" class="btn btn-default" data-page="{{ next_page }}">{% translate 'Next' %} <span class="wb-inv">Go to page {{ next_page }}</span></button>
+                    {% endif %}
+                </nav>
                 {% endif %}
             {% endblock main-content-pagination %}
             </div>
