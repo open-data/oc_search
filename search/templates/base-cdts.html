@@ -22,6 +22,10 @@
     <meta name="dcterms:accessRights" content="2"/>
     <meta name="dcterms:language" content="{{ dcterms_lang }}"/>
     <meta name="dcterms:title" content="{% translate 'Open Government Portal' %}"/>
+
+    {% if currentpage and currentpage > 1 %}
+        <meta name="robots" content="noindex, nofollow, noarchive">
+    {% endif %}
     {% endblock %}
 
     <!-- Site Exit Warning -->
@@ -128,6 +132,7 @@
 
 {% if body_js_snippet %}<script>{% include body_js_snippet %}</script>{% endif %}
 {% include 'search_snippets/site_analytics_body_bottom.html' %}
+<script src="{% static 'search_snippets/paging.js' %}"></script>
 </body>
 </html>
 {% endlanguage %}
