@@ -19,11 +19,14 @@ from django.urls import path
 from django.conf.urls import include
 from django.views.decorators.cache import never_cache
 from search.views import SearchView, SearchFormView, RecordView, ExportView, MoreLikeThisView, HomeView, DefaultView, ExportStatusView, DownloadSearchResultsView, PageView
+from django.views.generic import TemplateView
 
 
 urlpatterns = [
     path('search/admin/doc/', include('django.contrib.admindocs.urls')),
     path('search/admin/', admin.site.urls),
+    path('robots.txt', TemplateView.as_view(template_name="robots.txt", content_type="text/plain"),
+    ),
 ]
 
 # URLs for when Search is configured to use the URL path to determine language of web page 
