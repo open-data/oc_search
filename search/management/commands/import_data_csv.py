@@ -69,22 +69,41 @@ class Command(BaseCommand):
 
     def set_empty_field(self, solr_record: dict, sf: Field):
         # look for empty fields, empty multi-value fields, and empty multi-value codes and set them
-        if (sf.field_id not in solr_record and sf != 'default_fmt') or (solr_record[sf.field_id] == '') or \
-            (isinstance(solr_record[sf.field_id], list) and len(solr_record[sf.field_id]) < 1) or \
-            (isinstance(solr_record[sf.field_id], list) and solr_record[sf.field_id][0] == ''):
-            if sf.default_export_value:
-                default_fmt = sf.default_export_value.split('|')
-                if default_fmt[0] in ['str', 'date']:
-                    solr_record[sf.field_id] = str(default_fmt[1])
-                elif default_fmt[0] == 'int':
-                    solr_record[sf.field_id] = int(default_fmt[1])
-                elif default_fmt[0] == 'float':
-                    solr_record[sf.field_id] = float(default_fmt[1])
-                else:
-                    solr_record[sf.field_id] = ''
-            if sf.solr_field_is_coded:
-                solr_record[f"{sf.field_id}_en"] = "-"
-                solr_record[f"{sf.field_id}_fr"] = "-"
+        val = solr_record.get(sf.field_id)
+        is_empty = (
+            (sf.field_id not in solr_record and sf.field_id != 'default_fmt') or
+            val is None or val == "" or
+            (isinstance(val, list) and (len(val) == 0 or all(str(i).strip() == '' for i in val)))
+        )
+
+        if is_empty:
+            fallback_value = ''
+
+            if sf.default_export_value and '|' in sf.default_export_value:
+                try:
+                    data_type, default_value = sf.default_export_value.split('|', 1)
+
+                    if data_type in ['str', 'date']:
+                        fallback_value = default_value
+                    elif data_type == 'int':
+                        fallback_value = int(default_value)
+                    elif data_type == 'float':
+                        fallback_value = float(default_value)
+                except (ValueError, TypeError):
+                    fallback_value = ''
+
+            # check for multivalued field
+            is_multivalued = getattr(sf, 'solr_field_multivalued', False)
+            final_value = [fallback_value] if is_multivalued else fallback_value
+
+            solr_record[sf.field_id] = final_value
+
+            # check for localized fields
+            is_bilingual = getattr(sf, 'solr_field_lang', '') == 'bi'
+
+            if sf.solr_field_is_coded or is_bilingual:
+                solr_record[f"{sf.field_id}_en"] = final_value
+                solr_record[f"{sf.field_id}_fr"] = final_value
 
     def handle(self, *args, **options):
 
@@ -383,7 +402,7 @@ class Command(BaseCommand):
                                                 solr_record[csv_field + '_en'] = "-"
                                                 solr_record[csv_field + '_fr'] = "-"
 
-                                                # Ensure all empty CSV fields are set to appropriate or default values
+                            # Ensure all empty CSV fields are set to appropriate or default values
 
                             solr_record = self.set_empty_fields(solr_record)
 
