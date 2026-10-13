@@ -21,10 +21,14 @@ def cache_search_results_file(cached_filename: str, sr: SolrResponse, rows=0, fi
       
         with open(f"{cached_filename}.tmp", 'w', newline='', encoding='utf8') as csv_file:
             cache_writer = csv.writer(csv_file, dialect='excel', quoting=csv.QUOTE_NONNUMERIC)
-            #### the values from the dict docs[0] can be used to find the column headers
-            ## in the field_list dict.
+
+            headers = []
+            for doc in sr.docs:
+                for field in doc:
+                    if field not in headers:
+                        headers.append(field)
+
             label_header = []
-            headers = list(sr.docs[0])
             for colname in headers:
                 colname = colname.strip(" _,").lower()
                 if colname.lower() == 'id':
@@ -61,23 +65,23 @@ def cache_search_results_file(cached_filename: str, sr: SolrResponse, rows=0, fi
             csv_file.write(u'\N{BOM}' + data)  
 
         ######  @TODO  - Need to remove header_file immediately
-
         
         # Use a CSV writer with forced quoting for the body of the file
         with open(cached_filename, 'a', newline='', encoding='utf8') as csv_file:
             cache_writer = csv.writer(csv_file, dialect='excel', quoting=csv.QUOTE_ALL)
             c = 0
-            for i in sr.docs:
-                if rows != 0 and c > rows:
+            for doc in sr.docs:
+                if rows and c >= rows:
                     break
-                try:
-                    for j in i.keys():
-                        if isinstance(i[j], list):
-                            i[j] = ",".join(i[j])
-                    cache_writer.writerow(i.values())
-                    c += 1
-                except UnicodeEncodeError:
-                    pass
+
+                values = []
+                for colname in headers:
+                    value = doc.get(colname, "")
+                    if isinstance(value, list):
+                        value = ",".join(str(v) for v in value)
+                    values.append(value)
+                cache_writer.writerow(values)
+                c += 1
     return True
 
 ## OPEN-4055: Accept a list of Fields for the exported search results
