@@ -10,7 +10,7 @@ django-qurl-templatetag==0.0.14
 django-redis-sessions==0.6.2
 inflection==0.5.1
 markdown2==2.5.5
-nltk==3.9.4
+nltk==3.10.3
 numpy==2.4.4
 pandas==3.0.3
 psycopg2==2.9.12
