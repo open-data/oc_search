@@ -69,6 +69,9 @@ class Command(BaseCommand):
 
     def set_empty_field(self, solr_record: dict, sf: Field):
         # look for empty fields, empty multi-value fields, and empty multi-value codes and set them
+        field_type = getattr(sf, 'solr_field_type', 'string')
+        is_numeric = field_type in ['pint', 'pfloat']
+
         val = solr_record.get(sf.field_id)
         is_empty = (
             (sf.field_id not in solr_record and sf.field_id != 'default_fmt') or
@@ -78,6 +81,7 @@ class Command(BaseCommand):
 
         if is_empty:
             fallback_value = ''
+            has_valid_numeric_fallback = False
 
             if sf.default_export_value and '|' in sf.default_export_value:
                 try:
@@ -87,10 +91,15 @@ class Command(BaseCommand):
                         fallback_value = default_value
                     elif data_type == 'int':
                         fallback_value = int(default_value)
+                        has_valid_numeric_fallback = True
                     elif data_type == 'float':
                         fallback_value = float(default_value)
+                        has_valid_numeric_fallback = True
                 except (ValueError, TypeError):
                     fallback_value = ''
+
+            if is_numeric and not has_valid_numeric_fallback:
+                return
 
             # check for multivalued field
             is_multivalued = getattr(sf, 'solr_field_multivalued', False)
@@ -101,7 +110,7 @@ class Command(BaseCommand):
             # check for localized fields
             is_bilingual = getattr(sf, 'solr_field_lang', '') == 'bi'
 
-            if sf.solr_field_is_coded or is_bilingual:
+            if (sf.solr_field_is_coded or is_bilingual) and not is_numeric:
                 solr_record[f"{sf.field_id}_en"] = final_value
                 solr_record[f"{sf.field_id}_fr"] = final_value
 
