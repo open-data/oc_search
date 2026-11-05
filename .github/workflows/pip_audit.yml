@@ -55,19 +55,18 @@ jobs:
             echo -e "\nPython Vulnerabilities found:\n" >> consolidated_logs.tmp
             cat trivy_report.txt >> consolidated_logs.tmp
           fi
-          python3 - << 'EOF'
-import json
-import os
-repo = os.environ.get("GITHUB_REPOSITORY", "repo")
-summary_data = ""
-if os.path.exists("consolidated_logs.tmp"):
-    with open("consolidated_logs.tmp", "r") as f:
-        summary_data = f.read()
-message = f"*Vulnerabilities detected in {repo}* \n\n```\n{summary_data}\n```"
-with open("slack_payload.json", "w") as f:
-    json.dump({"text": message}, f)
-EOF
-
+          node -e '
+            const fs = require("fs");
+            const repo = process.env.GITHUB_REPOSITORY || "repo";
+            let logs = "";
+            if (fs.existsSync("consolidated_logs.tmp")) {
+              logs = fs.readFileSync("consolidated_logs.tmp", "utf8");
+            }
+            const payload = {
+              text: `*Vulnerabilities detected in ${repo}* \n\n\`\`\`\n${logs}\`\`\``
+            };
+            fs.writeFileSync("slack_payload.json", JSON.stringify(payload));
+          '
       - name: Send Slack Notification
         if: always() && hashFiles('slack_payload.json') != ''
         uses: slackapi/slack-github-action@v2.0.0
