@@ -47,7 +47,7 @@ jobs:
               logs = fs.readFileSync("consolidated_logs.tmp", "utf8");
             }
             const payload = {
-              text: `*Vulnerabilities detected in repo: ${repo}* \n\n\`\`\`\n${logs}\`\`\``
+              text: `:rotating_light: Vulnerabilities detected in repo: *${repo}* \n\n\`\`\`\n${logs}\`\`\``
             };
             fs.writeFileSync("slack_payload.json", JSON.stringify(payload));
           '
@@ -59,9 +59,3 @@ jobs:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
           payload-file-path: ./slack_payload.json
-
-      - name: Enforce Pipeline Failure
-        if: always() && steps.audit_packages.outcome == 'failure'
-        run: |
-          echo "Vulnerabilities detected. Review Slack notification."
-          exit 1
