@@ -32,7 +32,7 @@ jobs:
 
       - name: Run OS-level Runtime Audit (Trivy)
         id: audit_runtime
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: 'fs'
           scan-ref: '/opt/hostedtoolcache/Python'
@@ -44,26 +44,29 @@ jobs:
       - name: Create Slack Payload File
         if: always() && (steps.audit_packages.outcome == 'failure' || steps.audit_runtime.outcome == 'failure')
         run: |
-          SUMMARY=""
+          echo "Package Vulnerabilities found:" > consolidated_logs.tmp
           if [ -f pip-audit_report.md ]; then
-            CLEAN_AUDIT=$(cat pip-audit_report.md | \
+            cat pip-audit_report.md | \
               sed -E 's/\[([^]]+)\]\([^)]+\)/\1/g' | \
               sed 's/--- | --- | --- | ---//g' | \
-              sed 's/Name | Version | ID | Fix Versions/PACKAGE   | VERSION | ID                   | FIX VERSION/g')
-            SUMMARY="Package Vulnerabilities found:\n$CLEAN_AUDIT\n"
+              sed 's/Name | Version | ID | Fix Versions/PACKAGE   | VERSION | ID                   | FIX VERSION/g' >> consolidated_logs.tmp
           fi
           if [ -f trivy_report.txt ]; then
-            SUMMARY="${SUMMARY}\nPython Vulnerabilities found:\n$(cat trivy_report.txt)"
+            echo -e "\nPython Vulnerabilities found:\n" >> consolidated_logs.tmp
+            cat trivy_report.txt >> consolidated_logs.tmp
           fi
-          export EXPORT_SUMMARY="$SUMMARY"
-          python3 -c '
-import json, os
+          python3 - << 'EOF'
+import json
+import os
 repo = os.environ.get("GITHUB_REPOSITORY", "repo")
-summary_data = os.environ.get("EXPORT_SUMMARY", "")
+summary_data = ""
+if os.path.exists("consolidated_logs.tmp"):
+    with open("consolidated_logs.tmp", "r") as f:
+        summary_data = f.read()
 message = f"*Vulnerabilities detected in {repo}* \n\n```\n{summary_data}\n```"
 with open("slack_payload.json", "w") as f:
     json.dump({"text": message}, f)
-'
+EOF
 
       - name: Send Slack Notification
         if: always() && hashFiles('slack_payload.json') != ''
