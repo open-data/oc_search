@@ -28,7 +28,7 @@ jobs:
         id: audit_packages
         continue-on-error: true
         run: |
-          pip-audit -r requirements.txt --fix --dry-run > pip-audit_report.md
+          pip-audit -r requirements.txt --fix --dry-run --format markdown > pip-audit_report.md
 
       - name: Run OS-level Runtime Audit (Trivy)
         id: audit_runtime
@@ -46,23 +46,32 @@ jobs:
         run: |
           SUMMARY=""
           if [ -f pip-audit_report.md ]; then
-            SUMMARY="Package Vulnerabilities found: \n$(cat pip-audit_report.md)\n"
+            CLEAN_AUDIT=$(cat pip-audit_report.md | \
+              sed -E 's/\[([^]]+)\]\([^)]+\)/\1/g' | \
+              sed 's/--- | --- | --- | ---//g' | \
+              sed 's/Name | Version | ID | Fix Versions/PACKAGE   | VERSION | ID                   | FIX VERSION/g')
+            SUMMARY="Package Vulnerabilities found:\n$CLEAN_AUDIT\n"
           fi
           if [ -f trivy_report.txt ]; then
-            SUMMARY="${SUMMARY}\nPython Runtime Vulnerabilities:\n$(cat trivy_report.txt)"
+            SUMMARY="${SUMMARY}\nPython Vulnerabilities found:\n$(cat trivy_report.txt)"
           fi
-
-          jq -n --arg msg "Vulnerabilities detected in *${{ github.repository }}*\n\n\`\`\`\n$SUMMARY\n\`\`\`" \
-            '{text: $msg}' > slack_payload.json
+          export EXPORT_SUMMARY="$SUMMARY"
+          python3 -c '
+import json, os
+repo = os.environ.get("GITHUB_REPOSITORY", "repo")
+summary_data = os.environ.get("EXPORT_SUMMARY", "")
+message = f"*Vulnerabilities detected in {repo}* \n\n```\n{summary_data}\n```"
+with open("slack_payload.json", "w") as f:
+    json.dump({"text": message}, f)
+'
 
       - name: Send Slack Notification
         if: always() && hashFiles('slack_payload.json') != ''
-        uses: slackapi/slack-github-action@v1.23.0
+        uses: slackapi/slack-github-action@v2.0.0
         with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
           payload-file-path: ./slack_payload.json
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
       - name: Enforce Pipeline Failure
         if: always() && (steps.audit_packages.outcome == 'failure' || steps.audit_runtime.outcome == 'failure')
