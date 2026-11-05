@@ -1,0 +1,2 @@
+Skip numeric fields when initializing correspoding solr translated fields.
+
