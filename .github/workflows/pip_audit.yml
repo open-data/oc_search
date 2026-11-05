@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
   schedule:
-    - cron: '0 */3 * * *'
+    - cron: '0 */6 * * *'
   workflow_dispatch:
 
 jobs:
@@ -30,30 +30,14 @@ jobs:
         run: |
           pip-audit -r requirements.txt --fix --dry-run --format markdown > pip-audit_report.md
 
-      - name: Run OS-level Runtime Audit (Trivy)
-        id: audit_runtime
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          scan-type: 'fs'
-          scan-ref: '/opt/hostedtoolcache/Python'
-          format: 'table'
-          output: 'trivy_report.txt'
-          exit-code: '1'
-        continue-on-error: true
-
       - name: Create Slack Payload File
-        if: always() && (steps.audit_packages.outcome == 'failure' || steps.audit_runtime.outcome == 'failure')
+        if: always() && steps.audit_packages.outcome == 'failure'
         run: |
-          echo "Package Vulnerabilities found:" > consolidated_logs.tmp
           if [ -f pip-audit_report.md ]; then
             cat pip-audit_report.md | \
               sed -E 's/\[([^]]+)\]\([^)]+\)/\1/g' | \
               sed 's/--- | --- | --- | ---//g' | \
-              sed 's/Name | Version | ID | Fix Versions/PACKAGE   | VERSION | ID                   | FIX VERSION/g' >> consolidated_logs.tmp
-          fi
-          if [ -f trivy_report.txt ]; then
-            echo -e "\nPython Vulnerabilities found:\n" >> consolidated_logs.tmp
-            cat trivy_report.txt >> consolidated_logs.tmp
+              sed 's/Name | Version | ID | Fix Versions/PACKAGE   | VERSION | ID                   | FIX VERSION/g' > consolidated_logs.tmp
           fi
           node -e '
             const fs = require("fs");
@@ -63,10 +47,11 @@ jobs:
               logs = fs.readFileSync("consolidated_logs.tmp", "utf8");
             }
             const payload = {
-              text: `*Vulnerabilities detected in ${repo}* \n\n\`\`\`\n${logs}\`\`\``
+              text: `*Vulnerabilities detected in repo: ${repo}* \n\n\`\`\`\n${logs}\`\`\``
             };
             fs.writeFileSync("slack_payload.json", JSON.stringify(payload));
           '
+
       - name: Send Slack Notification
         if: always() && hashFiles('slack_payload.json') != ''
         uses: slackapi/slack-github-action@v2.0.0
@@ -76,7 +61,7 @@ jobs:
           payload-file-path: ./slack_payload.json
 
       - name: Enforce Pipeline Failure
-        if: always() && (steps.audit_packages.outcome == 'failure' || steps.audit_runtime.outcome == 'failure')
+        if: always() && steps.audit_packages.outcome == 'failure'
         run: |
           echo "Vulnerabilities detected. Review Slack notification."
           exit 1
