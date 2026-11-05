@@ -17,7 +17,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.12.15'
           
       - name: Install pip-audit
         run: |
@@ -27,7 +27,7 @@ jobs:
       - name: Run pip-audit
         id: audit
         run: |
-          pip-audit -r requirements.txt --fix --dry-run --format markdown > pip-audit_report.md
+          pip-audit -r requirements.txt --audit-local-python --fix --dry-run --format markdown > pip-audit_report.md
 
       - name: Read Audit Summary
         if: failure() && steps.audit.outcome == 'failure'
