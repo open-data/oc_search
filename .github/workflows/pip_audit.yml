@@ -45,6 +45,8 @@ jobs:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
           payload: |
-            {
-              "text": "Vulnerabilities found in repo: *${{ github.repository }}* \n\n```\n\${{ steps.read-summary.outputs.summary }}\n```"
-            }
+            text: |
+              Vulnerabilities found in repo: *${{ github.repository }}*
+              ```
+              \${{ steps.read-summary.outputs.summary }}
+              ```
