@@ -25,28 +25,46 @@ jobs:
           pip install pip-audit
 
       - name: Run pip-audit
-        id: audit
+        id: audit_packages
+        continue-on-error: true
         run: |
           pip-audit -r requirements.txt --fix --dry-run --format markdown > pip-audit_report.md
 
-      - name: Read Audit Summary
-        if: failure() && steps.audit.outcome == 'failure'
-        id: read-summary
+      - name: Run OS-level Runtime Audit (Trivy)
+        id: audit_runtime
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '/opt/hostedtoolcache/Python'
+          format: 'table'
+          output: 'trivy_report.txt'
+          exit-code: '1'
+        continue-on-error: true
+
+      - name: Create Slack Payload File
+        if: failure() && (steps.audit_packages.outcome == 'failure' || steps.audit_runtime.outcome == 'failure')
         run: |
-          EOF=$(dd if=/dev/urandom bs=15 count=1 2>/dev/null | base64)
-          echo "summary<<$EOF" >> $GITHUB_OUTPUT
-          cat pip-audit_report.md >> $GITHUB_OUTPUT
-          echo "$EOF" >> $GITHUB_OUTPUT
+          SUMMARY=""
+          if [ -f pip-audit_report.md ]; then
+            SUMMARY="Package Vulnerabilities found: \n$(cat pip-audit_report.md)\n"
+          fi
+          if [ -f trivy_report.txt ]; then
+            SUMMARY="${SUMMARY}\nPython Runtime Vulnerabilities:\n$(cat trivy_report.txt)"
+          fi
+
+          jq -n --arg msg "Vulnerabilities detected in *${{ github.repository }}*\n\n\`\`\`\n$SUMMARY\n\`\`\`" \
+            '{text: $msg}' > slack_payload.json
+
+      - name: Enforce Pipeline Failure
+        if: steps.audit_packages.outcome == 'failure' || steps.audit_runtime.outcome == 'failure'
+        run: |
+          echo "Vulnerabilities detected. Review Slack notification."
+          exit 1
 
       - name: Send Slack Notification
-        if: failure() && steps.audit.outcome == 'failure'
+        if: failure() && hashFiles('slack_payload.json') != ''
         uses: slackapi/slack-github-action@v2.0.0
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
-          payload: |
-            text: |
-              Vulnerabilities found in repo: *${{ github.repository }}*
-              ```
-              \${{ steps.read-summary.outputs.summary }}
-              ```
+          payload-file-path: ./slack_payload.json
