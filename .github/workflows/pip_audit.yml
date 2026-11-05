@@ -27,7 +27,7 @@ jobs:
       - name: Run pip-audit
         id: audit
         run: |
-          pip-audit -r requirements.txt --audit-local-python --fix --dry-run --format markdown > pip-audit_report.md
+          pip-audit -r requirements.txt --fix --dry-run --format markdown > pip-audit_report.md
 
       - name: Read Audit Summary
         if: failure() && steps.audit.outcome == 'failure'
