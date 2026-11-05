@@ -42,7 +42,8 @@ jobs:
         if: failure() && steps.audit.outcome == 'failure'
         uses: slackapi/slack-github-action@v2.0.0
         with:
-          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
           payload: |
             {
               "text": "Vulnerabilities found in repo: *${{ github.repository }}* \n\n```\n\${{ steps.read-summary.outputs.summary }}\n```"
