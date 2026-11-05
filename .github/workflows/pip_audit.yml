@@ -1,0 +1,49 @@
+name: Security Audit Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: '0 */3 * * *'
+  workflow_dispatch:
+
+jobs:
+  security-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12.15'
+          
+      - name: Install pip-audit
+        run: |
+          python -m pip install --upgrade pip
+          pip install pip-audit
+
+      - name: Run pip-audit
+        id: audit
+        run: |
+          pip-audit -r requirements.txt --audit-local-python --fix --dry-run --format markdown > pip-audit_report.md
+
+      - name: Read Audit Summary
+        if: failure() && steps.audit.outcome == 'failure'
+        id: read-summary
+        run: |
+          EOF=$(dd if=/dev/urandom bs=15 count=1 2>/dev/null | base64)
+          echo "summary<<$EOF" >> $GITHUB_OUTPUT
+          cat pip-audit_report.md >> $GITHUB_OUTPUT
+          echo "$EOF" >> $GITHUB_OUTPUT
+
+      - name: Send Slack Notification
+        if: failure() && steps.audit.outcome == 'failure'
+        uses: slackapi/slack-github-action@v2.0.0
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "text": "Vulnerabilities found in repo: *${{ github.repository }}* \n\n```\n\${{ steps.read-summary.outputs.summary }}\n```"
+            }
