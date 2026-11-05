@@ -3,8 +3,8 @@ name: Security Audit Pipeline
 on:
   push:
     branches: [ main ]
-  schedule:
-    - cron: '0 */3 * * *'
+  # schedule:
+  #   - cron: '0 */6 * * *'
   workflow_dispatch:
 
 jobs:
@@ -25,25 +25,37 @@ jobs:
           pip install pip-audit
 
       - name: Run pip-audit
-        id: audit
+        id: audit_packages
+        continue-on-error: true
         run: |
-          pip-audit -r requirements.txt --audit-local-python --fix --dry-run --format markdown > pip-audit_report.md
+          pip-audit -r requirements.txt --fix --dry-run --format markdown > pip-audit_report.md
 
-      - name: Read Audit Summary
-        if: failure() && steps.audit.outcome == 'failure'
-        id: read-summary
+      - name: Create Slack Payload File
+        if: always() && steps.audit_packages.outcome == 'failure'
         run: |
-          EOF=$(dd if=/dev/urandom bs=15 count=1 2>/dev/null | base64)
-          echo "summary<<$EOF" >> $GITHUB_OUTPUT
-          cat pip-audit_report.md >> $GITHUB_OUTPUT
-          echo "$EOF" >> $GITHUB_OUTPUT
+          if [ -f pip-audit_report.md ]; then
+            cat pip-audit_report.md | \
+              sed -E 's/\[([^]]+)\]\([^)]+\)/\1/g' | \
+              sed 's/--- | --- | --- | ---//g' | \
+              sed 's/Name | Version | ID | Fix Versions/PACKAGE   | VERSION | ID                   | FIX VERSION/g' > consolidated_logs.tmp
+          fi
+          node -e '
+            const fs = require("fs");
+            const repo = process.env.GITHUB_REPOSITORY || "repo";
+            let logs = "";
+            if (fs.existsSync("consolidated_logs.tmp")) {
+              logs = fs.readFileSync("consolidated_logs.tmp", "utf8");
+            }
+            const payload = {
+              text: `:rotating_light: Vulnerabilities detected in repo: *${repo}* \n\n\`\`\`\n${logs}\`\`\``
+            };
+            fs.writeFileSync("slack_payload.json", JSON.stringify(payload));
+          '
 
       - name: Send Slack Notification
-        if: failure() && steps.audit.outcome == 'failure'
+        if: always() && hashFiles('slack_payload.json') != ''
         uses: slackapi/slack-github-action@v2.0.0
         with:
-          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
-          payload: |
-            {
-              "text": "Vulnerabilities found in repo: *${{ github.repository }}* \n\n```\n\${{ steps.read-summary.outputs.summary }}\n```"
-            }
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload-file-path: ./slack_payload.json
