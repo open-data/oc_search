@@ -28,7 +28,7 @@ jobs:
         id: audit_packages
         continue-on-error: true
         run: |
-          pip-audit -r requirements.txt --fix --dry-run --format markdown > pip-audit_report.md
+          pip-audit -r requirements.txt --fix --dry-run > pip-audit_report.md
 
       - name: Run OS-level Runtime Audit (Trivy)
         id: audit_runtime
