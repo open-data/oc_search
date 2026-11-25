@@ -56,7 +56,6 @@ these extensions are included in the project's requirements.txt file.
 
  - [Django CORS Headers](https://github.com/adamchainz/django-cors-headers) A Django App that adds Cross-Origin Resource Sharing (CORS) headers to responses. This allows in-browser requests to your Django application from other origins.
  - [Django Jazzmin Admin Theme](https://django-jazzmin.readthedocs.io/) Provides a more modern Ui for the Django admin interface
- - [Django QUrl Template Tag](https://github.com/sophilabs/django-qurl-templatetag) A Django template tag to modify url's query string
  - [Django Celery Beat](https://github.com/celery/django-celery-beat) This extension enables you to store the 
    periodic task schedule in the database.
    The periodic tasks can be managed from the Django Admin interface, where you can create, edit and delete periodic tasks and how often they should run.
