@@ -1,0 +1,12 @@
+Upgrade the following dependencies:
+
+  - Django core framework to `django==5.2.17`
+  - Natural Language Toolkit `nltk==3.10.4`
+  - Python Bleach library `bleach==6.4.0`
+
+Remove unused and unmaintained dependencies:
+
+  - `django-redis-sessions`
+  - `django-qurl-templatetag` (replaced with Django's built-in `{% querystring %}` tag)
+
+Safely include `main_content_body_top_snippet` in `base-cdts.html` to prevent `TemplateDoesNotExist` errors when the snippet is omitted from view context.

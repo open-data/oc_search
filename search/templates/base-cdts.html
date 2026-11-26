@@ -96,7 +96,7 @@
 
     {% block info-message-block %}{% include info_message_snippet %}{% endblock info-message-block %}
     {% block about-message-block %}{% include about_message_snippet %}{% endblock about-message-block %}
-    {% block main-content-body-top %}{% include main_content_body_top_snippet %}{% endblock main-content-body-top %}
+    {% block main-content-body-top %}{% if main_content_body_top_snippet %}{% include main_content_body_top_snippet %}{% endif %}{% endblock main-content-body-top %}
 
     </section>
 
